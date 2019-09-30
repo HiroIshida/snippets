@@ -1,0 +1,46 @@
+<!-- http://wiki.ros.org/image_transport -->
+<launch>
+
+  <arg name="manager" default="ishi"/>
+
+  <arg name="launch_manager" default="true"/>
+
+  <group if="$(arg launch_manager)">
+    <node name="$(arg manager)"
+          pkg="nodelet" type="nodelet"
+          args="manager"
+          output="screen" respawn="true"/>
+  </group>
+
+  <group ns="head_camera_remote">
+    <!-- Relay -->
+    <node name="relay_camera_info"
+          pkg="topic_tools" type="relay"
+          args="/head_camera/rgb/camera_info /head_camera_remote/rgb/camera_info"
+          output="screen" respawn="true"/>
+    <!-- Republish images -->
+    <node name="republish_rgb"
+          pkg="image_transport" type="republish"
+          args="compressed raw"
+          output="screen" respawn="true">
+      <remap from="in" to="/head_camera/rgb/image_rect_color"/>
+      <remap from="out" to="rgb/image_rect_color"/>
+    </node>
+    <node name="republish_depth"
+          pkg="image_transport" type="republish"
+          args="compressedDepth raw"
+          output="screen" respawn="true">
+      <remap from="in" to="/head_camera/depth_registered/hw_registered/image_rect"/>
+      <remap from="out" to="depth_registered/hw_registered/image_rect"/>
+    </node>
+    <!-- 3D reconstruction remotely from kinect. Only for visualization. -->
+    <node name="point_cloud_xyzrgb_remote"
+          pkg="nodelet" type="nodelet"
+          args="load depth_image_proc/point_cloud_xyzrgb /$(arg manager)"
+          output="screen" respawn="true">
+      <remap from="rgb/camera_info" to="rgb/camera_info"/>
+      <remap from="rgb/image_rect_color" to="rgb/image_rect_color"/>
+      <remap from="depth_registered/image_rect" to="depth_registered/hw_registered/image_rect"/>
+    </node>
+  </group>
+</launch>
