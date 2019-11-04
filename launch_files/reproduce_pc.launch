@@ -1,8 +1,8 @@
 <!-- http://wiki.ros.org/image_transport -->
 <launch>
 
-  <arg name="manager" default="ishi"/>
-
+  <arg name="manager" default="reproduce_manager"/>
+  <arg name="camera" default="kinect_head"/>
   <arg name="launch_manager" default="true"/>
 
   <group if="$(arg launch_manager)">
@@ -16,21 +16,21 @@
     <!-- Relay -->
     <node name="relay_camera_info"
           pkg="topic_tools" type="relay"
-          args="/head_camera/rgb/camera_info /head_camera_remote/rgb/camera_info"
+          args="/$(arg camera)/rgb/camera_info /head_camera_remote/rgb/camera_info"
           output="screen" respawn="true"/>
     <!-- Republish images -->
     <node name="republish_rgb"
           pkg="image_transport" type="republish"
           args="compressed raw"
           output="screen" respawn="true">
-      <remap from="in" to="/head_camera/rgb/image_rect_color"/>
+      <remap from="in" to="/$(arg camera)/rgb/image_rect_color"/>
       <remap from="out" to="rgb/image_rect_color"/>
     </node>
     <node name="republish_depth"
           pkg="image_transport" type="republish"
           args="compressedDepth raw"
           output="screen" respawn="true">
-      <remap from="in" to="/head_camera/depth_registered/hw_registered/image_rect"/>
+      <remap from="in" to="/$(arg camera)/depth_registered/hw_registered/image_rect"/>
       <remap from="out" to="depth_registered/hw_registered/image_rect"/>
     </node>
     <!-- 3D reconstruction remotely from kinect. Only for visualization. -->
