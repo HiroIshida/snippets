@@ -1,6 +1,5 @@
-
 <launch>
-  <arg name="fetch" default="false"/>
+  <arg name="fetch" default="true"/>
   <arg name="remote" default="true"/>
   <arg name="camera" default="head_camera_remote" if="$(arg remote)"/>
   <arg name="camera" default="kinect_head" unless="$(arg remote)"/>
@@ -13,6 +12,7 @@
 
   <!-- please add fetch -->
   <arg name="input" default="/$(arg camera)/depth_registered/points"/>
+  <arg name="box_filter_frame" default="/head_camera_rgb_optical_frame" if="$(arg fetch)"/>
   <arg name="box_filter_frame" default="/head_mount_kinect_rgb_optical_frame" unless="$(arg fetch)"/>
 
   <group ns="/anne">

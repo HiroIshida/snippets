@@ -1,8 +1,11 @@
-<!-- http://wiki.ros.org/image_transport -->
 <launch>
 
-  <arg name="manager" default="reproduce_manager"/>
-  <arg name="camera" default="kinect_head"/>
+  <arg name="manager" default="ishi"/>
+
+  <arg name="fetch" default="true"/>
+  <arg name="camera" default="head_camera" if="$(arg fetch)"/>
+  <arg name="camera" default="kinect_head" unless="$(arg fetch)"/>
+
   <arg name="launch_manager" default="true"/>
 
   <group if="$(arg launch_manager)">
