@@ -1,11 +1,13 @@
+using Revise
 using LIBSVM, Test
 using DelimitedFiles
 using SparseArrays
-using Plots
+#using Plots
 using StaticArrays
 using RegionTrees
 
-include("adaptive_distance_fields.jl")
+Revise.includet("adaptive_distance_fields.jl")
+#include("adaptive_distance_fields.jl")
 using .AdaptivelySampledDistanceFields: ASDF, evaluate
 
 mutable struct Grid2d
@@ -45,9 +47,9 @@ function f(x)
 end
 
 function test()
-  for i in 1:100
+  for i in 1:300
     adf = ASDF(f, SVector(-1., -1), SVector(2., 2), 0.05, 0.05)
-    plt = plot(xlim=(-1, 1), ylim=(-1, 1), legend=nothing)
+    #plt = plot(xlim=(-1, 1), ylim=(-1, 1), legend=nothing)
   end
 end
 
@@ -59,18 +61,21 @@ function test2()
 end
    
 @time test()
-@time test2()
 adf = ASDF(f, SVector(-1.0, -1.0), SVector(2., 2), 0.05, 0.05)
+#=
 plt = plot(xlim=(-0.8, 0.8), ylim=(-0.8, 0.8), legend=nothing)
 
 x = range(-1, stop=1, length=50)
 y = range(-1, stop=1, length=50)
 contour!(plt, x, y, (x, y) -> evaluate(adf, SVector(x, y)), fill=true)
+@time allleaves(adf)
 
 for leaf in allleaves(adf)
     v = hcat(collect(vertices(leaf.boundary))...)
     plot!(plt, v[1,[1,2,4,3,1]], v[2,[1,2,4,3,1]], color=:white)
 end
+=#
+
 
 
 

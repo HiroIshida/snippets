@@ -13,9 +13,9 @@ function evaluate(itp::AbstractInterpolation, point::AbstractArray)
     itp(point...)
 end
 
-function evaluate(cell::Cell{D}, point::AbstractArray) where D <: AbstractInterpolation
+function evaluate(cell::Cell, point::AbstractArray)# where D <: AbstractInterpolation
     leaf = findleaf(cell, point)
-    evaluate(leaf.data, leaf.boundary, point)
+    evaluate(leaf.data[1], leaf.boundary, point)
 end
 
 function evaluate(interp::AbstractInterpolation, boundary::HyperRectangle, point::AbstractArray)
@@ -49,8 +49,12 @@ function refine_data(refinery::SignedDistanceRefinery, cell::Cell, indices)
 end
 
 function refine_data(refinery::SignedDistanceRefinery, boundary::HyperRectangle)
-    interpolate!(refinery.signed_distance_func.(vertices(boundary)),
-                 BSpline(Linear()))
+  itp = interpolate!(refinery.signed_distance_func.(vertices(boundary)), BSpline(Linear()))
+  center = boundary.origin + boundary.widths * 0.5
+  val_center = evaluate(itp, boundary, center)
+  size = prod(boundary.widths)
+  data = (itp, val_center, size)
+  return data
 end
 
 function ASDF(signed_distance::Function, origin::AbstractArray,
