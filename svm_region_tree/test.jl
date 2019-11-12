@@ -2,7 +2,7 @@ using Revise
 using LIBSVM, Test
 using DelimitedFiles
 using SparseArrays
-#using Plots
+using Plots
 using StaticArrays
 using RegionTrees
 
@@ -46,35 +46,37 @@ function f(x)
   return res[2][1]
 end
 
-function test()
-  for i in 1:300
-    adf = ASDF(f, SVector(-1., -1), SVector(2., 2), 0.05, 0.05)
-    #plt = plot(xlim=(-1, 1), ylim=(-1, 1), legend=nothing)
+   
+function tupler(adf)
+  tuple_list = Tuple{Float64, Float64}[]
+  for leaf in allleaves(adf)
+    data = leaf.data[2:3]
+    push!(tuple_list, data)
   end
 end
 
-function test2()
+function test()
+  tup = nothing
+  adf = nothing
   for i in 1:1000
-    x = reshape([0, 0], 2, 1)
-    res = svmpredict(model, x)
+    adf = ASDF(f, SVector(-1.0, -1.0), SVector(2., 2), 0.01, 0.01)
+    tup = tupler(adf)
   end
+  return adf
 end
-   
-@time test()
-adf = ASDF(f, SVector(-1.0, -1.0), SVector(2., 2), 0.05, 0.05)
-#=
-plt = plot(xlim=(-0.8, 0.8), ylim=(-0.8, 0.8), legend=nothing)
+
+@time adf = test()
+
+plt = plot(xlim=(-1.0, 1.0), ylim=(-1.0, 1.0), legend=nothing)
 
 x = range(-1, stop=1, length=50)
 y = range(-1, stop=1, length=50)
 contour!(plt, x, y, (x, y) -> evaluate(adf, SVector(x, y)), fill=true)
-@time allleaves(adf)
 
 for leaf in allleaves(adf)
     v = hcat(collect(vertices(leaf.boundary))...)
     plot!(plt, v[1,[1,2,4,3,1]], v[2,[1,2,4,3,1]], color=:white)
 end
-=#
 
 
 
