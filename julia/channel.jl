@@ -20,7 +20,3 @@ for e in c
   println(e)
 end
 
-
-
-
-
