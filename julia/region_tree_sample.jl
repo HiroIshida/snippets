@@ -2,7 +2,8 @@ using RegionTrees
 using StaticArrays
 
 function gen_sample_quadtree()
-    root = Cell(SVector(0, 0), SVector(1, 1))
+    empty_dict = Dict([])
+    root = Cell(SVector(0, 0), SVector(1, 1), empty_dict)
     cells = [root]
     for i in 1:6
         cell_current = begin
@@ -18,7 +19,10 @@ function gen_sample_quadtree()
         
         (length(cells)==1 ? root : cells[end-1])
         split!(cell_current)
-        map((c)->push!(cells, c), children(cell_current))
+        for c in children(cell_current)
+            c.data = Dict([])
+            push!(cells, c)
+        end
     end
     return root
 end
