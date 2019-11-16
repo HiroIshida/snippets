@@ -5,7 +5,7 @@ function gen_sample_quadtree()
     empty_dict = Dict([])
     root = Cell(SVector(0, 0), SVector(1, 1), empty_dict)
     cells = [root]
-    for i in 1:6
+    for i in 1:20
         cell_current = begin
             len = length(cells)
             if len == 1
@@ -16,11 +16,10 @@ function gen_sample_quadtree()
                 cells[end-3]
             end
         end
-        
         (length(cells)==1 ? root : cells[end-1])
         split!(cell_current)
-        for c in children(cell_current)
-            c.data = Dict([])
+        for (c, I) in zip(children(cell_current), CartesianIndices((2, 2)))
+            c.data = Dict([("indices", I.I)])
             push!(cells, c)
         end
     end
