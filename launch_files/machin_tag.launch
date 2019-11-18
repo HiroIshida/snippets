@@ -1,0 +1,95 @@
+<launch>
+
+  <arg name="MANAGER" value="plasticbottle_detection_manager" />
+  <arg name="INPUT_IMAGE" value="/kinect_head/rgb/half/image_rect_color" />
+  <arg name="INPUT_CLOUD" default="/kinect_head/depth_registered/half/points" />
+
+  <arg name="gui" default="false" />
+  <arg name="gpu" default="0" />
+  <arg name="euclidean_clustering" default="false"/>
+  <arg if="$(arg euclidean_clustering)"
+       name="euclidean_clustering_approximate_sync" default="false"/>
+  <arg unless="$(arg euclidean_clustering)"
+       name="euclidean_clustering_approximate_sync" default="true"/>
+
+  <arg name="ROBOT" default="$(optenv ROBOT sim)"/>
+  <include file="$(find pr2_machine)/$(arg ROBOT).machine" />
+
+  <node name="mask_rcnn_73b2_kitchen"
+        pkg="jsk_perception" type="mask_rcnn_instance_segmentation.py"
+        clear_params="true">
+    <remap from="~input" to="$(arg INPUT_IMAGE)" />
+    <rosparam command="load"
+              file="$(find jsk_perception)/trained_data/mask_rcnn_resnet50_73B2_kitchen_20190619_classnames.yaml" />
+    <rosparam subst_value="true">
+      gpu: $(arg gpu)
+      pretrained_model: $(find jsk_perception)/trained_data/mask_rcnn_resnet50_73B2_kitchen_20190619.npz
+    </rosparam>
+  </node>
+
+  <node name="$(arg MANAGER)" pkg="nodelet" type="nodelet" args="manager"
+    machine="c2"/>
+
+  <node name="label_filter"
+    pkg="nodelet" type="nodelet"
+    args="load jsk_pcl_utils/ClusterPointIndicesLabelFilter $(arg MANAGER)"
+    machine="c2">
+    <remap from="~input/indices" to="mask_rcnn_73b2_kitchen/output/cluster_indices"/>
+    <remap from="~input/labels" to="mask_rcnn_73b2_kitchen/output/labels"/>
+    <remap from="~output" to="mask_rcnn_73b2_kitchen/output/plasticbottle/cluster_indices"/>
+    <rosparam>
+      label_value: 7
+    </rosparam>
+  </node>
+
+  <group if="$(arg euclidean_clustering)">
+    <node name="euclidean_clustering"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/EuclideanClustering $(arg MANAGER)"
+        clear_params="true"
+        machine="c2">
+      <remap from="~input" to="$(arg INPUT_CLOUD)"/>
+      <remap from="~input/cluster_indices" to="mask_rcnn_73b2_kitchen/output/plasticbottle/cluster_indices"/>
+      <rosparam>
+    multi: true
+    tolerance: 0.03
+    min_size: 100
+    cluster_tolerance: 0.02
+    approximate_sync: true
+    queue_size: 100
+    downsample_enable: true
+      </rosparam>
+    </node>
+  </group>
+
+  <node name="cluster_point_indices_decomposer"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg MANAGER)"
+        clear_params="true"
+        machine="c2">
+    <remap from="~input" to="$(arg INPUT_CLOUD)"/>
+    <remap if="$(arg euclidean_clustering)"
+      from="~target" to="euclidean_clustering/output"/>
+    <remap unless="$(arg euclidean_clustering)"
+       from="~target" to="mask_rcnn_73b2_kitchen/output/plasticbottle/cluster_indices"/>
+    <remap from="~boxes" to="mask_rcnn_73b2_kitchen/output/plasticbottle/boxes"/>
+    <remap from="~centroid_pose_array" to="mask_rcnn_73b2_kitchen/output/plasticbottle/centroid"/>
+    <rosparam subst_value="true">
+      align_boxes: true
+      align_boxes_with_plane: false
+      force_to_flip_z_axis: false
+      target_frame_id: base_footprint
+      approximate_sync: $(arg euclidean_clustering_approximate_sync)
+      queue_size: 100
+    </rosparam>
+  </node>
+
+  <group if="$(arg gui)">
+    <node name="image_view"
+          pkg="image_view" type="image_view"
+          clear_params="true">
+      <remap from="image" to="mask_rcnn_73b2_kitchen/output/viz" />
+    </node>
+  </group>
+
+</launch>
