@@ -5,6 +5,7 @@ import numpy.linalg as la
 import numpy.random as rn
 import cvxopt
 import math
+import functions
 rn.seed(5)
 
 def show2d(func, bmin, bmax, N = 20, fax = None, levels = None):
@@ -39,7 +40,8 @@ def show2d(func, bmin, bmax, N = 20, fax = None, levels = None):
 
 
 def gen_dataset(N):
-    predicate = lambda x: x[0]**2 + x[1]**2 < 0.5 ** 2
+    #predicate = lambda x: x[0]**2 + x[1]**2 < 0.5 ** 2
+    predicate = lambda x: functions.modified_banana_function(x)
     xp_lst = []
     xm_lst = []
     for i in range(N):
@@ -69,7 +71,7 @@ def gen_diadig(vec):
 
 class SSLM:
 
-    def __init__(self, X, y, kern, nu = 0.1, nu1 = 0.01, nu2 = 0.02):
+    def __init__(self, X, y, kern, nu = 1.0, nu1 = 0.2, nu2 = 0.2):
         self.X = X
         self.y = y
         self.kern = kern
@@ -85,7 +87,7 @@ class SSLM:
                 = self._compute_important_parameters()
 
     def predict(self, x):
-        val = (self.R**2 - self.cc - self.kern(x, x) + sum(2 * self.kern(X.T, x).flatten() * self.a_lst * self.y)).item()
+        val = (self.R**2 - self.cc - self.kern(x, x, gamma = 10) + sum(2 * self.kern(X.T, x, gamma = 10).flatten() * self.a_lst * self.y)).item()
         return val
 
     def _compute_important_parameters(self):
@@ -103,6 +105,8 @@ class SSLM:
             a = a_lst[i]
             if eps < a and a < 1.0/(self.nu2 * self.m2) - eps:
                 idxes_S2.append(i)
+        print(idxes_S1)
+        print(idxes_S2)
 
         cc = sum(sum(gen_diadig(a_lst) * gramymat))
         f_inner = lambda idx: gram[idx, idx] - sum(2 * gram[idx, :] * a_lst * self.y) + cc
@@ -112,6 +116,8 @@ class SSLM:
 
         n1 = len(idxes_S1)
         n2 = len(idxes_S2)
+        print P1
+        print P2
         R = math.sqrt(P1/n1)
         rho = math.sqrt(P2/n2 - P1/n1)
         return R, rho, cc, a_lst, idxes_S1, idxes_S2
@@ -119,7 +125,7 @@ class SSLM:
     def _solve_qp(self):
         Ymat = gen_diadig(np.array(self.y))
 
-        gram = kern(self.X.T)
+        gram = self.kern(self.X.T, gamma = 10)
         gram_diag_matrix = np.diag(gram)
 
         gramymat = gram * Ymat
@@ -153,11 +159,12 @@ class SSLM:
         return gram, gramymat, a_lst
 
 if __name__ == '__main__':
-    N = 100
+    N = 700
     X, y, n_p = gen_dataset(N)
-    kern = linear_kernel
+    kern = rbf_kernel  
+    #kern = linear_kernel
 
-    sslm = SSLM(X, y, kern)
+    sslm = SSLM(X, y, kern, nu = 1.0, nu1 = 0.05, nu2 = 0.02)
     sslm.predict([0, 0.8])
 
 
