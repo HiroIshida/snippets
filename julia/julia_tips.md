@@ -4,6 +4,8 @@
 https://qiita.com/mametank/items/43330a9452f0039ca22d
 pkg > generate HelloWorld
 
+## when get stuck on "redefinition of constant Type" error ...
+https://docs.julialang.org/en/v1/manual/faq/#How-can-I-modify-the-declaration-of-a-type-in-my-session?-1
 
 
 ## julia develop
