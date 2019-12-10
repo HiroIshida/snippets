@@ -1,5 +1,10 @@
 # julia メモ
 
+## initialize julia array
+m = reshape([], 0, 2)
+or 
+m = Array{Float64}(undef, 0, 0)
+
 ## julia custom package 
 https://qiita.com/mametank/items/43330a9452f0039ca22d
 pkg > generate HelloWorld
