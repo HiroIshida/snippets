@@ -1,12 +1,21 @@
 import socket
 
-target_ip = "127.0.0.1"
-target_port = 2000
+HOST = "127.0.0.1"
+PORT = 2000
 
-tcp_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-tcp_client.connect((target_ip,target_port))
-tcp_client.send(b"abc")
-response = tcp_client.recv(1024)
-print(response)
-# print("[*]Received a response : {}".format(response))
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect((HOST,PORT))
+
+# these two steps are required because julia's readline expecet "\n" fast
+s.send("\n")
+response = s.recv(1024)
+
+def g(str):
+    s.send(str+"\n")
+    response = s.recv(1024)
+    print(response)
+
+
+f = gen()
+
 
