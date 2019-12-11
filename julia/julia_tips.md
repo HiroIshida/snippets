@@ -1,5 +1,8 @@
 # julia メモ
 
+## dict
+Dict([("A", 1), ("B", 2)])
+
 ## initialize julia array
 m = reshape([], 0, 2)
 or 
