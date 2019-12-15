@@ -1,5 +1,9 @@
 # julia メモ
 
+## how to pickle (or serialize)
+use Serialization; not HDF5
+
+
 ## dict
 Dict([("A", 1), ("B", 2)])
 
