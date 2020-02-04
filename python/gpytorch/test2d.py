@@ -5,33 +5,6 @@ from matplotlib import cm
 from matplotlib import pyplot as plt
 import numpy as np
 
-def franke(X, Y):
-    term1 = .75*torch.exp(-((9*X - 2).pow(2) + (9*Y - 2).pow(2))/4)
-    term2 = .75*torch.exp(-((9*X + 1).pow(2))/49 - (9*Y + 1)/10)
-    term3 = .5*torch.exp(-((9*X - 7).pow(2) + (9*Y - 3).pow(2))/4)
-    term4 = .2*torch.exp(-(9*X - 4).pow(2) - (9*Y - 7).pow(2))
-
-    f = term1 + term2 + term3 - term4
-    dfx = -2*(9*X - 2)*9/4 * term1 - 2*(9*X + 1)*9/49 * term2 + \
-          -2*(9*X - 7)*9/4 * term3 + 2*(9*X - 4)*9 * term4
-    dfy = -2*(9*Y - 2)*9/4 * term1 - 9/10 * term2 + \
-          -2*(9*Y - 3)*9/4 * term3 + 2*(9*Y - 7)*9 * term4
-
-    return f
-
-N = 10
-xv, yv = torch.meshgrid([torch.linspace(0, 1, N), torch.linspace(0, 1, N)])
-train_x = torch.cat((
-    xv.contiguous().view(xv.numel(), 1),
-    yv.contiguous().view(yv.numel(), 1)),
-    dim=1
-)
-
-f = franke(train_x[:, 0], train_x[:, 1])
-train_y = torch.stack([f], -1).squeeze(1)
-
-train_y += 0.05 * torch.randn(train_y.size()) # Add noise to both values and gradients
-
 # We will use the simplest form of GP model, exact inference
 class ExactGPModel(gpytorch.models.ExactGP):
     def __init__(self, train_x, train_y, likelihood):
@@ -53,13 +26,16 @@ class ExactGPModel(gpytorch.models.ExactGP):
         ], lr=0.05)
         mll = gpytorch.mlls.ExactMarginalLogLikelihood(self.likelihood, self)
 
-        for i in range(200):
-            print("hoge")
-            optimizer.zero_grad()
-            output = self(train_x)
-            loss = -mll(output, train_y)
-            loss.backward()
-            optimizer.step()
+        try:
+            for i in range(200):
+                print("hoge")
+                optimizer.zero_grad()
+                output = self(train_x)
+                loss = -mll(output, train_y)
+                loss.backward()
+                optimizer.step()
+        except RuntimeError:
+            print("cannot be optimized, more training data is necessary pribably")
 
         # switch to eval mode
         self.eval()
@@ -71,12 +47,16 @@ class ExactGPModel(gpytorch.models.ExactGP):
             return (pred.mean, pred.variance)
 
 
-likelihood = gpytorch.likelihoods.GaussianLikelihood()
-model = ExactGPModel(train_x, train_y, likelihood)
-model.optimize()
-model.predict(torch.tensor([[0.5, 0.5]]))
 
-'''
+import torch as th
+X_init = th.tensor([[0.5, 0.3], [0.5, 0.5], [0.5, 0.7]])
+Y_init = th.tensor([1, -1, 1])
+
+likelihood = gpytorch.likelihoods.GaussianLikelihood()
+model = ExactGPModel(X_init, Y_init, likelihood)
+model.optimize()
+#model.predict(torch.tensor([[0.5, 0.5]]))
+
 # Initialize plots
 fig, ax = plt.subplots(1, 1, figsize=(14, 10))
 
@@ -94,5 +74,3 @@ extent = (xv.min(), xv.max(), yv.max(), yv.min())
 ax.imshow(mean.detach().numpy().reshape(n1, n2), extent=extent, cmap=cm.jet)
 plt.show()
 
-None
-'''
