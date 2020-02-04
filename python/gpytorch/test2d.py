@@ -65,10 +65,18 @@ class ExactGPModel(gpytorch.models.ExactGP):
         self.eval()
         self.likelihood.eval()
 
+    def predict(self, test_x):
+        with torch.no_grad():
+            pred = self.likelihood(model(test_x))
+            return (pred.mean, pred.variance)
+
+
 likelihood = gpytorch.likelihoods.GaussianLikelihood()
 model = ExactGPModel(train_x, train_y, likelihood)
 model.optimize()
+model.predict(torch.tensor([[0.5, 0.5]]))
 
+'''
 # Initialize plots
 fig, ax = plt.subplots(1, 1, figsize=(14, 10))
 
@@ -87,3 +95,4 @@ ax.imshow(mean.detach().numpy().reshape(n1, n2), extent=extent, cmap=cm.jet)
 plt.show()
 
 None
+'''
