@@ -27,7 +27,7 @@ class ExactGPModel(gpytorch.models.ExactGP):
         mll = gpytorch.mlls.ExactMarginalLogLikelihood(self.likelihood, self)
 
         try:
-            for i in range(200):
+            for i in range(10):
                 print("hoge")
                 optimizer.zero_grad()
                 output = self(train_x)
@@ -49,12 +49,27 @@ class ExactGPModel(gpytorch.models.ExactGP):
 
 
 import torch as th
-X_init = th.tensor([[0.5, 0.3], [0.5, 0.5], [0.5, 0.7]])
-Y_init = th.tensor([1, -1, 1])
+#X_init = th.tensor([[0.5, 0.3], [0.5, 0.5], [0.5, 0.7]])
+#Y_init = th.tensor([1, -1, 1])
+def gen_dataset(N):
+    predicate = lambda x: (x[0]**2 -0.5)**2 + (x[1]**2 -0.5)**2 < 0.4 ** 2
+    X = []
+    Y = []
+    for i in range(N):
+        x = th.rand(2)  
+        y = predicate(x) * 2 - 1
+        X.append(x)
+        Y.append(y)
+    X_ = th.stack(X, dim=0)
+    Y_ = th.stack(Y)
+    return X_, Y_
+X_init, Y_init = gen_dataset(30)
+
 
 likelihood = gpytorch.likelihoods.GaussianLikelihood()
 model = ExactGPModel(X_init, Y_init, likelihood)
 model.optimize()
+
 #model.predict(torch.tensor([[0.5, 0.5]]))
 
 # Initialize plots
