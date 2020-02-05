@@ -1,0 +1,12 @@
+(load "package://pr2eus/pr2-interface.l")
+(pr2)
+
+(setq *ec* (send *pr2* :rarm :end-coords :parent))
+(setq *l* (send *pr2* :link-list *ec*))
+(setq link-r-wrist (elt *l* 7))
+(setq *racket* (make-cube 30 30 500))
+(send *racket* :newcoords (send link-r-wrist :copy-worldcoords))
+(send *racket* :translate #f(180 0 250) :local)
+(send link-r-wrist :assoc *racket*)
+(objects (list *pr2* *racket*))
+(send *pr2* :init-pose)
