@@ -7,10 +7,11 @@ import numpy as np
 
 # We will use the simplest form of GP model, exact inference
 class ExactGPModel(gpytorch.models.ExactGP):
-    def __init__(self, train_x, train_y, likelihood):
+    def __init__(self, train_x, train_y, likelihood, kernel):
         super(ExactGPModel, self).__init__(train_x, train_y, likelihood)
         self.mean_module = gpytorch.means.ConstantMean()
-        self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())
+        self.covar_module = kernel
+        #self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())
         self.likelihood = likelihood
     
     def forward(self, x):
@@ -49,15 +50,18 @@ class ExactGPModel(gpytorch.models.ExactGP):
 
 if __name__=='__main__':
     import torch as th
-    train_x = th.tensor([[0.5, 0.2], [0.5, 0.5], [0.5, 0.9]])
-    train_y = torch.tensor([-1, 1, -1])
+    train_x = th.tensor([[0.5, 0.2], [0.6, 0.5], [0.5, 0.9], [0.4, 0.5], [0.3, 0.9]])
+    train_y = torch.tensor([-1, 1, -1, 1, -1])
 
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
-    model = ExactGPModel(train_x, train_y, likelihood)
+    kernel = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())
+    kernel.base_kernel.lengthscale = 0.4
+    model = ExactGPModel(train_x, train_y, likelihood, kernel)
     model.optimize()
+    model.eval()
 
     fig, ax = plt.subplots(1, 1, figsize=(14, 10))
-    n1, n2 = 50, 50
+    n1, n2 = 200, 200
     xv, yv = torch.meshgrid([torch.linspace(0, 1, n1), torch.linspace(0, 1, n2)])
 
     # Make predictions
