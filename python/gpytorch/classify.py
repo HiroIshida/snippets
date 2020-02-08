@@ -74,7 +74,7 @@ xv, yv = torch.meshgrid([torch.linspace(0, 1, n1), torch.linspace(0, 1, n2)])
 with torch.no_grad(), gpytorch.settings.fast_computations(log_prob=False, covar_root_decomposition=False):
     test_x = torch.stack([xv.reshape(n1*n2, 1), yv.reshape(n1*n2, 1)], -1).squeeze(1)
     predictions = likelihood(model(test_x))
-    mean = predictions.variance
+    mean = predictions.mean
 
 extent = (xv.min(), xv.max(), yv.max(), yv.min())
 ax.imshow(mean.detach().numpy().reshape(n1, n2), extent=extent, cmap=cm.jet)
