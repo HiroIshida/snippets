@@ -4,6 +4,7 @@ import math
 from matplotlib import cm
 from matplotlib import pyplot as plt
 import numpy as np
+import pdb
 
 # We will use the simplest form of GP model, exact inference
 class ExactGPModel(gpytorch.models.ExactGP):
@@ -66,7 +67,9 @@ if __name__=='__main__':
 
     # Make predictions
     with torch.no_grad(), gpytorch.settings.fast_computations(log_prob=False, covar_root_decomposition=False):
+        pdb.set_trace()
         test_x = torch.stack([xv.reshape(n1*n2, 1), yv.reshape(n1*n2, 1)], -1).squeeze(1)
+
         predictions = likelihood(model(test_x))
         mean = predictions.mean
 
