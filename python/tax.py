@@ -30,19 +30,16 @@ def calc_juminzei(x, shotokukouzyo=380000):
     tax_depedent = (x - shotokukouzyo) * 0.1
     return tax_common + tax_depedent
 
-support = False
+print("juminzei calc is uncertain")
+support = True
 if support:
     x = 1200000
-    tax = calc_shotokuzei(x) + calc_hokenryo(x)
-    money = x - tax + 0.5 * (26 + 53)
+    tax = calc_shotokuzei(x) + calc_hokenryo(x) + calc_juminzei(x)
+    money = x - tax + 530000
     print(money)
 else:
     x = 1440000
-    tax = calc_shotokuzei(x) + calc_hokenryo(x)
-    money = x - tax + 0.5 * (26 + 53)
+    tax = calc_shotokuzei(x) + calc_hokenryo(x) + calc_juminzei(x)
+    money = x - tax + 530000
     print(money)
-
-
-
-
 
