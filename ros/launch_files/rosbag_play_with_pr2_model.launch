@@ -1,0 +1,10 @@
+<!-- see pr2_common-->
+<launch>
+  <!--param name="robot_description" textfile="" /-->
+  <param name="robot_description" command="$(find xacro)/xacro '$(find pr2_description)/robots/pr2.urdf.xacro' --inorder" />
+  <node pkg="rosbag" type="play" name="player" args="--clock /home/anne/catkin_ws/src/oven/2020-03-26-06-28-11.bag -l"/>
+
+  <node name="replay" pkg="rviz" type="rviz"
+    args="-d $(find oven)/config/basic.rviz"/>
+
+</launch>
