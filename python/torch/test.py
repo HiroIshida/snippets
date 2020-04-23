@@ -11,12 +11,13 @@ H = 30
 model = nn.Sequential(nn.Linear(1, H),
                       nn.ReLU(),
                       nn.Linear(H, 1))
-optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9)
+optimizer = optim.Adam(model.parameters(), lr=0.1)
 criterion = nn.MSELoss()
 
 func_target = lambda x: 1./(1.+torch.exp(-5*x))
-N = 10
-inp = torch.randn(N, D_in)
+#N = 10
+#inp = torch.randn(N, D_in)
+inp = torch.tensor([[-2.0, -1.0, -0.7, -0.4, 0.5, 1.5]]).T
 target = func_target(inp)
 
 model.train()
