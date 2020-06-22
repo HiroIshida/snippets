@@ -28,12 +28,11 @@ p.setGravity(0,0,-10)
 tray_id = p.loadURDF("./tray/tray.urdf")
 ball_ids = [p.loadURDF("sphere_small.urdf") for i in range(200)]
 for ball_id in ball_ids:
-    set_point(ball_id, [rn.randn()*0.03, rn.randn()*0.03, 0.2 + rn.random()*2])
+    set_point(ball_id, [rn.randn()*0.05, rn.randn()*0.05, 0.2 + rn.random()*2])
 
 planeId = p.loadURDF("plane.urdf")
-
 time.sleep(2.0)
 for i in range(1000):
-    if i%10==1:
+    if i%5==1:
         time.sleep(0.1)
     p.stepSimulation()
