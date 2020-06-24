@@ -1,3 +1,7 @@
+## pitfalls
+1. Do not set position and quaternion when loading URDF. It's buggy.
+2. A base link always has -1 index
+
 ## getCameraImage
 `bullet3/examples/SharedMemory/plugins/tinyRendererPlugin`
 `bullet3/examples/OpenGLWindow`
