@@ -18,4 +18,9 @@ void btCollisionWorld::rayTestSingleInternal(const btTransform& rayFromTrans, co
 											 RayResultCallback& resultCallback)
 ```
 
+## how inverse kinematics method is imported into python
+defined in `BussIK` then wrapped by `IKTrajectoryHelper.h`. This header is included by `PhysicsServerCommandProcessor.cpp`. Then finally integrated into `*C_API`.
+
+## calcualateJacobians 
+Super confusing thing is, `calcualateJacobians` method seem to come from `src/BulletInverseDynamics/MultBodyTree.hpp`. Insider `PhysicsServerCommandProcessor::processCalculateJacobianCommand`,  `tree->getBodyJacobianTrans` and `tree->getBodyJacobianRot` are called and computed values are stored as `jac_t` and `jac_r`. Seems that `jac_r` is used just to compute `jac_t_new`, and not returned.
 
