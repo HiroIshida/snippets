@@ -1,6 +1,13 @@
-## pitfalls
-1. Do not set position and quaternion when loading URDF. It's buggy.
-2. A base link always has -1 index
+# pitfalls
+## when joint limit is not specified in urdf
+lower and upper limits are set to 0.0 and -1.0. As the bullet (not pybullet) documentation shows, if lower > upper, that means the joint is free.
+
+## calculateJacobian
+Please specify that the base is fixed:
+```python
+robot = pb.loadURDF("./robot/config.urdf", useFixedBase=True)
+```
+otherwise the `calcualateJacobian` will return 3x(n+6) matrix. The additional 6 dims are for xyzrpy.
 
 ## getCameraImage
 `bullet3/examples/SharedMemory/plugins/tinyRendererPlugin`
