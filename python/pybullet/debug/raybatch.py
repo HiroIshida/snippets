@@ -1,38 +1,45 @@
 import pybullet as p
-import time
 import math
 import pybullet_data
 
-useGui = True
+def single_test(urdf_file, isDIRECT=True):
+    p.connect(p.DIRECT if isDIRECT else p.GUI)
+    p.setAdditionalSearchPath(pybullet_data.getDataPath())
+    p.loadURDF(urdf_file, [3, 3, 1])
 
-p.connect(p.DIRECT)
-p.setAdditionalSearchPath(pybullet_data.getDataPath())
+    numRays = 1024; rayLen = 13
 
-p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
-#p.configureDebugVisualizer(p.COV_ENABLE_RENDERING,0)
+    info_lst = []; rayFrom_lst = []; rayTo_lst = []
 
-#p.loadURDF("samurai.urdf")
-p.loadURDF("r2d2.urdf", [3, 3, 1])
+    for i in range(numRays):
+        rayFrom = [0, 0, 1]
+        rayTo = [rayLen * math.sin(2. * math.pi * float(i) / numRays),
+                rayLen * math.cos(2. * math.pi * float(i) / numRays), 1]
 
-rayFrom = []
-rayTo = []
-rayIds = []
+        info = p.rayTest(rayFrom, rayTo)
+        info_lst.append(info[0])
 
-numRays = 1024
+        p.addUserDebugLine(rayFrom, rayTo, [1, 0, 0])
+        rayFrom_lst.append(rayFrom)
+        rayTo_lst.append(rayTo)
 
-rayLen = 13
+    info_lst_batch = p.rayTestBatch(rayFrom_lst, rayTo_lst)
 
-rayHitColor = [1, 0, 0]
-rayMissColor = [0, 1, 0]
+    collide_predicate = lambda info:info[0]!=-1
+    info_filtered = list(filter(collide_predicate, info_lst))
+    info_batch_filtered = list(filter(collide_predicate, info_lst_batch))
 
-replaceLines = True
+    p.disconnect()
 
-for i in range(numRays):
-  rayFrom.append([0, 0, 1])
-  rayTo.append([
-      rayLen * math.sin(2. * math.pi * float(i) / numRays),
-      rayLen * math.cos(2. * math.pi * float(i) / numRays), 1
-  ])
+    return info_filtered, info_batch_filtered
 
-infos = p.rayTestBatch(rayFrom, rayTo) 
-list(filter(lambda info: info[0] != -1, infos))
+def isConsistent(model):
+    info_filtered, info_batch_filtered = single_test(model)
+    # number of collide ray must be equal 
+    return (len(info_filtered) == len(info_batch_filtered)) 
+
+models = ["sphere_small.urdf", "sphere2.urdf", "block.urdf",  # composed of single object
+        "r2d2.urdf", "humanoid/humanoid.urdf" # composed of multiple objects 
+        ]
+
+lst_consistensy = [isConsistent(model) for model in models]
