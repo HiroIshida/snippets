@@ -1,5 +1,16 @@
 ### attaching the process.
-Say I have `main.py` and `f()` inside C function wrapped by python. First embed `usleep(1000000)` or something. While sleeping run 
+Say I have `main.py` and `f()` inside C function wrapped by python. First please insert `usleep(1000000)` so that you have time to attach. Without this, the program is just executed. 
+```cpp
+#include <unistd.h>
+// something
+void f(){
+    std::cout<<"attach this process in 3 sec." <<std::endl;
+    usleep(3000000000);
+    // some procedures
+    return;
+}
+```
+While the above process waiting for seconds hit this command to attach:
 ```bash
 gdb --pid <PID-of-main.py>
 ```
