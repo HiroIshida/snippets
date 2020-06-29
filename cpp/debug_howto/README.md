@@ -4,7 +4,7 @@ Say I have `main.py` and `f()` inside C function wrapped by python. First embed 
 gdb --pid <PID-of-main.py>
 ```
 Another tip is (a) to show pid and wait for press as below:
-```ptyhon
+```python
 import os
 import psutil
 pid = os.getpid()
