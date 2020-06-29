@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <script async="" src="a_data/prebid.js"></script>
+    <style>/* Reset.less
+* Props to Eric Meyer (meyerweb.com) for his CSS reset file. We're using an adapted version here   that cuts out some of the reset HTML elements we will never need here (i.e., dfn, samp, etc).
+* ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
+html,
+body {
+margin: 0;
+padding: 0;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+dd,
+dl,
+dt,
+li,
+ol,
+ul,
+fieldset,
+form,
+label,
+legend,
+button,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td {
+margin: 0;
+padding: 0;
+border: 0;
+font-weight: normal;
+font-style: normal;
+font-size: 100%;
+line-height: 1;
+font-family: inherit;
+}
+table {
+border-collapse: collapse;
+border-spacing: 0;
+}
+ol,
+ul {
+list-style: none;
+}
+q:before,
+q:after,
+blockquote:before,
+blockquote:after {
+content: "";
+}
+html {
+overflow-y: scroll;
+font-size: 100%;
+-webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+}
+a:focus {
+outline: thin dotted;
+}
+a:hover,
+a:active {
+outline: 0;
+}
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+nav,
+section {
+display: block;
+}
+audio,
+canvas,
+video {
+display: inline-block;
+*display: inline;
+*zoom: 1;
+}
+audio:not([controls]) {
+display: none;
+}
+sub,
+sup {
+font-size: 75%;
+line-height: 0;
+position: relative;
+vertical-align: baseline;
+}
+sup {
+top: -0.5em;
+}
+sub {
+bottom: -0.25em;
+}
+img {
+border: 0;
+-ms-interpolation-mode: bicubic;
+}
+button,
+input,
+select,
+textarea {
+font-size: 100%;
+margin: 0;
+vertical-align: baseline;
+*vertical-align: middle;
+}
+button,
+input {
+line-height: normal;
+*overflow: visible;
+}
+button::-moz-focus-inner,
+input::-moz-focus-inner {
+border: 0;
+padding: 0;
+}
+button,
+input[type="button"],
+input[type="reset"],
+input[type="submit"] {
+cursor: pointer;
+-webkit-appearance: button;
+}
+input[type="search"] {
+-webkit-appearance: textfield;
+box-sizing: content-box;
+}
+input[type="search"]::-webkit-search-decoration {
+-webkit-appearance: none;
+}
+textarea {
+overflow: auto;
+vertical-align: top;
+}
+.spinner {
+z-index: 500;
+border: 3px solid transparent;
+border-color: transparent #c2c9d4 transparent #c2c9d4;
+animation: rotate-loading 1.2s linear 0s infinite normal;
+transform-origin: 50% 50%;
+margin: auto;
+width: 25px;
+height: 25px;
+border-radius: 28px;
+}
+.spinner.-xs {
+width: 11px;
+height: 11px;
+border-radius: 12px;
+border-width: 1px;
+}
+.spinner.-sm {
+width: 16px;
+height: 16px;
+border-radius: 10px;
+border-width: 2px;
+}
+@keyframes rotate-loading {
+0% {
+    transform: rotate(0deg);
+}
+100% {
+    transform: rotate(360deg);
+}
+}
+.report-ad__link {
+color: #999;
+cursor: pointer;
+font-size: 12px;
+position: absolute;
+right: 15px;
+bottom: 5px;
+}
+.report-ad__link:hover {
+color: #555;
+}
+.report-ad__container {
+height: 18px;
+margin: -5px auto 0;
+max-width: 600px;
+padding: 0;
+position: relative;
+}
+.report-ad__container .report-ad__link {
+right: 0px;
+}
+.privacy-ad__link {
+position: absolute;
+top: 20px;
+right: 20px;
+height: 20px;
+width: 20px;
+background: #333;
+display: -ms-flexbox;
+display: flex;
+-ms-flex-align: center;
+    align-items: center;
+-ms-flex-pack: center;
+    justify-content: center;
+border-radius: 50%;
+border: 1px solid #ccc;
+color: #ccc;
+font-weight: bold;
+font-size: 16px;
+}
+.privacy-ad__link :hover {
+border-color: white;
+color: white;
+}
+.report-ad__confirmation {
+margin: 0 auto;
+color: #999;
+font-size: 12px;
+display: -ms-flexbox;
+display: flex;
+-ms-flex-align: center;
+    align-items: center;
+-ms-flex-pack: center;
+    justify-content: center;
+text-align: center;
+}
+*,
+*:before,
+*:after {
+-webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale;
+}
+.truncate-line {
+text-overflow: ellipsis;
+word-wrap: break-word;
+white-space: nowrap;
+overflow: hidden;
+min-width: 1px;
+}
+body {
+padding: 0;
+margin: 10px 0 0;
+font-family: "Helvetica Neue", arial, sans-serif;
+}
+.serif {
+font-family: Georgia, Times, serif;
+}
+.iab-ad__wrapper {
+width: 100%;
+max-height: 1090px;
+overflow: hidden;
+margin-top: 10px;
+}
+.text-subheading {
+font-family: "Helvetica Neue", arial, sans-serif;
+font-size: 12px;
+font-weight: 700;
+color: #7f929c;
+color: rgba(0, 39, 59, 0.5);
+}
+.dark-theme .text-subheading {
+color: #eaedee;
+color: rgba(255, 255, 255, 0.85);
+}
+a {
+text-decoration: none;
+}
+.dark-theme {
+background-color: transparent;
+color: #fff;
+}
+.hidden {
+display: none !important;
+}
+.ad-dr {
+position: relative;
+}
+.ad-dr__title {
+margin-top: 5px;
+}
+.ad-dr__message {
+padding-right: 5px;
+}
+.clearfix {
+*zoom: 1;
+}
+.clearfix:before,
+.clearfix:after {
+display: table;
+content: "";
+line-height: 0;
+}
+.clearfix:after {
+clear: both;
+}
+.hide-text {
+font: 0/0 a;
+color: transparent;
+text-shadow: none;
+background-color: transparent;
+border: 0;
+}
+/*
+    Reusable positioning
+*/
+.icon__block {
+margin-bottom: 10px;
+}
+.icon__block .icon {
+margin-right: 2px;
+}
+.generic-ad__block {
+position: relative;
+}
+.generic-ad__wrapper {
+overflow: hidden;
+transition: height 500ms;
+}
+.align--center {
+display: -ms-flexbox;
+display: flex;
+-ms-flex-align: center;
+    align-items: center;
+-ms-flex-pack: center;
+    justify-content: center;
+text-align: center;
+}
+/*
+    2016 Common adsnative styles
+*/
+.story-ad {
+width: 100%;
+background-color: white;
+border-radius: 5px;
+padding: 15px;
+}
+.dark-theme .story-ad {
+background: transparent;
+}
+.adsnative-video-iframe {
+max-width: 640px;
+width: 100% !important;
+height: 400px;
+margin-bottom: 10px;
+float: left !important;
+}
+.story-ad__thumb {
+margin: 0 0 10px 0;
+height: 225px !important;
+width: 100% !important;
+background-position: 50% 33% !important;
+}
+@media (min-width: 400px) {
+.story-ad__thumb {
+    height: 140px !important;
+    float: right;
+    width: 30% !important;
+    margin: 0 0 10px 10px;
+}
+}
+.story-ad__thumb.adsnative-video-iframe {
+width: 100% !important;
+margin-left: 0;
+}
+@media (min-width: 400px) {
+.story-ad__thumb.adsnative-video-iframe {
+    height: 350px !important;
+}
+}
+.story-ad__thumb img {
+width: 100%;
+}
+.story-ad__thumb-privacy-link {
+position: absolute;
+right: 0;
+top: 0;
+}
+.story-ad__attribution {
+font-size: 10px;
+color: #aaaaaa;
+}
+@media (min-width: 400px) {
+.story-ad__attribution.-video-ad {
+    float: right;
+    margin-top: 23px;
+}
+}
+.story-ad__attribution .bullet {
+font-size: 75%;
+color: #ccc;
+line-height: 1.4em;
+padding: 0 6px;
+}
+.story-ad_attribution-link {
+font-weight: bold;
+}
+.story-ad__title {
+font-weight: bold;
+font-size: 16px;
+line-height: 1.45em;
+color: #000000;
+margin-top: 0px;
+}
+.story-ad__title:hover {
+text-decoration: none;
+}
+.dark-theme .story-ad__title {
+color: #FFFFFF;
+}
+.story-ad__message {
+font-size: 14px;
+margin-bottom: 0;
+line-height: 1.35em;
+color: #999;
+margin-top: 3px;
+}
+.story-ad__message p {
+margin-bottom: 0px;
+line-height: 1.45em;
+}
+.story-ad__cta {
+border: 1px solid #2E9FFF;
+padding: 10px 15px;
+border-radius: 3px;
+font-weight: bold;
+color: #2e9FFF;
+margin: 10px 0 15px;
+font-size: 14px;
+text-align: center;
+}
+@media (min-width: 400px) {
+.story-ad__cta {
+    display: inline-block;
+}
+}
+.story-ad__cta:hover {
+color: #fff;
+background: #2e9FFF;
+}
+/*
+    Adsnative namespaced templates
+*/
+.template-2016-baseline {
+max-width: 630px;
+margin: 0px auto;
+position: relative;
+}
+.template-2016-baseline *,
+.template-2016-baseline *:before,
+.template-2016-baseline *:after {
+box-sizing: border-box;
+}
+.template-2016-baseline .iab-ad__wrapper {
+width: 100%;
+max-height: 1090px;
+overflow: hidden;
+}
+.template-2016-baseline .iab-ad {
+margin: 0 auto;
+}
+.template-2016-baseline .iframe-ad__wrapper {
+padding-bottom: 62.5%;
+position: relative;
+height: 0;
+overflow: hidden;
+}
+.template-2016-baseline .iframe-ad {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+}
+.template-2016-baseline .story-ad__thumb {
+background-size: cover;
+}
+.template-2016-baseline.-comment {
+max-width: 100%;
+}
+.template-2016-baseline.-comment .story-ad__thumb {
+float: left;
+margin: 0 10px 10px 0;
+max-height: 48px;
+max-width: 48px;
+border-radius: 3px;
+}
+.template-2016-baseline.-comment .story-ad__title {
+color: #656c7a;
+font-size: 12px;
+font-weight: 500;
+}
+.template-2016-baseline.-comment .story-ad__title .bullet {
+color: #c2c6cc;
+font-size: 9px;
+}
+.template-2016-baseline.-comment .story-ad__title a {
+color: #428bca;
+font-weight: bold;
+font-size: 13px;
+}
+.template-2016-baseline.-comment .story-ad__message {
+font-size: 15px;
+line-height: 21px;
+color: #2a2e2e;
+margin-left: 58px;
+}
+.template-2016-baseline.-comment .story-ad__attribution {
+color: #656c7a;
+font-weight: 500;
+display: block;
+font-size: 13px;
+line-height: 24px;
+}
+.template-2015 .ad-dr {
+width: 100%;
+margin: 0px auto 20px;
+padding: 15px;
+}
+.template-2015 .ad-dr.-thumb-right .ad-dr__thumb {
+float: right;
+}
+.template-2015 .ad-dr.-thumb-right .ad-dr__content {
+float: right;
+padding-right: 15px;
+box-sizing: border-box;
+}
+@media (max-width: 400px) {
+.template-2015 .ad-dr.-thumb-right .ad-dr__content {
+    float: none;
+    padding-right: 0;
+}
+}
+.template-2015 .ad-dr.-thumb-left .ad-dr__thumb {
+float: right;
+}
+.template-2015 .ad-dr.-thumb-left .ad-dr__content {
+float: left;
+}
+.template-2015 .adsnative-video-iframe {
+max-width: 640px;
+width: 100% !important;
+height: 400px;
+margin-bottom: 10px;
+float: left !important;
+}
+@media (max-width: 400px) {
+.template-2015 .ad-dr.-thumb-left .ad-dr__content {
+    float: none;
+    padding-left: 0;
+}
+}
+.template-2015 .ad-dr__content {
+width: 70%;
+}
+@media (max-width: 400px) {
+.template-2015 .ad-dr__content {
+    width: 100%;
+}
+}
+.template-2015 .ad-dr__thumb {
+width: 30%;
+position: relative;
+}
+.template-2015 .ad-dr__thumb img {
+width: 100%;
+}
+@media (max-width: 400px) {
+.template-2015 .ad-dr__thumb {
+    display: none;
+}
+}
+.template-2015 .ad-dr__thumb-privacy-link {
+position: absolute;
+right: 0;
+top: 0;
+}
+.template-2015 .ad-dr__company {
+font-size: 12px;
+text-transform: uppercase;
+color: #cbd2d6;
+font-weight: bold;
+}
+.template-2015 .ad-dr__company .icon-trophy {
+color: #ffc62e;
+margin-right: 1px;
+font-size: 11px;
+position: relative;
+top: 1px;
+}
+.template-2015 .ad-dr__company .bullet {
+font-size: 75%;
+color: #ccc;
+line-height: 1.4em;
+padding: 0 6px;
+}
+.template-2015 .ad-dr__company a {
+font-weight: bold;
+color: #cbd2d6;
+}
+.template-2015 .ad-dr__thumb--mobile {
+display: none;
+margin-top: 10px;
+position: relative;
+}
+.template-2015 .ad-dr__thumb--mobile img {
+width: 100%;
+}
+@media (max-width: 400px) {
+.template-2015 .ad-dr__thumb--mobile {
+    display: block;
+}
+}
+.template-2015 .ad-dr__title {
+line-height: 1em;
+}
+.template-2015 .ad-dr__title a {
+font-weight: bold;
+font-size: 15px;
+margin-top: 10px;
+line-height: 1.45em;
+}
+.template-2015 .ad-dr__title a:hover {
+text-decoration: underline;
+}
+.template-2015 .ad-dr__message {
+font-size: 14px;
+margin-bottom: 0;
+line-height: 1.45em;
+}
+.template-2015 .ad-dr__message p {
+margin-bottom: 0px;
+line-height: 1.45em;
+}
+.template-2015 .ad-dr__cta {
+margin-top: 25px;
+}
+.template-2015 .ad-dr__cta .btn {
+background: #768187;
+color: #fff;
+padding: 10px 18px;
+border-radius: 3px;
+font-weight: bold;
+transition: all 250ms ease-in-out;
+}
+.template-2015 .ad-dr__cta .btn:hover {
+color: #fff;
+background: #3f4549;
+}
+.template-2015 .iab-ad__wrapper {
+width: 100%;
+max-height: 1090px;
+overflow: hidden;
+}
+.template-2015 .iab-ad__wrapper .iab-ad {
+margin: 0 auto;
+}
+.template-2015 .iframe-ad__wrapper {
+padding-bottom: 62.5%;
+position: relative;
+height: 0;
+overflow: hidden;
+}
+.template-2015 .iframe-ad {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+}
+.template-2015 .learn-more {
+margin-top: 0;
+float: right;
+padding: 9px;
+display: block;
+border: 2px solid #2e9fff;
+font-weight: 700;
+}
+.template-2015 .learn-more-btn {
+display: none;
+padding: 10px;
+border: 1px solid;
+margin-top: 10px;
+border-radius: 3px;
+width: 100%;
+text-align: center;
+}
+.template-2015 .ad-dr__cta .btn {
+font-size: 14px;
+}
+.template-2015 .ad-dr__cta .btn:hover {
+text-decoration: none;
+}
+.template-2016-adsonhome {
+margin-top: 20px;
+}
+.template-2016-adsonhome *,
+.template-2016-adsonhome *:before,
+.template-2016-adsonhome *:after {
+box-sizing: border-box;
+}
+.template-2016-adsonhome .story-ad {
+box-shadow: none;
+border: 1px solid #ccc;
+}
+.template-2016-adsonhome .story-ad__attribution {
+font-weight: 700;
+margin-bottom: 10px;
+font-size: 11px;
+}
+.template-2016-adsonhome .story-ad__thumb {
+height: 160px !important;
+}
+@media (min-width: 400px) {
+.template-2016-adsonhome .story-ad__thumb {
+    height: 125px !important;
+    float: right !important;
+    width: 25% !important;
+    margin: 0 0 0 10px;
+}
+}
+.template-2016-adsonhome .story-ad__message {
+font-size: 13px;
+}
+.template-2016-adsonhome .story-ad__cta {
+margin-bottom: 0px;
+}
+.report-ad__button {
+position: absolute;
+top: 15px;
+right: 15px;
+color: #fff;
+background: rgba(0, 0, 0, 0.8);
+border-radius: 50%;
+line-height: 12px;
+padding: 1px 4px 4px 3px;
+margin: 4px;
+border: 1px solid #555;
+cursor: pointer;
+display: none;
+font-size: 16px;
+font-weight: 700;
+box-shadow: 0px 0px 1px #000;
+}
+.ad-dr:hover .report-ad__button,
+.template-2016-baseline:hover .report-ad__button {
+display: block;
+}
+.report-ad__overlay {
+position: absolute;
+top: 51px;
+width: 100%;
+font-size: 12px;
+color: #000;
+line-height: 16px;
+font-family: Arial, Helvetica, sans-serif;
+width: 195px;
+padding: 9px;
+border: 1px solid rgba(0, 0, 0, 0.2);
+right: 16px;
+border-radius: 3px;
+background-color: #fff;
+font-weight: 700;
+transition: opacity 0.3s ease-in-out;
+}
+.report-ad__overlay:after {
+top: -10px;
+right: 2px;
+margin-left: -10px;
+border-width: 10px;
+border-top-width: 0;
+border-color: transparent;
+border-bottom-color: #fff;
+border-style: solid;
+content: "";
+position: absolute;
+display: block;
+width: 0;
+height: 0;
+}
+.report-ad__overlay:before {
+top: -11px;
+right: 2px;
+margin-left: -10px;
+border-width: 10px;
+border-top-width: 0;
+border-color: transparent;
+border-bottom-color: rgba(0, 0, 0, 0.2);
+border-style: solid;
+content: "";
+position: absolute;
+display: block;
+width: 0;
+height: 0;
+}
+.report-ad__overlay.hidden {
+opacity: 0;
+}
+.spinner {
+display: inline-block;
+margin-right: 5px;
+position: relative;
+top: 2px;
+}
+#taboola-mobile-mid-comments-thumbnails {
+max-width: 630px;
+margin: 0 auto 20px;
+position: relative;
+}
+@media (max-width: 400px) {
+#taboola-mobile-mid-comments-thumbnails {
+    margin: 0;
+    padding: 20px;
+}
+#taboola-mobile-mid-comments-thumbnails .trc_rbox_header {
+    height: 0px;
+    padding: 0px;
+}
+}
+#taboola-mobile-mid-comments-thumbnails .thumbBlock_holder {
+max-width: 180px;
+float: right;
+margin: 0 0 0 10px;
+}
+@media (max-width: 400px) {
+#taboola-mobile-mid-comments-thumbnails .thumbBlock_holder {
+    width: 100%;
+    max-width: 100%;
+    max-height: 280px;
+    float: none;
+    margin: 0 0 10px 0;
+}
+}
+#taboola-mobile-mid-comments-thumbnails .video-title {
+font-size: 16px;
+line-height: 1.45em;
+font-family: "Helvetica Neue", Arial, sans-serif;
+max-height: 100px;
+}
+#taboola-mobile-mid-comments-thumbnails .video-title:after {
+content: 'Learn More';
+display: block;
+border: 1px solid;
+border-radius: 3px;
+padding: 5px 15px;
+font-size: 14px;
+width: 77px;
+margin: 10px 0;
+}
+#taboola-mobile-mid-comments-thumbnails .videoCube:hover .video-title {
+text-decoration: none;
+}
+#taboola-mobile-mid-comments-thumbnails .branding {
+font-size: 10px;
+font-family: "Helvetica Neue", Arial, sans-serif;
+}
+#taboola-mobile-mid-comments-thumbnails .branding:before {
+content: 'Sponsored by ';
+font-weight: normal;
+}
+.-image_left .story-ad__thumb {
+float: left;
+margin: 0 10px 10px 0;
+}
+.-image_left_2 {
+margin: 0 auto;
+max-width: 630px;
+position: relative;
+}
+.-image_left_2 .story-ad {
+padding: 0;
+}
+.-image_left_2 .story-ad__thumb {
+float: left;
+margin: 0 10px 0 0;
+}
+.-image_left_2 .story-ad__cta {
+margin: 5px 0;
+border-color: #2e9fff;
+color: #2e9fff;
+}
+.-image_left_2 .story-ad__title {
+color: #2e9fff;
+}
+.-image_left_2 .report-ad__container {
+margin: 0;
+padding: 0;
+position: absolute;
+right: 0;
+bottom: -7px;
+}
+.-image_left_3 {
+margin: 0 auto;
+max-width: 630px;
+position: relative;
+}
+.-image_left_3 .story-ad {
+padding: 15px;
+border: 1px solid #DBE0E9;
+border-radius: 0;
+}
+.-image_left_3 .story-ad:hover {
+border: 1px solid #DBE0E9;
+}
+.-image_left_3 .story-ad__thumb {
+float: left;
+margin: 0 10px 0 0;
+}
+.-image_left_3 .story-ad__cta {
+display: none;
+}
+.-image_left_3 .story-ad__title {
+color: #2e9fff;
+font-size: 18px;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+.-image_left_3 .story-ad__message {
+font-size: 16px;
+}
+.-image_left_3 .story-ad__attribution {
+background: #FED25B;
+text-transform: uppercase;
+display: inline-block;
+padding: 5px;
+margin-top: 10px;
+color: white;
+font-weight: bold;
+line-height: 11px;
+}
+.-image_left_3 .story-ad_attribution-link {
+display: block;
+background: #ffffff;
+color: #2e9fff;
+margin: 4px -5px -5px -5px;
+padding-top: 4px;
+font-size: 14px;
+text-transform: none;
+}
+.-image_left_3 .report-ad__container {
+margin: 0;
+padding: 0;
+position: absolute;
+right: 15px;
+bottom: 10px;
+}
+.-no_cta .story-ad__cta {
+display: none;
+}
+.-no_cta .story-ad__attribution {
+margin-top: 5px;
+}
+.-story_3_1 .story-ad__thumb,
+.-story_3_2 .story-ad__thumb,
+.-story_3_3 .story-ad__thumb,
+.-story_3_4 .story-ad__thumb,
+.-story_3_5 .story-ad__thumb {
+position: absolute;
+left: 5px;
+top: 42px;
+}
+.-story_3_1 .story-ad__message,
+.-story_3_2 .story-ad__message,
+.-story_3_3 .story-ad__message,
+.-story_3_4 .story-ad__message,
+.-story_3_5 .story-ad__message,
+.-story_3_1 .story-ad__cta,
+.-story_3_2 .story-ad__cta,
+.-story_3_3 .story-ad__cta,
+.-story_3_4 .story-ad__cta,
+.-story_3_5 .story-ad__cta,
+.-story_3_1 .story-ad__attribution,
+.-story_3_2 .story-ad__attribution,
+.-story_3_3 .story-ad__attribution,
+.-story_3_4 .story-ad__attribution,
+.-story_3_5 .story-ad__attribution {
+margin-left: 198px;
+}
+.-story_3_1 .story-ad__content,
+.-story_3_2 .story-ad__content,
+.-story_3_3 .story-ad__content,
+.-story_3_4 .story-ad__content,
+.-story_3_5 .story-ad__content {
+min-height: 170px;
+}
+.-story_3_2 .template-2016-baseline {
+border: 2px solid #666;
+border-width: 2px 0;
+}
+.-story_3_3 .template-2016-baseline {
+border: 2px solid #666;
+border-width: 0 2px;
+}
+.-story_3_4 .template-2016-baseline {
+border: 2px solid #000;
+border-width: 2px 0;
+}
+.-story_3_5 .template-2016-baseline {
+border: 2px solid #000;
+border-width: 0 2px;
+}
+.-sponsored_comments_1 {
+position: relative;
+}
+.-sponsored_comments_1 .story-ad {
+padding: 10px;
+background: #FFFAEE;
+}
+.-sponsored_comments_1 [data-role="ad-container"] {
+margin-bottom: 10px;
+}
+.-sponsored_comments_1 .story-ad_attribution {
+font-size: 12px;
+color: #687a86;
+}
+.-sponsored_comments_1 .report-ad__container {
+margin: 0;
+padding: 0;
+position: absolute;
+right: 15px;
+bottom: 10px;
+}
+.-sponsored_comments_1 .voting {
+display: inline-block;
+margin-left: 58px;
+margin-top: 5px;
+}
+.-sponsored_comments_1 .voting li {
+display: inline-block;
+padding: 0 3px;
+}
+.-sponsored_comments_1 .voting li:last-child {
+border-left: 2px solid #e7e9ee;
+padding-left: 5px;
+}
+.-sponsored_comments_1 .voting svg {
+height: 16px;
+width: 16px;
+fill: #656c7a;
+transition: fill 0.2s ease-in;
+}
+.-sponsored_comments_1 .voting svg:hover {
+fill: #2a2e2e;
+}
+.-forum_tmz {
+font-family: 'Source Sans Pro', arial, sans-serif;
+}
+.-forum_tmz .story-ad {
+padding: 0;
+}
+.-forum_tmz .story-ad__content:before {
+content: 'SPONSORED';
+color: #cf0000;
+font-weight: bold;
+display: block;
+border-bottom: 2px solid #eee;
+font-size: 15px;
+padding-bottom: 2px;
+margin-bottom: 10px;
+}
+.-forum_tmz .story-ad__thumb {
+margin-top: 30px;
+position: relative;
+z-index: 2;
+}
+.-forum_tmz .story-ad__attribution {
+position: relative;
+}
+.-forum_tmz .story-ad_attribution-link {
+position: absolute;
+left: 0;
+background: white;
+width: 100%;
+z-index: 1;
+font-weight: normal;
+font-style: italic;
+color: #818080;
+font-size: 12px;
+}
+.-forum_tmz .story-ad__cta {
+border: 1px solid black;
+border-radius: 0px;
+font-weight: bold;
+color: black;
+font-style: italic;
+text-transform: uppercase;
+box-shadow: 2px 2px #000;
+}
+.-forum_tmz .template-2016-baseline {
+max-width: 100%;
+}
+.-forum_worldstar {
+font-family: Verdana, Geneva, sans-serif;
+}
+.-forum_worldstar .story-ad {
+background: transparent;
+padding: 0;
+}
+.-forum_worldstar .story-ad__thumb {
+float: left;
+margin: 0 10px 10px 0;
+border-radius: 5px;
+}
+.-forum_worldstar .story-ad__title {
+font-weight: normal;
+color: #00488f;
+font-size: 15px;
+}
+.-forum_worldstar .story-ad__message {
+color: black;
+font-size: 12px;
+}
+.-forum_worldstar .story-ad__cta {
+border: 1px solid black;
+color: black;
+}
+.-forum_worldstar .story-ad__attribution {
+position: relative;
+margin-top: 5px;
+}
+.-forum_worldstar .story-ad_attribution-link {
+font-weight: normal;
+font-style: italic;
+color: #818080;
+font-size: 10px;
+}
+.-nstory [data-role="ad-container"] {
+display: -ms-flexbox;
+display: flex;
+-ms-flex-positive: 0;
+    flex-grow: 0;
+-ms-flex-pack: center;
+    justify-content: center;
+}
+.-nstory .template-2016-baseline,
+.-nstory .ad-dr {
+width: 300px;
+margin: 0 10px;
+border: 1px solid rgba(0, 0, 0, 0.2);
+border-radius: 0px;
+}
+.-nstory .ad-dr {
+padding: 15px;
+min-height: 275px;
+}
+.-nstory .story-ad {
+padding: 0px;
+}
+.-nstory .story-ad__title {
+text-overflow: ellipsis;
+overflow: hidden;
+white-space: nowrap;
+clear: both;
+padding: 0 5px;
+font-size: 15px;
+}
+.-nstory .story-ad__message {
+text-overflow: ellipsis;
+overflow: hidden;
+white-space: nowrap;
+padding: 0 5px;
+font-size: 10px;
+}
+.-nstory .story-ad__attribution {
+margin: 2px 0;
+}
+.-nstory .story-ad__content {
+text-align: center;
+}
+.-nstory .ad-dr__company {
+margin-top: 5px;
+}
+.-nstory .ad-dr__title {
+margin-top: 5px;
+}
+.-nstory .story-ad__thumb,
+.-nstory .ad-dr img {
+width: 100% !important;
+max-height: 250px;
+}
+.-nstory .story-ad__cta {
+width: 80%;
+min-width: 150px;
+margin: 5px 0;
+}
+.-nstory .ad-dr__content {
+width: 100%;
+}
+.-nstory .ad-dr__message {
+display: none;
+}
+.ads-position {
+margin: 0 2px;
+flex: auto;
+}
+</style>
+
+</head>
+<body>
+
+
+    
+    <div id="ad-container" data-role="ad-container" class="align--center">
+        <script>
+            
+function has(obj, key) {
+    // The object.hasOwnProperty method fails when the
+    // property under consideration is named 'hasOwnProperty'.
+    return Object.prototype.hasOwnProperty.call(obj, key);
+}
+
+
+
+/*
+ * Iterates over an object or a collection and calls a callback
+ * function with each item as a parameter.
+ */
+function each(collection, callback) {
+    var length = collection.length;
+    var forEach = Array.prototype.forEach;
+
+    if (isNaN(length)) {
+        // Treat collection as an object
+        for (var key in collection) {
+            if (has(collection, key))
+                callback(collection[key], key, collection);
+        }
+    } else if (forEach) {
+        // Treat collection as an array
+        forEach.call(collection, callback);
+    } else {
+        for (var i = 0; i < length; i++)
+            callback(collection[i], i, collection);
+    }
+}
+
+/**
+ * Create an object from the key-value pairs in a query string.
+ * Duplicate keys are not supported (only last value will be used).
+ *
+ * @param {string} [queryString] - The search portion of a url. Must start with a ?.
+ *                                 Defaults to window.location.search.
+ * @returns {Object<string>} - The mapping of query string keys to values.
+ */
+function parseQueryString(queryString) {
+    if (typeof queryString === 'undefined')
+        queryString = window.location.search;
+
+    var params = {};
+
+    each(queryString.substr(1).split('&'), function (item) {
+        var pair = item.split('=').map(function (part) {
+            return decodeURIComponent(part.replace(/\+/g, '%20'));
+        });
+        if (pair[0])
+            params[pair[0]] = pair[1];
+    });
+
+    return params;
+}
+
+
+/**
+* Wrap a function such that it can only be run once. The return value is cached and returned in subsequent calls.
+* @param {function} fn - Function to wrap.
+* @returns {any} - Return value as returned by the first invocation of fn, regardless of arguments.
+*/
+function once(fn) {
+    var returnValue;
+    return function () {
+        if (fn) {
+            returnValue = fn.apply(this, arguments);
+            fn = null;
+        }
+        return returnValue;
+    };
+}
+
+if (window.getComputedStyle) {
+    getCurrentStyle = function(elem, prop, _camel) {
+        try {
+            // We need this to both protect for the case where `elem` is not valid,
+            // such as it being `document` and for the broken ShadowDOMPolyfill script.
+            // See https://git.io/vrPIf for more details.
+            return window.document.defaultView.getComputedStyle(elem, null).getPropertyValue(prop);
+        } catch (err) {
+            return null;
+        }
+    };
+} else {
+    // IE < 9, Opera
+    getCurrentStyle = function(elem, prop, camel) {
+        return elem.currentStyle[prop] || elem.currentStyle[camel];
+    }
+}
+
+/**
+* Get the height of the document.
+*
+* @returns {number} - The document height
+*/
+function getDocumentHeight() {
+    
+    const container = document.body;
+    
+    var height = container.offsetHeight
+
+    var marginTop = parseInt(getCurrentStyle(container, 'margin-top', 'marginTop'), 10);
+    if (marginTop)
+        height += marginTop;
+
+    var marginBottom = parseInt(getCurrentStyle(container, 'margin-bottom', 'marginBottom'), 10);
+    if (marginBottom)
+        height += marginBottom;
+
+    return height;
+}
+
+/**
+* Starts a loop to notice changes to the page height.
+*
+* @param {function} cb - Function to call with new height values.
+* @returns {void}
+*/
+function onHeightChange(cb) {
+    let count = 0;
+    let lastHeight = 0;
+
+    const loop = () => {
+        const currentHeight = getDocumentHeight();
+        if (currentHeight !== lastHeight) {
+            lastHeight = currentHeight;
+            cb(currentHeight);
+        }
+
+        // We'll watch for height changes for a total of ~25.4 seconds,
+        // with these intervals:
+        // 100ms, 100ms, 200ms, 200ms, 400ms, 400ms, ..., 6400ms
+        // The idea behind these intervals is the following:
+        // - on fast websites, with small number of widgets, ad provider
+        // will be loaded fast and has good chances to be visible right away,
+        // so we need to detect resize quickly
+        // - on slow websites it doesn't make sense to check for resize every
+        // 100ms because well, they're slow and it might take more than 5sec
+        // for ad provider to render. Also most likely page will be long and it
+        // will take some time for user to scroll down
+        /* eslint-disable no-magic-numbers */
+        count += 1;
+        if (count < 15)
+            setTimeout(loop, 100 * Math.pow(2, Math.floor(count / 2)));
+        /* eslint-enable no-magic-numbers */
+    };
+
+    loop();
+}
+
+/**
+* Send a message to the host page. Mimics the format
+* used by core/utils/frameBus.
+*
+* @param {string} name - The event name.
+* @param {*} data - JSON-serializable data to send.
+* @returns {void}
+*/
+function sendMessageToHost(name, data) {
+    data = data || {};
+    window.parent.postMessage(JSON.stringify({
+        data,
+        name,
+        scope: 'host',
+        sender:  window.name ,
+    }), '*');
+}
+
+
+const POST_MESSAGE_TYPES = Object.freeze({
+    click: 'click',
+    errorProviderNotReady: 'error-provider-not-ready',
+    errorNoHeight: 'error-no-height',
+    ready: 'ready',
+    resize: 'resize',
+});
+
+const minHeight = 85;
+
+/**
+* Generates events for resizing the frame and ad loads.
+*
+* @param {Object} options - Options
+*   {number} minHeight - The minimum height which indicates an ad has loaded. Default to 0.
+*   {function} readyData - The data to include with the ready event.
+* @returns {function} - A callback which should be called when the provider indicates the ad is ready.
+*/
+function startAdsLoop(readyData) {
+    const startTime = new Date().getTime();
+
+    let providerReadied = false;
+    let minHeightReached = false;
+    // This parameter isn't expected in the ready event so we delete it after capturing it's value.
+    const sendReady = readyData.sendReady;
+    delete readyData.sendReady;
+
+    const sendReadyOnce = once(() => {
+        const extraData = window._OnReadyExtraData;
+        if (extraData) {
+            extraData.time_to_load = new Date().getTime() - startTime;
+            readyData.extraData = JSON.stringify(extraData);
+        }
+
+        sendMessageToHost(POST_MESSAGE_TYPES.ready, readyData);
+    });
+    const detectReadyMismatch = once(() => {
+        setTimeout(() => {
+            if (!providerReadied)
+                sendMessageToHost(POST_MESSAGE_TYPES.errorProviderNotReady, { provider: readyData.provider });
+
+            const heightReached = minHeightReached || getDocumentHeight() >= minHeight;
+            if (!heightReached)
+                sendMessageToHost(POST_MESSAGE_TYPES.errorNoHeight, { provider: readyData.provider });
+        }, 100); // eslint-disable-line no-magic-numbers
+    });
+
+    onHeightChange(height => {
+        if (height < minHeight)
+            return;
+
+        minHeightReached = true;
+        if (sendReady) {
+            sendReadyOnce();
+        }
+        detectReadyMismatch();
+        sendMessageToHost(POST_MESSAGE_TYPES.resize, { height });
+    });
+
+    return once(() => {
+        providerReadied = true;
+        detectReadyMismatch();
+    });
+}
+
+            const onAdLoad = startAdsLoop({
+    forumId: 1593322,
+    sendReady: true,
+});
+
+const startTime = new Date().getTime();
+const readyExtraData = {};
+
+var pbjs = window.pbjs || {};
+pbjs.que = pbjs.que || [];
+
+// We need to create HTML elements for the ad slots we are going to run.
+const container = document.getElementById('ad-container');
+const div = document.createElement('div');
+div.className = 'ads-position';
+div.id = 'single-lightbox';
+container.appendChild(div);
+
+function resizeIframe(iframe) {
+    iframe.style.height = iframe.contentWindow.document.documentElement.scrollHeight + 'px';
+}
+
+pbjs.que.push(function() {
+    // Add ad units
+    pbjs.addAdUnits([{
+        code: 'single-lightbox',
+        mediaTypes: {
+            banner: {
+                sizes: [[300, 250]]
+            },
+        },
+        bids: [{"params":{"video":{"playback_method":["auto_play_sound_off"],"skippable":true},"placementId":"19151817","supply_type":"web"},"bidder":"appnexus"}],
+    }]);
+    
+    // Run header bidding
+    pbjs.requestBids({
+        bidsBackHandler: function(bidResponses) {
+            var bids = pbjs.getHighestCpmBids();
+            if (bids.length > 0) {
+                // Create IFrame and render ad
+                var iframe = document.createElement("iframe");
+                iframe.setAttribute('frameborder', '0');
+                iframe.setAttribute('scrolling', 'no');
+                iframe.setAttribute('onload', 'resizeIframe(this)');
+                div.appendChild(iframe);
+                pbjs.renderAd(iframe.contentWindow.document, bids[0]['adId']);
+                // Set height
+                const currentHeight = getDocumentHeight();
+                sendMessageToHost('resize', {height: currentHeight});
+            }
+        },
+        timeout: 1000,
+    });
+});
+        </script><div class="ads-position" id="single-lightbox"></div>
+    </div>
+
+
+
+
+
+
+</body></html>
