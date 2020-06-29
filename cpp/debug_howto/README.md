@@ -10,9 +10,9 @@ void f(){
     return;
 }
 ```
-While the above process waiting for seconds hit this command to attach:
+First running python (not from IPython). While the above process waiting for seconds hit this command to attach:
 ```bash
-gdb --pid <PID-of-main.py>
+gdb --pid $(pidof python) #pidof is a bash command
 ```
 Another tip is (a) to show pid and wait for press as below:
 ```python
