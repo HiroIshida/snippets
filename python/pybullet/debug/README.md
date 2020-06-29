@@ -1,4 +1,8 @@
 ### TODO 
+check if the following parameters is equivalent in both case of `0 0 0` and `0 0 1`.
+```cpp
+rayFrom, rayTo, rayCallback.m_rayDirectionInverse, rayCallback.m_signs, rayCallback.m_lambda_max, aabbMin, aabbMax,*stack,allback
+```
 ### failure 
 cycle1: root = true => enter => result1 = false => break
 cycle2: root = false => break
