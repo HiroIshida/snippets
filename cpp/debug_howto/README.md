@@ -26,6 +26,16 @@ input("press")
 func_youwanna_debug()
 ```
 The above idea originally comes from this [post](https://stackoverflow.com/questions/57612531/step-from-pdb-in-gdb-when-debugging-c-extension)
+### Automate debugging process
+write `hoge.gdb` file and load it when run gdb command: like 
+```bash
+gdb --batch --command=test.gdb --args ./test.exe 5
+```
+see [this](https://stackoverflow.com/questions/10748501/what-are-the-best-ways-to-automate-a-gdb-debugging-session) for the detail.
+You can also run external gdb script inside gdb by:
+```bash
+source [-s] [-v] command_file_name
+```
 
 ### How to trace interactive window 
 **This section is copied from [here](https://stackoverflow.com/questions/9257085/how-can-i-scroll-back-in-gdbs-command-window-in-the-tui-mode).**
