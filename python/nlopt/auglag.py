@@ -3,9 +3,7 @@ import nlopt
 import copy  
 
 ndim = 2
-algorithm = nlopt.LD_SLSQP
-#algorithm = nlopt.LD_SLSQP
-#algorithm = nlopt.LN_AUGLAG
+algorithm = nlopt.LD_AUGLAG
 opt = nlopt.opt(algorithm, ndim)
 
 def auto_diff(f, x0):
@@ -18,7 +16,6 @@ def auto_diff(f, x0):
         x_[i] += dx
         grad[i] = (f(x_) - f(x0))/dx
     return grad
-
 
 def func(x, grad):
     f = lambda x: np.linalg.norm(x) ** 2
@@ -35,10 +32,20 @@ def fc(x, grad):
         for i in range(2):
             diff = auto_diff(f, x)
             grad[i] = diff[i]
+    return f(x)
+
+def h(x, grad):
+    f = lambda x: -(x[1] - 1.5)
+    if grad.size > 0:
+        for i in range(2):
+            diff = auto_diff(f, x)
+            grad[i] = diff[i]
+    return f(x)
 
 tol = 1e-1 
 opt.set_ftol_rel(tol)
 opt.set_min_objective(func)
-#opt.add_equality_constraint(fc, tol=1e-10)
+opt.add_equality_constraint(fc, 1e-10)
+opt.add_inequality_constraint(h, 1e-10)
 x_init_guess = np.array([1.0, 1.0])
 xopt = opt.optimize(x_init_guess)
