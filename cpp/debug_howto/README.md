@@ -1,3 +1,9 @@
+### when you cannot attach the process
+```
+echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
+```
+https://pleiades.io/help/clion/attaching-to-local-process.html
+
 ### attaching the process.
 Say I have `main.py` and `f()` inside C function wrapped by python. First please insert `usleep(1000000)` so that you have time to attach. Without this, the program is just executed. 
 ```cpp
