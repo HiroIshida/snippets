@@ -1,6 +1,5 @@
-# pybulletのしくみ
-クライアントは: まずpybullet.c内で, コマンドを生成する(b3CalculateInverseKinematicsCommandInit). . 
-
+# implemenation of pybullet
+First, inside `pyblullet.c`, client side generate a command by HogeHogeCommandInit (like b3CalculateInverseKinematicsCommandInit).
 ```c++
 // inside PhysicsClientC_API.cpp
 B3_SHARED_API b3SharedMemoryCommandHandle b3CalculateInverseKinematicsCommandInit(b3PhysicsClientHandle physClient, int bodyUniqueId){
@@ -11,7 +10,7 @@ B3_SHARED_API b3SharedMemoryCommandHandle b3CalculateInverseKinematicsCommandIni
 	return (b3SharedMemoryCommandHandle)command;
 }
 ```
-それぞれのコマンドは, コマンド識別用の`m_type`というメンバに加えて, その他の処理部にわたすための引数をまとめた構造体(例えば: を内部にもっている. その定義は, こんな感じ. command init関数内では上記のhogehogeArgsのメンバ変数を埋めていく操作をしていることに注意.  
+each command from the client side, has a member `m_type=CMD_HOGEHOGE` which later will be used to identify the command. Also, the command has a struct which equipped with all the arguments that will be passe d to main procedure. Note that inside `hogehogeCommandInit` these member variables of the struct is filled as follows:
 ```c++
 // inside SharedMemoryCommands.h
 struct CalculateInverseKinematicsResultArgs{
@@ -22,21 +21,21 @@ struct CalculateInverseKinematicsResultArgs{
 // blah blah 
 struct CalculateInverseKinematicsArgs m_calculateInverseKinematicsArguments;
 ```
-こうしてつくられたコマンドを`b3SubmitClientCommandAndWaitStatus`によってサーバに送りつける. サーバ`PhysicsServerCommandProcessor.cpp`内のswitch文によって, dispatchされて最終的にメイン処理関数に到達する. メイン処理関数はぜんぶ次の形式:  
+Then this command will be sent to the server side by `b3SubmitClientCommandAndWaitStatus`. In server side `PhysicsServerCommandProcessor.cpp`, through the switch sequences, the command is dispatched to the main procedure. All such main procedure is of the form:
 ```c++
 bool PhysicsServerCommandProcessor::processCalculateInverseKinematicsCommand(const struct SharedMemoryCommand& clientCmd, struct SharedMemoryStatus& serverStatusOut, char* bufferServerToClient, int bufferSizeInBytes)
 ```
-大事なのは, `clientCmd`と`serverStatusOut`である. 前者は先述した, クライアントから届いたコマンドである. 後者は, 処理に成功したかどうかの情報と実行結果データを蓄えたものである. 成功の可否はこんな感じでセットされる: 
+Here important arguments are `clientCmd`and`serverStatusOut`, the former of which are explained already. The later has 1) information of success or not and 2) data obtained by execution. For example of inverse kinematics case, `serverStatusOut` will contain success and solved joint angles. Information of success/not is set as follows:
 ```
 serverCmd.m_type = CMD_CALCULATE_INVERSE_KINEMATICS_COMPLETED;
 serverCmd.m_type = CMD_CALCULATE_INVERSE_KINEMATICS_FAILED; 
 ```
-物理エンジンをダイレクトに使う場合とGUI(shared memory?)を用いる場合それぞれ, 
+Note that using this success/not info, finally client side check the status. This check process is different for DIRECT and GUI (shared?) case:
 ```c++
 void PhysicsDirect::postProcessStatus(const struct SharedMemoryStatus& serverCmd)
 const SharedMemoryStatus* PhysicsClientSharedMemory::processServerStatus()
 ```
-のような感じでチェックされるようなので, 新しいメソッドを追加する場合には両方にcaseを追加することをお忘れなく. このチェックが終わったあとは, `b3SubmitClientCommandAndWaitStatus`の結果としてstatusのハンドルが返ってくるので, この内部変数を取り出すことで, 所望のデータを得ることができる. clientの時と同じようにサーバが返してくる(sever)statusも内部にデータ保存用構造体をもっている. たとえば: 
+Thus, if you wanna add a new function, then don't forget add checks for both cases. After this checking process, the execution result is return by `b3SubmitClientCommandAndWaitStatus` (finally!), which then will be returned from `pybullet.c`. LIke client side, the server side status class also has specific struct to save returning data :
 ```
 // inside SharedMemoryCommands.h
 struct CalculateInverseKinematicsResultArgs
@@ -48,9 +47,7 @@ struct CalculateInverseKinematicsResultArgs
 // blah blah 
 struct CalculateInverseKinematicsResultArgs m_inverseKinematicsResultArgs;
 ```
-のような感じ. 最後に, `CMD_HOGE_HOGE`のようなものはすべて`SharedMemoryPubulic.h`内でenumで定義されていることに注意.  
-
-
+Note that all `CMD_HOGE_HOGE` kind things are defined in `SharedMemoryPubulic.h` using enum.
 
 # pitfalls
 ## when joint limit is not specified in urdf
