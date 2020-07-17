@@ -1,53 +1,27 @@
 #include <Python.h>
 
-/*
-static PyObject *hello_internal(PyObject* self) {
-   return Py_BuildValue("s", "Hello, Python extensions!!");
-}
-
-static PyMethodDef HelloMethods[] = {
-    {"hello", hello_internal, METH_VARARGS, "Python interface for fputs C library function"},
-    {NULL, NULL, 0, NULL}
-};
-
-static struct PyModuleDef hello_module = {
-    PyModuleDef_HEAD_INIT,
-    "helloworld",
-    "Python interface for the fputs C library function",
-    -1,
-    HelloMethods
-};
-
-PyMODINIT_FUNC PyInit_hello(void) {
-    return PyModule_Create(&hello_module);
-}
-*/
-
 static PyObject *method_fputs(PyObject *self, PyObject *args) {
-
     char *str, *filename = NULL;
+    PyObject* pymat;
+    PyArg_ParseTuple(args, "O", &pymat);
 
-    int bytes_copied = -1;
-
-
-    /* Parse arguments */
-
-    if(!PyArg_ParseTuple(args, "ss", &str, &filename)) {
-
-        return NULL;
-
+    double mat[3][3];
+    for(int i=0; i<3; i++){
+        PyObject* pyvec = PyTuple_GetItem(pymat, i);
+        for(int j=0; j<3; j++){
+            mat[i][j] = PyFloat_AsDouble(PyTuple_GetItem(pyvec, j));
+        }
     }
 
-
-    FILE *fp = fopen(filename, "w");
-
-    bytes_copied = fputs(str, fp);
-
-    fclose(fp);
-
-
-    return PyLong_FromLong(bytes_copied);
-
+    PyObject* pymat_ret = PyTuple_New(3);
+    for(int i=0; i<3; i++){
+        PyObject* pyvec_ret = PyTuple_New(3);
+        for(int j=0; j<3; j++){
+            PyTuple_SetItem(pyvec_ret, j, PyFloat_FromDouble(mat[i][j]));
+        }
+        PyTuple_SetItem(pymat_ret, i, pyvec_ret);
+    }
+	return pymat_ret;
 }
 
 static PyMethodDef FputsMethods[] = {
