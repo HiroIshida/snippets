@@ -70,6 +70,11 @@ def unit_circle_decode(pos, bmin, bmax):
     s = (phase / (2 * math.pi)) * (bmax - bmin) + bmin
     return s
 
+def regularize(angles, bmin, bmax):
+    tmp = (angles - bmin)/(bmax - bmin)
+    tmp2 = tmp - np.floor(tmp)
+    return tmp2 * (bmax - bmin) + bmin
+
 def unit_circle_merge(s_lst, a_lst, bmin, bmax):
     pos0 = unit_circle_encode(s_lst[0], bmin, bmax)
     pos1 = unit_circle_encode(s_lst[1], bmin, bmax)
@@ -87,6 +92,7 @@ class ParticleFilter:
     def initialize(self, X, W=None):
         N = X.shape[0]
         self.X = X
+        self.X[:, 2] = regularize(X[:, 2], 0, 2*3.1415)
         W = np.ones(N)/self.N
         self.W = W
 
@@ -105,15 +111,13 @@ class ParticleFilter:
         if resampling:
             self.X = marging_resampling(self.X, self.W)
 
-
-
 if __name__=='__main__':
     import numpy as np
-    N = 1000
-    X = np.random.randn(N, 3) 
+    N = 10000
+    X = np.random.randn(N, 3) * 3
     pf = ParticleFilter(N)
     pf.initialize(X)
-    pf.update(np.array([0.0, 0.0, 0.6]), np.eye(3)*0.2)
+    #pf.update(np.array([0.0, 0.0, 0.6]), np.eye(3)*0.2)
 
     import matplotlib.pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
