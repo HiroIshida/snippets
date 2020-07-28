@@ -52,32 +52,31 @@ def low_variance_sampler(ws):
         idxes[n] = k
     return idxes
 
+def unit_circle_encode(s, bmin, bmax):
+    tmp = (s - bmin) / (bmax - bmin)
+    phase = tmp * 2 * math.pi
+    x = np.vectorize(math.cos)(phase)
+    y = np.vectorize(math.sin)(phase)
+    return np.vstack((x, y))
+
+def stick_to_unit_circle(pos):
+    r = np.vectorize(math.sqrt)(np.sum(pos**2, 0))
+    return pos * (1/r)
+
+def unit_circle_decode(pos, bmin, bmax):
+    phase  = np.arctan2(pos[1], pos[0]) 
+    idx = np.where(phase < 0)[0]
+    phase[idx] =  phase[idx] + 2 * math.pi
+    s = (phase / (2 * math.pi)) * (bmax - bmin) + bmin
+    return s
+
 def unit_circle_merge(s_lst, a_lst, bmin, bmax):
-
-    def unit_circle_encode(s):
-        tmp = (s - bmin) / (bmax - bmin)
-        phase = tmp * 2 * math.pi
-        x = np.vectorize(math.cos)(phase)
-        y = np.vectorize(math.sin)(phase)
-        return np.vstack((x, y))
-
-    def stick_to_unit_circle(pos):
-        r = np.vectorize(math.sqrt)(np.sum(pos**2, 0))
-        return pos * (1/r)
-
-    def unit_circle_decode(pos):
-        phase  = np.arctan2(pos[1], pos[0]) 
-        idx = np.where(phase < 0)[0]
-        phase[idx] =  phase[idx] + 2 * math.pi
-        s = (phase / (2 * math.pi)) * (bmax - bmin) + bmin
-        return s
-
-    pos0 = unit_circle_encode(s_lst[0])
-    pos1 = unit_circle_encode(s_lst[1])
-    pos2 = unit_circle_encode(s_lst[2])
+    pos0 = unit_circle_encode(s_lst[0], bmin, bmax)
+    pos1 = unit_circle_encode(s_lst[1], bmin, bmax)
+    pos2 = unit_circle_encode(s_lst[2], bmin, bmax)
     pos_tmp = a_lst[0] * pos0 + a_lst[1] * pos1 + a_lst[2] * pos2
     pos = stick_to_unit_circle(pos_tmp)
-    s = unit_circle_decode(pos)
+    s = unit_circle_decode(pos, bmin, bmax)
     return s
 
 class ParticleFilter:
