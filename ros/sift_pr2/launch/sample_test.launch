@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="rosbag" type="play" name="player" output="screen" args="-l $(find sift_pr2)/preparation/sample.bag"/>
+  <include file="$(find sift_pr2)/launch/detect_fridge.launch"/>
+</launch>

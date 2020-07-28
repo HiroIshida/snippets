@@ -1,0 +1,58 @@
+<launch>
+  <arg name="remote" default="true"/>
+  <arg name="camera" default="head_camera_remote" if="$(arg remote)"/>
+  <arg name="camera" default="kinect_head" unless="$(arg remote)"/>
+  <arg name="use_mask" default="false"/>
+
+  <include file="$(find sift_pr2)/launch/reproduce_pc.launch" if="$(arg remote)"/>
+  <arg name="input_image" default="/$(arg camera)/rgb/image_rect_color"/>
+  <arg name="input_camera_info" default="/$(arg camera)/rgb/camera_info"/>
+
+  <node name="relay_camera_info"
+        pkg="topic_tools" type="relay"
+        args="/$(arg camera)/rgb/camera_info /head_camera_remote/rgb/camera_info"
+        output="screen" respawn="true"/>
+  <!-- Republish images -->
+  <node name="republish_rgb"
+        pkg="image_transport" type="republish"
+        args="compressed raw"
+        output="screen" respawn="true">
+    <remap from="in" to="/$(arg camera)/rgb/image_rect_color"/>
+    <remap from="out" to="rgb/image_rect_color"/>
+  </node>
+
+
+
+  <group ns="/$(arg camera)/rgb">
+
+    <node name="fridge_demo_sift" pkg="imagesift" type="imagesift"
+          output="screen">
+      <remap from="image" to="$(arg input_image)" />
+      <remap from="camera_info" to="$(arg input_camera_info)"/>
+      <rosparam>
+        use_mask: false
+      </rosparam>
+    </node>
+
+    <node name="handle_detector" pkg="jsk_perception" type="point_pose_extractor">
+      <remap from="object_pose" to="handle_pose"/> 
+      <rosparam subst_value="true">
+        template_filename: $(find sift_pr2)/data/openni_rgb_fridge.png
+        window_name: fridge_handle_upper
+        object_width: 0.231
+        object_height: 0.196
+        relative_pose: '0.22 0.05 0.075  0.707107 0 -0.707107 0'
+        viewer_window: false
+      </rosparam>
+    </node>
+
+    <node name="image_view"
+          pkg="image_view" type="image_view">
+      <remap from="image" to="/head_camera_remote/rgb/handle_detector/debug_image" />
+    </node>
+  </group>
+
+
+  <!-- run dummy node, otherwise fridge_detector's publishing topics are not updated -->
+  <node pkg="sift_pr2" type="dummy_subscriber.py" name="dummy_subscriber" output="screen"/>
+</launch>
