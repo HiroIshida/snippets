@@ -104,12 +104,19 @@ class ParticleFilter:
         dists = np.sum(tmp.T * d.T, axis=0)
         return np.exp(-0.5 * dists)
 
-    def update(self, z, R, resampling=True):
+    def update(self, z, R, resampling=True, ess_threshold=0.8):
         weights_likeli = self.default_likelihood_function(self.X, z, R)
         tmp = self.W * weights_likeli
         self.W = tmp/sum(tmp) 
+
+        ess = 1.0/(np.sum(self.W ** 2) * self.N) # effective sample size
+
         if resampling:
-            self.X = marging_resampling(self.X, self.W)
+            if ess < ess_threshold:
+                message = "effective sample size is {0} < {1}, thus the resampling took place".format(\
+                        ess, ess_threshold)
+                print(message)
+                self.X = marging_resampling(self.X, self.W)
 
 if __name__=='__main__':
     import numpy as np
@@ -117,14 +124,18 @@ if __name__=='__main__':
     X = np.random.randn(N, 3) * 3
     pf = ParticleFilter(N)
     pf.initialize(X)
-    #pf.update(np.array([0.0, 0.0, 0.6]), np.eye(3)*0.2)
+    for i in range(100):
+        pf.update(np.array([0.0, 0.0, 0.6]), np.eye(3)*0.9)
 
-    import matplotlib.pyplot as plt
-    from mpl_toolkits.mplot3d import Axes3D
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    print(sum(pf.W))
 
-    myscat = lambda X, color: ax.scatter(X[:, 0], X[:, 1], X[:, 2], c=color)
-    myscat(pf.X, 'red')
-    plt.show()
+    vistest = False
+    if vistest:
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        print(sum(pf.W))
+
+        myscat = lambda X, color: ax.scatter(X[:, 0], X[:, 1], X[:, 2], c=color)
+        myscat(pf.X, 'red')
+        plt.show()
