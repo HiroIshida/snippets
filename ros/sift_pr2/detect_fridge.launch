@@ -1,0 +1,31 @@
+<launch>
+  <arg name="package_name_this" default="visual_feedback"/>
+
+  <arg name="camera" default="kinect_head"/>
+  <arg name="input_image" default="/$(arg camera)/rgb/image_rect_color"/>
+  <arg name="input_camera_info" default="/$(arg camera)/rgb/camera_info"/>
+  <arg name="use_mask" default="false"/>
+
+    <group ns="/$(arg camera)/rgb">
+      <node name="fridge_demo_sift" pkg="imagesift" type="imagesift"
+            launch-prefix="nice -n +10" output="screen">
+        <remap from="image" to="$(arg input_image)" />
+        <remap from="camera_info" to="$(arg input_camera_info)"/>
+        <remap from="mask" to="attention_clipper/output/mask"/>
+        <param name="use_mask" value="$(arg use_mask)"/>
+      </node>
+      <node name="fridge_detector" pkg="jsk_perception" type="point_pose_extractor">
+        <rosparam subst_value="true">
+          template_filename: $(find detect_cans_in_fridge_201202)/data/openni_rgb_fridge.png
+          window_name: fridge_handle_upper
+          object_width: 0.231
+          object_height: 0.196
+          relative_pose: '0.22 0.05 0.075  0.707107 0 -0.707107 0'
+          viewer_window: false
+        </rosparam>
+      </node>
+    </group>
+
+  <!-- run dummy node, otherwise fridge_detector's publishing topics are not updated -->
+  <!--node pkg="$(arg package_name_this)" type="dummy_subscriber.py" name="dummy_subscriber" output="screen"/-->
+</launch>
