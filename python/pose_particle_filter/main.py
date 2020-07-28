@@ -117,6 +117,9 @@ class ParticleFilter:
                         ess, ess_threshold)
                 print(message)
                 self.X = marging_resampling(self.X, self.W)
+                self.W = np.ones(self.N)/self.N
+
+
 
 if __name__=='__main__':
     import numpy as np
