@@ -1,14 +1,19 @@
 import scipy.stats
 import numpy as np
 import math
+from low_variance_sampler import low_variance_sampler_cython
 
 def marging_resampling(ptcls, w, mp = 0.9, 
         unit_circle_idxes = [2],
-        unit_circle_bminmaxes = [[0, 2*3.1415]]):
+        unit_circle_bminmaxes = [[0, 2*3.1415]],
+        cython=False
+        ):
     N = len(w)
-    idxes1 = low_variance_sampler(w)
-    idxes2_ = low_variance_sampler(w)
-    idxes3_ = low_variance_sampler(w)
+
+    sampler = low_variance_sampler_c if cython else low_variance_sampler
+    idxes1 = sampler(w)
+    idxes2_ = sampler(w)
+    idxes3_ = sampler(w)
     perm2 = np.random.permutation(N)
     perm3 = np.random.permutation(N)
     idxes2 = idxes2_[perm2]
@@ -35,6 +40,11 @@ def marging_resampling(ptcls, w, mp = 0.9,
                 [ptcl_partial_tmp1, ptcl_partial_tmp2, ptcl_partial_tmp3],
                 [a1, a2, a3], bmin_ucm, bmax_ucm)
     return ptcls
+
+def low_variance_sampler_c(ws):
+    r = np.random.random()
+    idxes = low_variance_sampler_cython(ws, r)
+    return idxes
 
 def low_variance_sampler(ws):
     # ws is numpya array
@@ -104,13 +114,12 @@ class ParticleFilter:
         dists = np.sum(tmp.T * d.T, axis=0)
         return np.exp(-0.5 * dists)
 
-    def update(self, z, R, resampling=True, ess_threshold=0.8):
+    def update(self, z, R, resampling=True, ess_threshold=0.99999):
         weights_likeli = self.default_likelihood_function(self.X, z, R)
         tmp = self.W * weights_likeli
         self.W = tmp/sum(tmp) 
 
         ess = 1.0/(np.sum(self.W ** 2) * self.N) # effective sample size
-
         if resampling:
             if ess < ess_threshold:
                 message = "effective sample size is {0} < {1}, thus the resampling took place".format(\
@@ -119,16 +128,17 @@ class ParticleFilter:
                 self.X = marging_resampling(self.X, self.W)
                 self.W = np.ones(self.N)/self.N
 
-
-
 if __name__=='__main__':
     import numpy as np
-    N = 10000
+    N = 100000
     X = np.random.randn(N, 3) * 3
     pf = ParticleFilter(N)
     pf.initialize(X)
-    for i in range(100):
+    import time
+    ts = time.time()
+    for i in range(20):
         pf.update(np.array([0.0, 0.0, 0.6]), np.eye(3)*0.9)
+    print(time.time() - ts)
 
 
     vistest = False
