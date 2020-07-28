@@ -1,6 +1,22 @@
 import scipy.stats
 import numpy as np
 
+def low_variance_sampler(ws):
+    # ws is numpya array
+    N = len(ws)
+    idxes = np.zeros(N, dtype=int)
+    w_sum = sum(ws)
+    r = np.random.random()*(1.0/N)
+    c = ws[0]/w_sum
+    k = 0
+    for n in range(N):
+        U = r + n*(1.0/N)
+        while U > c:
+            k+=1
+            c = c+ws[k]/w_sum
+        idxes[n] = k
+    return idxes
+
 class ParticleFilter:
     def __init__(self, N, M=3):
         self.N = N
@@ -20,26 +36,25 @@ class ParticleFilter:
         dists = np.sum(tmp.T * d.T, axis=0)
         return np.exp(-0.5 * dists)
 
-    def update(self, z, R):
+    def update(self, z, R, resampling=True):
         weights_likeli = self.default_likelihood_function(self.X, z, R)
         tmp = self.W * weights_likeli
         self.W = tmp/sum(tmp) 
+        if resampling:
+            idxes = low_variance_sampler(self.W)
+            print(idxes)
+            self.X = self.X[idxes, :]
+            self.W = np.ones(self.N)/self.N
 
-def mv_normal(X, Z, R):
-    Rinv = np.linalg.inv(R)
-    Rdet = np.linalg.det(R)
-    d = X - Z
-    tmp = np.einsum('ij,jk', d, Rinv) 
-    dists = np.sum(tmp.T * d.T, axis=0)
-    #return weights = np.exp(-0.5 * dists)
+
 
 if __name__=='__main__':
     import numpy as np
-    N = 10000
+    N = 1000
     X = np.random.randn(N, 3) 
     pf = ParticleFilter(N)
     pf.initialize(X)
-    pf.update(np.array([0.5, 0.5, 0.5]), np.eye(3))
+    pf.update(np.array([2.0, 0.0, 0.0]), np.eye(3)*0.2)
 
     import matplotlib.pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
@@ -48,5 +63,5 @@ if __name__=='__main__':
     print(sum(pf.W))
 
     myscat = lambda X, color: ax.scatter(X[:, 0], X[:, 1], X[:, 2], c=color)
-    myscat(X, 'red')
+    myscat(pf.X, 'red')
     plt.show()
