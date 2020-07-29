@@ -83,8 +83,7 @@ class PoseEstimater:
         cov = np.diag([std_x**2, std_y**2, std_z**2])
         if self.pf.X is None:
             cov_init = cov * 10
-            ptcls = np.random.multivariate_normal(state, cov, self.N)
-            self.pf.initialize(ptcls)
+            self.pf.initialize(state, cov_init)
         else:
             self.pf.update(state, cov)
         x_est, cov = self.pf.get_current_est(withCov=None)

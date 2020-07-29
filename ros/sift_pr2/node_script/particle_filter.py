@@ -98,7 +98,8 @@ class ParticleFilter:
     def isInitialized(self):
         return (self.X is not None)
 
-    def initialize(self, X, W=None):
+    def initialize(self, x_mean, x_cov):
+        X = np.random.multivariate_normal(x_mean, x_cov, self.N)
         N = X.shape[0]
         self.X = X
         self.X[:, 2] = regularize(X[:, 2], 0, 2*3.1415)
