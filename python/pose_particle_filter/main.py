@@ -128,17 +128,26 @@ class ParticleFilter:
                 self.X = marging_resampling(self.X, self.W)
                 self.W = np.ones(self.N)/self.N
 
+    def get_current_est(self):
+        x_mean = np.dot(self.X.T, self.W) 
+        diff = self.X - x_mean.reshape(1, 3).repeat(self.N, axis=0)
+        diff_weighted = diff * self.W.reshape(self.N, 1).repeat(3, axis=1)
+        cov = np.einsum('ki,kj', diff, diff_weighted)
+        return x_mean, cov
+
 if __name__=='__main__':
     import numpy as np
-    N = 100000
+    N = 10000
     X = np.random.randn(N, 3) * 3
     pf = ParticleFilter(N)
     pf.initialize(X)
     import time
     ts = time.time()
-    for i in range(20):
+    for i in range(1):
         pf.update(np.array([0.0, 0.0, 0.6]), np.eye(3)*0.9)
     print(time.time() - ts)
+
+    print(pf.get_current_est())
 
 
     vistest = False
