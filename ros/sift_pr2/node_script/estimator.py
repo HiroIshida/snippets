@@ -67,12 +67,20 @@ class PoseEstimater:
         obj = msg.objects[0]
         tf_handle_to_kinect = convert_pose2tf(obj.pose)
         tf_kinect_to_map = listener.lookupTransform('/map', '/head_mount_kinect_rgb_optical_frame', rospy.Time(0))
+
+        dist_to_kinect = np.linalg.norm(tf_handle_to_kinect[0])
+        print("dist to kinnect is {0}".format(dist_to_kinect))
+
         tf_handle_to_map = convert(tf_handle_to_kinect, tf_kinect_to_map)
         trans = tf_handle_to_map[0]
         rpy = tf.transformations.euler_from_quaternion(tf_handle_to_map[1])
 
         state = np.array([trans[0], trans[1], rpy[1]])
-        cov = np.diag([0.2**2, 0.2**2, 0.1**2])
+        std_x = dist_to_kinect * 0.5
+        std_y = dist_to_kinect * 0.5
+        std_z = dist_to_kinect * 0.1
+
+        cov = np.diag([std_x**2, std_y**2, std_z**2])
         if self.pf.X is None:
             cov_init = cov * 10
             ptcls = np.random.multivariate_normal(state, cov, self.N)
