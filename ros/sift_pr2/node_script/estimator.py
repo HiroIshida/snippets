@@ -53,15 +53,18 @@ class PoseEstimater:
         rpy = tf.transformations.euler_from_quaternion(tf_handle_to_map[1])
 
         state = np.array([trans[0], trans[1], rpy[1]])
-        cov = np.diag([0.2, 0.2, 0.1])
+        cov = np.diag([0.2**2, 0.2**2, 0.1**2])
         if self.pf.X is None:
+            cov_init = cov * 10
             ptcls = np.random.multivariate_normal(state, cov, self.N)
             self.pf.initialize(ptcls)
         else:
             self.pf.update(state, cov)
+        x_est, cov = self.pf.get_current_est()
+        print(np.diag(cov))
 
 
-PoseEstimater(5000)
+PoseEstimater(1000)
 rospy.spin()
 
 

@@ -119,7 +119,6 @@ class ParticleFilter:
         self.W = tmp/sum(tmp) 
 
         ess = 1.0/(np.sum(self.W ** 2) * self.N) # effective sample size
-        print(ess)
         if resampling:
             if ess < ess_threshold:
                 message = "effective sample size is {0} < {1}, thus the resampling took place".format(\
@@ -127,3 +126,12 @@ class ParticleFilter:
                 print(message)
                 self.X = marging_resampling(self.X, self.W)
                 self.W = np.ones(self.N)/self.N
+
+    def get_current_est(self):
+        x_mean = np.dot(self.X.T, self.W) 
+        diff = self.X - x_mean.reshape(1, 3).repeat(self.N, axis=0)
+        diff_weighted = diff * self.W.reshape(self.N, 1).repeat(3, axis=1)
+        cov = np.einsum('ki,kj', diff, diff_weighted)
+        return x_mean, cov
+
+
