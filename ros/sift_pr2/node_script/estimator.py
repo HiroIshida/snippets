@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 import rospy
 import tf
+import copy
 import numpy as np
 from posedetection_msgs.msg import ObjectDetection
+from geometry_msgs.msg import Pose, PoseStamped
 from particle_filter import ParticleFilter
 
 rospy.init_node("pose3d_estimator", anonymous=True)
@@ -28,14 +30,31 @@ def convert(tf_12, tf_23):
     tran_13 = tran_23 + qv_mult(rot_23, tran_12)
     return list(tran_13), list(rot_13)
 
+def create_posemsg_from_pose3d(pose3d):
+    trans_new = [pose3d[0], pose3d[1], 1.126]
+    rot_new = tf.transformations.quaternion_from_euler(0.0, pose3d[2], 0.0)
+    pose_msg = Pose()
+
+    pose_msg.position.x = trans_new[0]
+    pose_msg.position.y = trans_new[1]
+    pose_msg.position.z = trans_new[2]
+
+    pose_msg.orientation.x = rot_new[0]
+    pose_msg.orientation.y = rot_new[1]
+    pose_msg.orientation.z = rot_new[2]
+    pose_msg.orientation.w = rot_new[3]
+    return pose_msg
+
 class PoseEstimater:
     def __init__(self, N):
         self.N = N
         self.pf = ParticleFilter(N)
         self.sub = rospy.Subscriber("/kinect_head/rgb/ObjectDetection", 
                 ObjectDetection, self.cb_object_detection, queue_size=10)
+        self.pub = rospy.Publisher('fridge_pose', PoseStamped, queue_size=10)
 
     def cb_object_detection(self, msg):
+        header = copy.deepcopy(msg.header)
         def convert_pose2tf(pose):
             pos = pose.position
             rot = pose.orientation
@@ -61,8 +80,10 @@ class PoseEstimater:
         else:
             self.pf.update(state, cov)
         x_est, cov = self.pf.get_current_est(withCov=None)
-        print(x_est)
-
+        pose_msg = create_posemsg_from_pose3d(x_est)
+        header.frame_id = "/map"
+        posestamped_msg = PoseStamped(header = header, pose = pose_msg)
+        self.pub.publish(posestamped_msg)
 
 PoseEstimater(5000)
 rospy.spin()
