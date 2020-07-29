@@ -60,11 +60,11 @@ class PoseEstimater:
             self.pf.initialize(ptcls)
         else:
             self.pf.update(state, cov)
-        x_est, cov = self.pf.get_current_est()
-        print(np.diag(cov))
+        x_est, cov = self.pf.get_current_est(withCov=None)
+        print(x_est)
 
 
-PoseEstimater(1000)
+PoseEstimater(5000)
 rospy.spin()
 
 

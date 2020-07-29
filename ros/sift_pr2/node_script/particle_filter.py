@@ -116,22 +116,35 @@ class ParticleFilter:
     def update(self, z, R, resampling=True, ess_threshold=0.4):
         weights_likeli = self.default_likelihood_function(self.X, z, R)
         tmp = self.W * weights_likeli
-        self.W = tmp/sum(tmp) 
 
-        ess = 1.0/(np.sum(self.W ** 2) * self.N) # effective sample size
-        if resampling:
-            if ess < ess_threshold:
-                message = "effective sample size is {0} < {1}, thus the resampling took place".format(\
-                        ess, ess_threshold)
-                print(message)
-                self.X = marging_resampling(self.X, self.W)
-                self.W = np.ones(self.N)/self.N
+        validUpdate = (sum(tmp) > 0)
+        """
+        usually invalidUpdate occurs while update just after initialization
+        """
 
-    def get_current_est(self):
+        if validUpdate:
+            self.W = tmp/sum(tmp) 
+            ess = 1.0/(np.sum(self.W ** 2) * self.N) # effective sample size
+            if resampling:
+                if ess < ess_threshold:
+                    message = "effective sample size is {0} < {1}, thus the resampling took place".format(\
+                            ess, ess_threshold)
+                    print(message)
+                    self.X = marging_resampling(self.X, self.W)
+                    self.W = np.ones(self.N)/self.N
+        else:
+            print("invalid update! just take a mean")
+            Z = z.reshape(1, 3).repeat(self.N, axis=0)
+            self.X = (Z + self.X) * 0.5
+
+
+    def get_current_est(self, withCov=False):
         x_mean = np.dot(self.X.T, self.W) 
-        diff = self.X - x_mean.reshape(1, 3).repeat(self.N, axis=0)
-        diff_weighted = diff * self.W.reshape(self.N, 1).repeat(3, axis=1)
-        cov = np.einsum('ki,kj', diff, diff_weighted)
+        if withCov:
+            diff = self.X - x_mean.reshape(1, 3).repeat(self.N, axis=0)
+            diff_weighted = diff * self.W.reshape(self.N, 1).repeat(3, axis=1)
+            cov = np.einsum('ki,kj', diff, diff_weighted)
+        else:
+            cov = None
         return x_mean, cov
-
 
