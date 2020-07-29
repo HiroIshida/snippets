@@ -6,6 +6,7 @@ import numpy as np
 from posedetection_msgs.msg import ObjectDetection
 from geometry_msgs.msg import Pose, PoseStamped
 from particle_filter import ParticleFilter
+from kalman_filter import KalmanFilter
 
 rospy.init_node("pose3d_estimator", anonymous=True)
 listener = tf.TransformListener()
@@ -48,7 +49,7 @@ def create_posemsg_from_pose3d(pose3d):
 class PoseEstimater:
     def __init__(self, N):
         self.N = N
-        self.pf = ParticleFilter(N)
+        self.state_estimater = KalmanFilter()
         self.sub = rospy.Subscriber("/kinect_head/rgb/ObjectDetection", 
                 ObjectDetection, self.cb_object_detection, queue_size=10)
         self.pub = rospy.Publisher('fridge_pose', PoseStamped, queue_size=10)
@@ -81,12 +82,14 @@ class PoseEstimater:
         std_z = dist_to_kinect * 0.1
 
         cov = np.diag([std_x**2, std_y**2, std_z**2])
-        if self.pf.X is None:
-            cov_init = cov * 10
-            self.pf.initialize(state, cov_init)
+        if self.state_estimater.isInitialized:
+            self.state_estimater.update(state, cov)
         else:
-            self.pf.update(state, cov)
-        x_est, cov = self.pf.get_current_est(withCov=None)
+            cov_init = cov * 10
+            self.state_estimater.initialize(state, cov_init)
+
+        x_est, cov = self.state_estimater.get_current_est(withCov=None)
+        print(x_est)
         pose_msg = create_posemsg_from_pose3d(x_est)
         header.frame_id = "/map"
         posestamped_msg = PoseStamped(header = header, pose = pose_msg)

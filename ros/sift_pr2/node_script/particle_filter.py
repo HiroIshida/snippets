@@ -94,9 +94,7 @@ class ParticleFilter:
         self.M = M
         self.X = None
         self.W = None
-
-    def isInitialized(self):
-        return (self.X is not None)
+        self.isInitialized = False
 
     def initialize(self, x_mean, x_cov):
         X = np.random.multivariate_normal(x_mean, x_cov, self.N)
@@ -105,6 +103,7 @@ class ParticleFilter:
         self.X[:, 2] = regularize(X[:, 2], 0, 2*3.1415)
         W = np.ones(N)/self.N
         self.W = W
+        self.isInitialized = True
 
     def default_likelihood_function(self, X, z, R):
         Rinv = np.linalg.inv(R)
