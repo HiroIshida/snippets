@@ -15,7 +15,7 @@ listener = tf.TransformListener()
 
 def create_posemsg_from_pose3d(pose3d):
     trans_new = [pose3d[0], pose3d[1], 1.126]
-    rot_new = tf.transformations.quaternion_from_euler(0.0, pose3d[2], 0.0)
+    rot_new = tf.transformations.quaternion_from_euler(0.0, 0.0, pose3d[2])
     pose_msg = Pose()
 
     pose_msg.position.x = trans_new[0]
@@ -57,8 +57,9 @@ class PoseEstimater:
         tf_handle_to_map = convert(tf_handle_to_kinect, tf_kinect_to_map)
         trans = tf_handle_to_map[0]
         rpy = tf.transformations.euler_from_quaternion(tf_handle_to_map[1])
+        print(rpy)
 
-        state = np.array([trans[0], trans[1], rpy[1]])
+        state = np.array([trans[0], trans[1], rpy[2]])
         std_x = dist_to_kinect * 0.5
         std_y = dist_to_kinect * 0.5
         std_z = dist_to_kinect * 0.1
@@ -71,7 +72,6 @@ class PoseEstimater:
             self.state_estimater.initialize(state, cov_init)
 
         x_est, cov = self.state_estimater.get_current_est(withCov=None)
-        print(x_est)
         pose_msg = create_posemsg_from_pose3d(x_est)
         header.frame_id = "/map"
         posestamped_msg = PoseStamped(header = header, pose = pose_msg)

@@ -6,4 +6,7 @@
         pkg="image_view" type="image_view">
     <remap from="image" to="/kinect_head/rgb/fridge_detector/debug_image" />
   </node>
+
+  <node pkg="sift_pr2" type="dummy_subscriber.py" name="dummy_subscriber" output="screen"/>
+  <node pkg="sift_pr2" type="estimator.py" name="pose_estimater" output="screen"/>
 </launch>
