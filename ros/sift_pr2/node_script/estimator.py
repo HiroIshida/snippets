@@ -13,9 +13,10 @@ rospy.init_node("pose3d_estimator", anonymous=True)
 listener = tf.TransformListener()
 
 
-def create_posemsg_from_pose3d(pose3d):
-    trans_new = [pose3d[0], pose3d[1], 1.126]
-    rot_new = tf.transformations.quaternion_from_euler(0.0, 0.0, pose3d[2])
+def create_posemsg_from_pose3d(pose6d):
+    trans_new = [pose6d[0], pose6d[1], pose6d[2]]
+    #trans_new = [pose3d[0], pose3d[1], 1.126]
+    rot_new = tf.transformations.quaternion_from_euler(pose6d[3], pose6d[4], pose6d[5])
     pose_msg = Pose()
 
     pose_msg.position.x = trans_new[0]
@@ -31,7 +32,7 @@ def create_posemsg_from_pose3d(pose3d):
 class PoseEstimater:
     def __init__(self, N):
         self.N = N
-        self.state_estimater = KalmanFilter()
+        self.state_estimater = KalmanFilter(6)
         self.sub = rospy.Subscriber("/kinect_head/rgb/ObjectDetection", 
                 ObjectDetection, self.cb_object_detection, queue_size=10)
         self.pub = rospy.Publisher('fridge_pose', PoseStamped, queue_size=10)
@@ -51,20 +52,20 @@ class PoseEstimater:
         tf_handle_to_kinect = convert_pose2tf(obj.pose)
         tf_kinect_to_map = listener.lookupTransform('/map', '/head_mount_kinect_rgb_optical_frame', rospy.Time(0))
 
+        rpy = tf.transformations.euler_from_quaternion(tf_handle_to_kinect[1])
+
         dist_to_kinect = np.linalg.norm(tf_handle_to_kinect[0])
         print("dist to kinnect is {0}".format(dist_to_kinect))
 
         tf_handle_to_map = convert(tf_handle_to_kinect, tf_kinect_to_map)
         trans = tf_handle_to_map[0]
         rpy = tf.transformations.euler_from_quaternion(tf_handle_to_map[1])
-        print(rpy)
 
-        state = np.array([trans[0], trans[1], rpy[2]])
-        std_x = dist_to_kinect * 0.5
-        std_y = dist_to_kinect * 0.5
-        std_z = dist_to_kinect * 0.1
+        state = np.array(list(trans) + list(rpy))
+        std_trans = dist_to_kinect * 0.5
+        std_rot = dist_to_kinect * 0.1
 
-        cov = np.diag([std_x**2, std_y**2, std_z**2])
+        cov = np.diag([std_trans**2]*3 + [std_rot**2]*3)
         if self.state_estimater.isInitialized:
             self.state_estimater.update(state, cov)
         else:
@@ -72,6 +73,7 @@ class PoseEstimater:
             self.state_estimater.initialize(state, cov_init)
 
         x_est, cov = self.state_estimater.get_current_est(withCov=None)
+        print(x_est)
         pose_msg = create_posemsg_from_pose3d(x_est)
         header.frame_id = "/map"
         posestamped_msg = PoseStamped(header = header, pose = pose_msg)

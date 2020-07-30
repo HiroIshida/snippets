@@ -1,7 +1,8 @@
 import numpy as np
 
 class KalmanFilter: # not really a kalman filter...
-    def __init__(self):
+    def __init__(self, M):
+        self.M = M
         self.x_est = None
         self.P = None
         self.isInitialized = False
@@ -17,7 +18,7 @@ class KalmanFilter: # not really a kalman filter...
         S = self.P + R
         K = self.P.dot(np.linalg.inv(S))
         x_est_new = self.x_est + K.dot(y)
-        P_new = (np.eye(3) - K).dot(self.P)
+        P_new = (np.eye(self.M) - K).dot(self.P)
         self.x_est = x_est_new
         self.P = P_new
 
