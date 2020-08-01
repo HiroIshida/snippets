@@ -25,7 +25,7 @@
 (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
 (send *ri* :wait-interpolation)
 
-(ros::rate (/ 1.0 0.1)
+(ros::rate (/ 1.0 0.06))
 (dotimes (i 10000)
   (ros::spin-once)
   (print "hoge")
@@ -33,7 +33,7 @@
     (setq *av-pre* (send *pr2* :angle-vector))
     (setq *lt* (send *tfl* :lookup-transform "base_link" "map" (ros::time 0)))
     (setq *target-co* (send *lt* :transform (ros::tf-pose->coords *target-pose*)))
-    (send *target-co* :translate #f(-150 0 0) :local)
+    (send *target-co* :translate #f(-80 0 0) :local)
     
     (bench (send *pr2* :larm :inverse-kinematics
           *target-co*
@@ -43,7 +43,7 @@
 
     (setq *av-post* (send *pr2* :angle-vector))
     (setq *av-diff* (v- *av-post* *av-pre*))
-    (setq *av-com*  (v+ *av-pre* (scale 2.0 *av-diff*)))
+    (setq *av-com*  (v+ *av-pre* (scale 3.0 *av-diff*)))
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
     (send *ri* :angle-vector *av-com* 500 :larm-controller 0 :min-time 0.3 :scale 5.0)
     )
