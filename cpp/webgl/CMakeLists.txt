@@ -11,9 +11,6 @@ set(cppzmq_INCLUDE_DIRS zeromq/include )
 include_directories(${cppzmq_INCLUDE_DIRS})
 add_definitions(-DZMQ_STATIC)
 
-SUBDIRS(crossguid)
-set(crossguid_INCLUDE_DIRS crossguid)
-include_directories(${crossguid_INCLUDE_DIRS})
 
 find_package(nlohmann_json)
 IF ( nlohmann_json_FOUND)
@@ -23,6 +20,6 @@ ELSE()
     include_directories(${nlohmann_json_INCLUDE_DIRS})
 ENDIF()
 
-set(MESHCAT_LIBRARIES crossguid zmq ) # droff cpp_base64 for now
+set(MESHCAT_LIBRARIES zmq) # droff cpp_base64 for now
 add_executable(test example.cpp ${TDS_HDRS})
 target_link_libraries(test  ${MESHCAT_LIBRARIES})

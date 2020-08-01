@@ -15,10 +15,20 @@
  */
 
 #include <iostream>
-
-#include <crossguid/guid.hpp>
 #include <nlohmann/json.hpp>
-std::string generate_uuid() { return xg::newGuid().str(); }
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid_io.hpp>
+using namespace boost::uuids;
+
+boost::uuids::string_generator gen; // ad-hoc (ishida)
+std::string generate_uuid() { 
+    const uuid id = random_generator()();
+    const std::string result = boost::lexical_cast<std::string>(id);
+    return result;
+}
+
 
 #include "zmq.hpp"
 #include "zmq_addon.hpp"

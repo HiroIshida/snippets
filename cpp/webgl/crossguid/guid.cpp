@@ -42,6 +42,8 @@ THE SOFTWARE.
 #include <cassert>
 #endif
 
+#define GUID_LIBUUID // ad-hoc [ishida]
+
 BEGIN_XG_NAMESPACE
 
 #ifdef GUID_ANDROID
