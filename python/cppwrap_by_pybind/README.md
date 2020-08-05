@@ -1,3 +1,4 @@
-## note
-- build fail if pyenv is activated even if I specify the python_executable path.
-- cannot load (fail)
+## PITFALLS!
+- if you use pyenv, please specify python executable path like `cmake -DPYTHON_EXECUTABLE=path/to/python ..`
+- install [pybind11](https://github.com/pybind/pybind11) under the root directory
+- DO NOT copy and paste QIITA 

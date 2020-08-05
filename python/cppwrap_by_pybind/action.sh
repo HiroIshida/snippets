@@ -1,4 +1,4 @@
 cd build
-cmake -DPYTHON_EXECUTABL=/usr/bin/python2.7 ../
-make -j4
+cmake -DPYTHON_EXECUTABLE=/usr/bin/python2.7 ..
+make 
 
