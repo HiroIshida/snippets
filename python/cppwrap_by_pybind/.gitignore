@@ -1,2 +1,3 @@
 /build
 /pybind11
+*.so
