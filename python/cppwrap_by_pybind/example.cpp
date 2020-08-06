@@ -1,7 +1,9 @@
-
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/eigen.h>
+#include <Eigen/Dense>
 
+using namespace Eigen;
 namespace py = pybind11;
 struct Pet {
     Pet(const std::string &name) : name(name) {
@@ -12,6 +14,11 @@ struct Pet {
     const std::string &getName() const { return name; }
     const std::vector<double> &getVec() const { return vec; }
     void pushVec(double val){vec.push_back(val);}
+    MatrixXd getMat(){
+      MatrixXd m = MatrixXd::Zero(3, 6);
+      return m;
+    }
+
     std::string name;
     std::vector<double> vec;
 };
@@ -28,6 +35,6 @@ PYBIND11_MODULE(example, m) {
             .def("pushvec", &Pet::pushVec)
             .def("getvec", &Pet::getVec)
             .def("setName", &Pet::setName)
+            .def("getmat", &Pet::getMat)
             .def("getName", &Pet::getName);
-
 }
