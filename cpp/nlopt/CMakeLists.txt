@@ -1,0 +1,5 @@
+set(CMAKE_CXX_STANDARD 14)
+find_package(nlopt REQUIRED)
+include_directories(${NLOPT_INCLUDE_DIR})
+add_executable(sample sample.cpp)
+target_link_libraries(sample nlopt)
