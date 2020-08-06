@@ -1,8 +1,6 @@
 #include <nlopt.hpp>
 #include <iostream>
 
-double myfunc(const std::vector<double> &x, std::vector<double> &grad, void *my_func_data);
-
 void multi_constraint(unsigned m, double *result, unsigned n, const double* x, double* grad, void* f_data);
 
 int main()
@@ -13,7 +11,15 @@ int main()
 	lb[1] = 0;
 	opt.set_lower_bounds(lb);
 
-	opt.set_min_objective(myfunc, NULL);
+
+  auto f = [](const std::vector<double> &x, std::vector<double> &grad, void *my_func_data){
+    if (!grad.empty()) {
+        grad[0] = 0.0;
+        grad[1] = 0.5 / sqrt(x[1]);
+    }
+    return sqrt(x[1]);
+  };
+	opt.set_min_objective(f, NULL);
 
 	double data[4] = {2,0,-1,1};   //use one dimensional array
 	std::vector<double> tol_constraint(2);
@@ -30,15 +36,6 @@ int main()
 	std::cout << "The result is" << std::endl;
 	std::cout << result << std::endl;
 	std::cout << "Minimal function value " << minf << std::endl;
-}
-
-double myfunc(const std::vector<double> &x, std::vector<double> &grad, void *my_func_data)
-{
-    if (!grad.empty()) {
-        grad[0] = 0.0;
-        grad[1] = 0.5 / sqrt(x[1]);
-    }
-    return sqrt(x[1]);
 }
 
 void multi_constraint(unsigned m, double *result, unsigned n, const double* x, double* grad, void* f_data)
