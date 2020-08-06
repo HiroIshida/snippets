@@ -15,6 +15,22 @@ int main(){
     print(*it);
   }
 
+  print("=--------------------------");
+  for(auto it = group_json.begin(); it!=group_json.end(); it++){
+    print(it.key() << " : " << it.value());
+  }
+
+  print("=----conversion to std vector. many stl type is supported");
+  std::vector<std::string> strvec;
+  for(auto& group : group_json.items()){
+    print(group.key() << " : ");
+     strvec = group.value().get<std::vector<std::string>>();
+      for(std::string& s : strvec){
+        print(s);
+      }
+  }
+
+  print("=----dump");
   std::string s = group_json.dump(4); // adding 4 makes output pretty
   print(s);
 }
