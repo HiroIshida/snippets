@@ -1,6 +1,6 @@
 ** compiled at:     Aug 12 2020 20:18:04
 ** execution start: 1970-01-01_09:00:00.000000
-/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.cpp:initCmdLine:682(1) ** cmd line arguments: '/home/hiro/documents/misc/snippets/cpp/toussaint_opt/test '
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.cpp:initCmdLine:682(1) ** cmd line arguments: './test '
 /home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/graph.cpp:RegistryInitializer:1329(3) opening config file 'rai.cfg'
 /home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/graph.cpp:readNode:878(-1) you specified tags [d, im] for node 'im:200', which is of non-graph type -- ignored
 /home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:42(3)     constraintChoice =     1 [i] (graph!)
@@ -31,3 +31,4 @@
 /home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:65(3)         opt/muLBInit =     1 [d] (default!)
 /home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:42(3)        opt/aulaMuInc =   1.5 [d] (graph!)
 /home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/array.cpp:blas_At_A:1807(-2) not implemented with this compiler options: usually this means that the implementation needs an external library and a corresponding compiler option - see the source code
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.cpp:~Mutex:1364(-2) CHECK failed: '!state' Mutex destroyed without unlocking first

@@ -1,3 +1,3 @@
-b main.cpp:90
-c
+b Optim/lagrangian.cpp:51
+run
 layout n

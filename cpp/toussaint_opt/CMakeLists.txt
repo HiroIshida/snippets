@@ -6,4 +6,4 @@ add_subdirectory(Optim)
 FILE(GLOB HDRS "*.h" ) # workaround
 
 add_executable(test main.cpp lecture.cpp)
-target_link_libraries(test optim core pthread)
+target_link_libraries(test optim core pthread lapack)

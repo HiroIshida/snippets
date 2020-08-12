@@ -19,6 +19,7 @@
 #include "array.h"
 #include "util.h"
 
+#define RAI_LAPACK
 #ifdef RAI_LAPACK
 extern "C" {
 #include "cblas.h"
