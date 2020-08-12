@@ -7,9 +7,12 @@ add_library(optim
   newton.cpp 
   gradient.cpp 
   convert.cpp 
+  constrained.cpp
+  newOptim.cpp
+  opt-ceres.cpp
   lagrangian.cpp
   benchmarks.cpp)
 
-add_executable(test main.cpp)
-target_link_libraries(test optim core pthread)
-include_directories(./)
+#add_executable(test main.cpp)
+#target_link_libraries(test optim core pthread)
+#include_directories(./)

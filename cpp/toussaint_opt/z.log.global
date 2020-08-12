@@ -1,0 +1,33 @@
+** compiled at:     Aug 12 2020 20:18:04
+** execution start: 1970-01-01_09:00:00.000000
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.cpp:initCmdLine:682(1) ** cmd line arguments: '/home/hiro/documents/misc/snippets/cpp/toussaint_opt/test '
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/graph.cpp:RegistryInitializer:1329(3) opening config file 'rai.cfg'
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/graph.cpp:readNode:878(-1) you specified tags [d, im] for node 'im:200', which is of non-graph type -- ignored
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:42(3)     constraintChoice =     1 [i] (graph!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:65(3)                  dim =     2 [j] (default!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:65(3)                 seed =     0 [j] (default!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:42(3)          opt/verbose =     1 [i] (graph!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:42(3)    opt/stopTolerance = 0.0001 [d] (graph!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:65(3)   opt/stopFTolerance =   0.1 [d] (default!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:42(3)   opt/stopGTolerance = 0.0001 [d] (graph!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:65(3)        opt/stopEvals =  1000 [j] (default!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:65(3)        opt/stopIters =  1000 [j] (default!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:65(3)       opt/stopOuters =  1000 [j] (default!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:65(3)    opt/stopLineSteps =    10 [j] (default!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:65(3)    opt/stopTinySteps =    10 [j] (default!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:65(3)         opt/initStep =     1 [d] (default!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:65(3)          opt/minStep =    -1 [d] (default!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:65(3)          opt/maxStep =   0.2 [d] (default!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:65(3)          opt/damping =     1 [d] (default!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:42(3)          opt/stepInc =   1.2 [d] (graph!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:42(3)          opt/stepDec =   0.5 [d] (graph!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:42(3)       opt/dampingInc =     1 [d] (graph!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:42(3)       opt/dampingDec =     1 [d] (graph!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:65(3)            opt/wolfe =  0.01 [d] (default!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:42(3)   opt/nonStrictSteps =     0 [j] (graph!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:65(3)    opt/allowOverstep =     0 [b] (default!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:42(3) opt/constrainedMethod =     1 [i] (graph!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:65(3)           opt/muInit =     1 [d] (default!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:65(3)         opt/muLBInit =     1 [d] (default!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/util.tpp:getParameterBase:42(3)        opt/aulaMuInc =   1.5 [d] (graph!)
+/home/hiro/documents/misc/snippets/cpp/toussaint_opt/Optim/Core/array.cpp:blas_At_A:1807(-2) not implemented with this compiler options: usually this means that the implementation needs an external library and a corresponding compiler option - see the source code
