@@ -15,26 +15,45 @@ def gridmsg2nparray(msg):
     npnized = np.array(msg.data).reshape((w, h))
     return npnized
 
+class MapData:
+    def __init__(self, arr, res, origin, tf_base_to_map):
+        self.arr = arr
+        self.tf_base_to_map = tf_base_to_map
+        self.origin = origin
+        self.res = res
+
 class MapManager:
     def __init__(self):
         msg_name  = "/move_base_node/local_costmap/costmap"
         self.sub = rospy.Subscriber(msg_name, OccupancyGrid, self.map_callback)
+        self.listener = tf.TransformListener()
         self.msg = None
         self.arr = None
+        self.data = None
 
     def map_callback(self, msg):
         print("rec")
         self.msg = copy.deepcopy(msg)
         info = msg.info
         arr = gridmsg2nparray(msg)
-        self.arr = arr
+        self.arr = np.fliplr(arr)
+
+        while(True):
+            try:
+                tf_base_to_map = self.listener.lookupTransform(msg.header.frame_id, "/base_footprint", rospy.Time(0))
+                print(tf_base_to_map)
+                break
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                continue
+        print(info.origin)
+        self.data = MapData(np.fliplr(arr), info.resolution, info.origin, tf_base_to_map)
 
     def show_map(self):
         plt.pcolor(self.arr)
 
     def save_map(self, name="localcost_pr2.pickle"):
         with open(name, 'wb') as f:
-            pickle.dump(self.arr, f)
+            pickle.dump(self.data, f)
 
 
 if __name__=='__main__':
