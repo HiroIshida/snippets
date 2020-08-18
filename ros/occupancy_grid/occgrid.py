@@ -36,7 +36,7 @@ class MapManager:
         self.msg = copy.deepcopy(msg)
         info = msg.info
         arr = gridmsg2nparray(msg)
-        self.arr = np.fliplr(arr)
+        self.arr = arr
 
         while(True):
             try:
