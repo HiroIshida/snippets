@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import scipy.interpolate  
 import rospy
 from nav_msgs.msg import OccupancyGrid
 import tf
@@ -46,10 +47,29 @@ class MapManager:
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 continue
         print(info.origin)
-        self.data = MapData(np.fliplr(arr), info.resolution, info.origin, tf_base_to_odom)
+        self.data = MapData(arr, info.resolution, info.origin, tf_base_to_odom)
 
     def show_map(self):
-        plt.pcolor(self.arr)
+        nx, ny = self.data.arr.shape
+
+        bmin = [0, 0]
+        bmax = [nx * self.data.res, ny * self.data.res]
+        xlin = np.linspace(bmin[0], bmax[0], 200)
+        ylin = np.linspace(bmin[1], bmax[1], 200)
+
+        # SAVE THIS
+        # finterp = scipy.interpolate.interp2d(xlin, ylin, self.data.arr.T, kind='cubic')
+        # SAVE THIS
+
+        finterp = scipy.interpolate.interp2d(xlin, ylin, self.data.arr.T, kind='cubic')
+
+
+        fig, ax = plt.subplots()
+        X, Y = np.meshgrid(xlin, ylin)
+        Z = finterp(xlin, ylin)
+        ax.contourf(X, Y, Z.T)
+        plt.show()
+
 
     def save_map(self, name="localcost_pr2.pickle"):
         with open(name, 'wb') as f:
@@ -60,7 +80,7 @@ if __name__=='__main__':
     rospy.init_node('map_saver')
     mm = MapManager();
     r = rospy.Rate(10)
-    for i in range(20):
+    for i in range(10):
         r.sleep()
     mm.show_map()
     plt.show()

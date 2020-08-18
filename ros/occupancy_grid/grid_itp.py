@@ -19,8 +19,8 @@ bmin = [0, 0]
 bmax = [nx * data.res, ny * data.res]
 xlin = np.linspace(bmin[0], bmax[0], 200)
 ylin = np.linspace(bmin[1], bmax[1], 200)
-finterp = scipy.interpolate.interp2d(xlin, ylin, np.flip(data.arr.T, axis=0), kind='cubic')
-fp = scipy.interpolate.RegularGridInterpolator((xlin, ylin), np.flip(data.arr.T, axis=0), method='linear')
+finterp = scipy.interpolate.interp2d(xlin, ylin, data.arr.T, kind='cubic')
+fp = scipy.interpolate.RegularGridInterpolator((xlin, ylin), data.arr.T, method='linear')
 
 fig, ax = plt.subplots()
 X, Y = np.meshgrid(xlin, ylin)
@@ -48,9 +48,3 @@ ax.scatter(P_map[0, 0], P_map[0, 1], c="black", s=30)
 ax.scatter(P_map[1, 0], P_map[1, 1], c="red", s=30) 
 ax.scatter(P_map[2, 0], P_map[2, 1], c="green", s=30) 
 plt.show()
-
-
-
-
-
-
