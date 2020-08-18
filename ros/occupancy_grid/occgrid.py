@@ -16,9 +16,9 @@ def gridmsg2nparray(msg):
     return npnized
 
 class MapData:
-    def __init__(self, arr, res, origin, tf_base_to_map):
+    def __init__(self, arr, res, origin, tf_base_to_odom):
         self.arr = arr
-        self.tf_base_to_map = tf_base_to_map
+        self.tf_base_to_odom = tf_base_to_odom
         self.origin = origin
         self.res = res
 
@@ -40,13 +40,13 @@ class MapManager:
 
         while(True):
             try:
-                tf_base_to_map = self.listener.lookupTransform(msg.header.frame_id, "/base_footprint", rospy.Time(0))
-                print(tf_base_to_map)
+                tf_base_to_odom = self.listener.lookupTransform(msg.header.frame_id, "/base_footprint", rospy.Time(0))
+                print(tf_base_to_odom)
                 break
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 continue
         print(info.origin)
-        self.data = MapData(np.fliplr(arr), info.resolution, info.origin, tf_base_to_map)
+        self.data = MapData(np.fliplr(arr), info.resolution, info.origin, tf_base_to_odom)
 
     def show_map(self):
         plt.pcolor(self.arr)
