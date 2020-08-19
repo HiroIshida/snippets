@@ -3,7 +3,7 @@
 ```python
 tf_base_to_map = tf_base_to_odom * tf_odom_to_map
 ```
-where `tf_odom_to_map` is given in `msg.info.origin. Note that `OccupancyGrid` msg is (usually) defined in `odom_combined` frame (but check `msg.header.frame_id`).
+where `tf_odom_to_map` is given in `msg.info.origin`. Note that `OccupancyGrid` msg is (usually) defined in `odom_combined` frame (but check `msg.header.frame_id`).
 
 2. after you numpy-nize the array like `np.array(msg.data).reshape((N, N))` you must transpose it!
 ```python
