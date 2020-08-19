@@ -35,7 +35,7 @@ class CostmapFunctionData:
         tmp = np.array(self.msg.data).reshape((n_grid[1], n_grid[0])) # about to be transposed!!
         arr = tmp.T # [IMPORTANT] !!
         fp_wrt_map = scipy.interpolate.RegularGridInterpolator((xlin, ylin), arr, 
-                method='linear', bounds_error=True, fill_value=0.0) 
+                method='linear', bounds_error=False, fill_value=0.0) 
 
         def base_to_map(P): 
             n_points = len(P)

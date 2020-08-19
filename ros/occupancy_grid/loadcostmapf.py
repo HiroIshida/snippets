@@ -9,7 +9,7 @@ with open("costmapf.pickle", "rb") as f:
 
 costmapf = costmapdata.convert2sdf()
 
-b = 1.0
+b = 4.0
 xlin = np.linspace(-b, b, 200)
 ylin = np.linspace(-b, b, 200)
 X, Y = np.meshgrid(xlin, ylin)
@@ -18,4 +18,8 @@ Z_ = costmapf(pts)
 Z = Z_.reshape((200, 200))
 fig, ax = plt.subplots()
 ax.contourf(X, Y, Z)
+
+idxes_clear = Z_ < 80
+pts_valid = pts[idxes_clear, :]
+ax.scatter(pts_valid[:, 0], pts_valid[:, 1])
 plt.show()
