@@ -4,10 +4,24 @@ import rospy
 from nav_msgs.msg import OccupancyGrid
 import tf
 import copy
-import StringIO
 import numpy as np
 import matplotlib.pyplot as plt 
-import pickle 
+import dill 
+
+def quaternion_matrix(quaternion): # fetched from tf.transformations
+    _EPS = np.finfo(float).eps * 4.0
+    q = np.array(quaternion[:4], dtype=np.float64, copy=True)
+    nq = np.dot(q, q)
+    if nq < _EPS:
+        return np.identity(4)
+    q *= np.sqrt(2.0 / nq)
+    q = np.outer(q, q)
+    return np.array((
+        (1.0-q[1, 1]-q[2, 2],     q[0, 1]-q[2, 3],     q[0, 2]+q[1, 3], 0.0),
+        (    q[0, 1]+q[2, 3], 1.0-q[0, 0]-q[2, 2],     q[1, 2]-q[0, 3], 0.0),
+        (    q[0, 2]-q[1, 3],     q[1, 2]+q[0, 3], 1.0-q[0, 0]-q[1, 1], 0.0),
+        (                0.0,                 0.0,                 0.0, 1.0)
+        ), dtype=np.float64)
 
 def generate_sdf(msg, tf_base_to_odom):
     info = msg.info
@@ -27,7 +41,8 @@ def generate_sdf(msg, tf_base_to_odom):
     def base_to_map(P): 
         n_points = len(P)
         pos_base_to_odom, rot_base_to_odom = tf_base_to_odom
-        M = tf.transformations.quaternion_matrix(rot_base_to_odom)[:2, :2]
+        #M = tf.transformations.quaternion_matrix(rot_base_to_odom)[:2, :2]
+        M = quaternion_matrix(rot_base_to_odom)[:2, :2]
         points = P.dot(M.T) + np.repeat(
                 np.array([[pos_base_to_odom[0], pos_base_to_odom[1]]]), n_points, 0)
 
@@ -71,6 +86,10 @@ class MapManager:
         ax.contourf(X, Y, Z)
         plt.show()
 
+    def save_pickle(self):
+        with open("costmapf.dill", "wb") as f:
+            dill.dump(self.costmapf, f)
+
 if __name__=='__main__':
     rospy.init_node('map_saver')
     mm = MapManager();
@@ -78,3 +97,4 @@ if __name__=='__main__':
     for i in range(10):
         r.sleep()
     mm.show_map_wrtbase()
+    mm.save_pickle()
