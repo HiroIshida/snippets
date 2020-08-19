@@ -2,10 +2,12 @@ import scipy.interpolate
 import copy
 import numpy as np
 import matplotlib.pyplot as plt 
-import dill 
+import pickle 
 
-with open("costmapf.dill", "rb") as f:
-    costmapf = dill.load(f)
+with open("costmapf.pickle", "rb") as f:
+    costmapdata = pickle.load(f)
+
+costmapf = costmapdata.convert2sdf()
 
 b = 1.0
 xlin = np.linspace(-b, b, 200)
