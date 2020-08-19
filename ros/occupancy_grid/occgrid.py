@@ -60,6 +60,7 @@ class MapManager:
         self.msg = None
         self.arr = None
         self.data = None
+        self.costmapf = None
 
     def map_callback(self, msg):
         print("rec")
@@ -78,8 +79,19 @@ class MapManager:
         print(info.origin)
         self.data = MapData(arr, info.resolution, info.origin, tf_base_to_odom)
 
-        sdf = generate_sdf(msg, tf_base_to_odom)
-        print(sdf(np.array([[0, 0]])))
+        self.costmapf = generate_sdf(msg, tf_base_to_odom)
+
+    def show_map_wrtbase(self):
+        b = 1.0
+        xlin = np.linspace(-b, b, 200)
+        ylin = np.linspace(-b, b, 200)
+        X, Y = np.meshgrid(xlin, ylin)
+        pts = np.array(list(zip(X.flatten(), Y.flatten())))
+        Z_ = self.costmapf(pts)
+        Z = Z_.reshape((200, 200))
+        fig, ax = plt.subplots()
+        ax.contourf(X, Y, Z)
+        plt.show()
 
     def show_map(self):
         nx, ny = self.data.arr.shape
@@ -114,7 +126,6 @@ if __name__=='__main__':
     r = rospy.Rate(10)
     for i in range(10):
         r.sleep()
-    mm.show_map()
-    plt.show()
-    mm.save_map()
+    mm.show_map_wrtbase()
+    #mm.save_map()
 
