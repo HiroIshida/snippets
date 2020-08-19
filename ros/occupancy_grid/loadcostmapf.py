@@ -17,7 +17,8 @@ pts = np.array(list(zip(X.flatten(), Y.flatten())))
 Z_ = costmapf(pts)
 Z = Z_.reshape((200, 200))
 fig, ax = plt.subplots()
-ax.contourf(X, Y, Z)
+c = ax.contourf(X, Y, Z)
+cbar = fig.colorbar(c)
 
 idxes_clear = Z_ < 80
 pts_valid = pts[idxes_clear, :]
