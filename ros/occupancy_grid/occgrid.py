@@ -16,6 +16,35 @@ def gridmsg2nparray(msg):
     npnized = np.array(msg.data).reshape((w, h))
     return npnized
 
+def generate_sdf(msg, tf_base_to_odom):
+    info = msg.info
+    n_grid = np.array([info.width, info.height])
+    res = info.resolution
+    origin = info.origin
+
+    b_min = np.zeros(2)
+    b_max = n_grid * res
+    xlin, ylin = [np.linspace(b_min[i], b_max[i], n_grid[i]) for i in range(2)]
+
+    tmp = np.array(msg.data).reshape((n_grid[1], n_grid[0])) # about to be transposed!!
+    arr = tmp.T # [IMPORTANT] !!
+    fp_wrt_map = scipy.interpolate.RegularGridInterpolator((xlin, ylin), arr, 
+            method='linear', bounds_error=True, fill_value=0.0) 
+
+    def base_to_map(P): 
+        n_points = len(P)
+        pos_base_to_odom, rot_base_to_odom = tf_base_to_odom
+        M = tf.transformations.quaternion_matrix(rot_base_to_odom)[:2, :2]
+        points = P.dot(M.T) + np.repeat(
+                np.array([[pos_base_to_odom[0], pos_base_to_odom[1]]]), n_points, 0)
+
+        mappos_origin = np.array([[origin.position.x, origin.position.y]])
+        points = points - np.repeat(mappos_origin, n_points, 0)
+        return points
+
+    fp_wrt_base = lambda X: fp_wrt_map(base_to_map(X))
+    return fp_wrt_base
+
 class MapData:
     def __init__(self, arr, res, origin, tf_base_to_odom):
         self.arr = arr
@@ -48,6 +77,9 @@ class MapManager:
                 continue
         print(info.origin)
         self.data = MapData(arr, info.resolution, info.origin, tf_base_to_odom)
+
+        sdf = generate_sdf(msg, tf_base_to_odom)
+        print(sdf(np.array([[0, 0]])))
 
     def show_map(self):
         nx, ny = self.data.arr.shape
