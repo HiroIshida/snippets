@@ -14,34 +14,41 @@ def sdf_combine(X):
     logicals = f1 > f2
     return f2 * logicals + f1 * (~logicals)
 
-ns = np.array([200, 200])
-b_min = np.array([-1.0, -1.0])
-b_max = np.array([1.0, 1.0])
-xlin, ylin = [np.linspace(b_min[i], b_max[i], ns[i]) for i in range(2)]
-X, Y = np.meshgrid(xlin, ylin)
+class SampleTestData:
+    def __init__(self):
+        ns = np.array([200, 200])
+        b_min = np.array([-1.0, -1.0])
+        b_max = np.array([1.0, 1.0])
+        xlin, ylin = [np.linspace(b_min[i], b_max[i], ns[i]) for i in range(2)]
+        X, Y = np.meshgrid(xlin, ylin)
 
-pts = np.array(zip(X.flatten(), Y.flatten()))
-fs_ = sdf_combine(pts)
-fs = fs_.reshape(ns)
+        pts = np.array(zip(X.flatten(), Y.flatten()))
+        fs_ = sdf_combine(pts)
+        fs = fs_.reshape(ns)
 
-fig, ax = plt.subplots()
-X, Y = np.meshgrid(xlin, ylin)
-c = ax.contourf(X, Y, fs)
-cbar = fig.colorbar(c)
+        c__ = measure.find_contours(fs.T, 0.0)[0] # only one closed curve now
+        def rescale_contour(pts, b_min, b_max, n):
+            n_points, n_dim = pts.shape
+            width = b_max - b_min
+            b_min_tile = np.tile(b_min, (n_points, 1))
+            width_tile = np.tile(width, (n_points, 1))
+            pts_rescaled = b_min_tile + width_tile * pts / (n - 1)
+            return pts_rescaled
 
-c__ = measure.find_contours(fs.T, 0.0)[0] # only one closed curve now
-def rescale_contour(pts, b_min, b_max, n):
-    n_points, n_dim = pts.shape
-    width = b_max - b_min
-    b_min_tile = np.tile(b_min, (n_points, 1))
-    width_tile = np.tile(width, (n_points, 1))
-    pts_rescaled = b_min_tile + width_tile * pts / (n - 1)
-    return pts_rescaled
+        c_ = c__[::10]
+        c = rescale_contour(c_, b_min, b_max, ns[0])
 
-c_ = c__[::10]
-c = rescale_contour(c_, b_min, b_max, ns[0])
+        self.b_min = b_min
+        self.b_max = b_max
+        self.X = X
+        self.Y = Y
+        self.fs = fs
+        self.c = c
 
-ax.scatter(c[:, 0], c[:, 1])
-plt.show()
-
-
+if __name__=='__main__':
+    std = SampleTestData()
+    fig, ax = plt.subplots()
+    cplt = ax.contourf(std.X, std.Y, std.fs)
+    cbar = fig.colorbar(cplt)
+    ax.scatter(std.c[:, 0], std.c[:, 1])
+    plt.show()
