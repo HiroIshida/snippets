@@ -15,8 +15,8 @@ def sdf_combine(X):
     return f2 * logicals + f1 * (~logicals)
 
 class SampleTestData:
-    def __init__(self, n_interval=10):
-        ns = np.array([200, 200])
+    def __init__(self, n_interval=5):
+        ns = np.array([100, 100])
         b_min = np.array([-1.0, -1.0])
         b_max = np.array([1.0, 1.0])
         xlin, ylin = [np.linspace(b_min[i], b_max[i], ns[i]) for i in range(2)]
@@ -44,10 +44,13 @@ class SampleTestData:
         self.Y = Y
         self.fs = fs
         self.c = c
+        self.ns = ns
 
-    def show(self):
+    def show(self, data=None):
+        if data is None:
+            data = self.fs
         fig, ax = plt.subplots()
-        cplt = ax.contourf(self.X, self.Y, self.fs)
+        cplt = ax.contourf(self.X, self.Y, data)
         cbar = fig.colorbar(cplt)
         ax.scatter(self.c[:, 0], self.c[:, 1])
         plt.show()
