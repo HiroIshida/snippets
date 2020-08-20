@@ -9,14 +9,14 @@ def sdf_sphere(X, c, r):
     return dists - r
 
 def sdf_combine(X):
-    f1 = sdf_sphere(X, np.array([0, -0.4]), 0.6)
+    f1 = sdf_sphere(X, np.array([0, -0.3]), 0.6)
     f2 = sdf_sphere(X, np.array([0, 0.4]), 0.4)
     logicals = f1 > f2
     return f2 * logicals + f1 * (~logicals)
 
 class SampleTestData:
-    def __init__(self, n_interval=5):
-        ns = np.array([100, 100])
+    def __init__(self, n_grid=100, n_interval=5):
+        ns = np.array([n_grid, n_grid])
         b_min = np.array([-1.0, -1.0])
         b_max = np.array([1.0, 1.0])
         xlin, ylin = [np.linspace(b_min[i], b_max[i], ns[i]) for i in range(2)]

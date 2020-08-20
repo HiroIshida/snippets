@@ -5,7 +5,7 @@ from gen_testdataset import SampleTestData
 import time
 from math import *
 
-std = SampleTestData(20, n_interval=3)
+std = SampleTestData(100, n_interval=3)
 pts = np.array(zip(std.X.flatten(), std.Y.flatten()))
 
 # E is list of index pair
@@ -18,15 +18,24 @@ b_min = std.b_min
 b_max = std.b_max
 w = b_max - b_min
 N = std.ns[0]
+debug_view = False
+
+ts = time.time()
 
 # first, do some scaling 
 scale = N/w
-V_reshaped = (V - np.repeat(b_min.reshape(1, 2), n_vert, 0)) \
+V_rescaled = (V - np.repeat(b_min.reshape(1, 2), n_vert, 0)) \
         * np.repeat(scale.reshape(1, 2), n_vert, 0)
 
+scale = (N-1)/w # TODO  N-1 ?? 
+pts_scaled = (pts - np.repeat(b_min.reshape(1, 2), N*N, 0)) \
+        * np.repeat(scale.reshape(1, 2), N*N, 0)
+
+# TODO x based index
 P_incrementer = []
+incrementer_map = [[] for i in range(N)]
 for e in E:
-    p, q = V_reshaped[e[0]], V_reshaped[e[1]]
+    p, q = V_rescaled[e[0]], V_rescaled[e[1]]
     if p[1] > q[1]: # p is lower in y axis
         p, q = q, p
     dif = q - p
@@ -39,14 +48,29 @@ for e in E:
     for y in [ymin + i for i in range(ymax - ymin + 1)]: # for(int i=ymin; i<=y_max;  i++)
         x_isc = ceiled_x_intersection(y)
         P_incrementer.append((x_isc, y))
+        incrementer_map[y].append(x_isc)
 
 P_incrementer = np.array(P_incrementer)
 
-fig, ax = plt.subplots()
-ax.scatter(V_reshaped[:, 0], V_reshaped[:, 1], c="red")
-ax.scatter(P_incrementer[:, 0], P_incrementer[:, 1])
+intersection_count = np.zeros((N, N))
+for j in range(N):
+    intersection_count[0][j] = 0
+    for i in [ii+1 for ii in range(N-1)]: # for(int i=1; i<N; i++)
+        intersection_count[i][j] = intersection_count[i-1][j]  
+        if i in incrementer_map[j]:
+            intersection_count[i][j] += 1
 
-ax.set_xticks(np.arange(0, N, 1))
-ax.set_yticks(np.arange(0, N, 1))
-plt.grid()
-plt.show()
+idxes_inside = intersection_count.reshape(N*N) % 2 == 1
+
+if debug_view:
+    fig, ax = plt.subplots()
+    ax.scatter(V_rescaled[:, 0], V_rescaled[:, 1], c="red")
+    ax.scatter(P_incrementer[:, 0], P_incrementer[:, 1])
+    ax.set_xticks(np.arange(0, N, 1)); ax.set_yticks(np.arange(0, N, 1))
+
+    idxes_inside = intersection_count.T.reshape(N*N) % 2 == 1
+    ax.scatter(pts_scaled[idxes_inside, 0], pts_scaled[idxes_inside, 1], c="green", marker="x")
+
+    plt.grid(); plt.show()
+
+print(time.time() - ts)
