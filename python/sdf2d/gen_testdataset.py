@@ -15,7 +15,7 @@ def sdf_combine(X):
     return f2 * logicals + f1 * (~logicals)
 
 class SampleTestData:
-    def __init__(self):
+    def __init__(self, n_interval=10):
         ns = np.array([200, 200])
         b_min = np.array([-1.0, -1.0])
         b_max = np.array([1.0, 1.0])
@@ -35,7 +35,7 @@ class SampleTestData:
             pts_rescaled = b_min_tile + width_tile * pts / (n - 1)
             return pts_rescaled
 
-        c_ = c__[::10]
+        c_ = c__[::n_interval]
         c = rescale_contour(c_, b_min, b_max, ns[0])
 
         self.b_min = b_min
@@ -45,10 +45,13 @@ class SampleTestData:
         self.fs = fs
         self.c = c
 
+    def show(self):
+        fig, ax = plt.subplots()
+        cplt = ax.contourf(self.X, self.Y, self.fs)
+        cbar = fig.colorbar(cplt)
+        ax.scatter(self.c[:, 0], self.c[:, 1])
+        plt.show()
+
 if __name__=='__main__':
     std = SampleTestData()
-    fig, ax = plt.subplots()
-    cplt = ax.contourf(std.X, std.Y, std.fs)
-    cbar = fig.colorbar(cplt)
-    ax.scatter(std.c[:, 0], std.c[:, 1])
-    plt.show()
+    std.show()
