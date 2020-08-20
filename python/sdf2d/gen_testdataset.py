@@ -29,7 +29,7 @@ X, Y = np.meshgrid(xlin, ylin)
 c = ax.contourf(X, Y, fs)
 cbar = fig.colorbar(c)
 
-c_ = measure.find_contours(fs.T, 0.0)[0] # only one closed curve now
+c__ = measure.find_contours(fs.T, 0.0)[0] # only one closed curve now
 def rescale_contour(pts, b_min, b_max, n):
     n_points, n_dim = pts.shape
     width = b_max - b_min
@@ -37,6 +37,8 @@ def rescale_contour(pts, b_min, b_max, n):
     width_tile = np.tile(width, (n_points, 1))
     pts_rescaled = b_min_tile + width_tile * pts / (n - 1)
     return pts_rescaled
+
+c_ = c__[::10]
 c = rescale_contour(c_, b_min, b_max, ns[0])
 
 ax.scatter(c[:, 0], c[:, 1])
