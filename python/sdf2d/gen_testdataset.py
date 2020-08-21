@@ -8,9 +8,15 @@ def sdf_sphere(X, c, r):
     dists = np.sqrt(np.sum((X - C)**2, 1))
     return dists - r
 
-def sdf_combine(X):
+def sdf_snowball(X):
     f1 = sdf_sphere(X, np.array([0, -0.3]), 0.6)
     f2 = sdf_sphere(X, np.array([0, 0.4]), 0.4)
+    logicals = f1 > f2
+    return f2 * logicals + f1 * (~logicals)
+
+def sdf_multiple(X):
+    f1 = sdf_sphere(X, np.array([0.5, 0.5]), 0.3)
+    f2 = sdf_sphere(X, np.array([-0.5, -0.5]), 0.3)
     logicals = f1 > f2
     return f2 * logicals + f1 * (~logicals)
 
@@ -23,10 +29,10 @@ class SampleTestData:
         X, Y = np.meshgrid(xlin, ylin)
 
         pts = np.array(zip(X.flatten(), Y.flatten()))
-        fs_ = sdf_combine(pts)
+        fs_ = sdf_multiple(pts)
         fs = fs_.reshape(ns)
 
-        c__ = measure.find_contours(fs.T, 0.0)[0] # only one closed curve now
+        c_list = measure.find_contours(fs.T, 0.0)
         def rescale_contour(pts, b_min, b_max, n):
             n_points, n_dim = pts.shape
             width = b_max - b_min
@@ -35,15 +41,15 @@ class SampleTestData:
             pts_rescaled = b_min_tile + width_tile * pts / (n - 1)
             return pts_rescaled
 
-        c_ = c__[::n_interval]
-        c = rescale_contour(c_, b_min, b_max, ns[0])
+        process = lambda c: rescale_contour(c[::n_interval], b_min, b_max, ns[0])
+        c_list_processed = map(process, c_list)
 
         self.b_min = b_min
         self.b_max = b_max
         self.X = X
         self.Y = Y
         self.fs = fs
-        self.c = c
+        self.c_list = c_list_processed
         self.ns = ns
 
     def show(self, data=None):
@@ -52,7 +58,8 @@ class SampleTestData:
         fig, ax = plt.subplots()
         cplt = ax.contourf(self.X, self.Y, data)
         cbar = fig.colorbar(cplt)
-        ax.scatter(self.c[:, 0], self.c[:, 1])
+        for c in self.c_list:
+            ax.scatter(c[:, 0], c[:, 1])
         plt.show()
 
 if __name__=='__main__':
