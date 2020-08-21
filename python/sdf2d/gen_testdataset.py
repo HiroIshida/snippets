@@ -43,14 +43,29 @@ class SampleTestData:
             return pts_rescaled
 
         process = lambda c: rescale_contour(c[::n_interval], b_min, b_max, ns[0])
-        c_list_processed = map(process, c_list)
+        V_list = map(process, c_list) # V is list of vertex, V_list is list of V
+
+        def make_edges(V):
+            n_vert = len(V)
+            E = np.array(zip(range(n_vert), np.array(range(n_vert)) + 1))
+            E[n_vert-1][1] = 0 
+            return E
+        E_list = map(make_edges, V_list)
+
+        V = V_list[0]; E = E_list[0]
+        for i in range(len(E_list)-1):
+            E_append = E_list[i+1] + len(V)
+            E = np.vstack((E, E_append))
+            V_append = V_list[i+1]
+            V = np.vstack((V, V_append))
 
         self.b_min = b_min
         self.b_max = b_max
         self.X = X
         self.Y = Y
         self.fs = fs
-        self.c_list = c_list_processed
+        self.V = V
+        self.E = E
         self.ns = ns
 
     def show(self, data=None):
@@ -59,18 +74,18 @@ class SampleTestData:
         fig, ax = plt.subplots()
         cplt = ax.contourf(self.X, self.Y, data)
         cbar = fig.colorbar(cplt)
-        for c in self.c_list:
-            ax.scatter(c[:, 0], c[:, 1])
+        ax.scatter(self.V[:, 0], self.V[:, 1])
         plt.show()
 
     def save(self):
         data = {}
         data["b_min"] = list(self.b_min)
         data["b_max"] = list(self.b_max)
-        data["n"] = list(self.ns)
-        data["contours"] = [[list(e) for e in c] for c in self.c_list]
-        with open("contour_test.json", 'w') as f:
-            json.dump(data, f, indent=2)
+        data["N"] = list(self.ns)
+        data["V"] = [list(vert) for vert in self.V] 
+        data["E"] = [list(edge) for edge in self.E] 
+        with open("test.json", 'w') as f:
+            json.dump(data, f)
 
 if __name__=='__main__':
     std = SampleTestData()

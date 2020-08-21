@@ -12,24 +12,10 @@ b_min = std.b_min
 b_max = std.b_max
 w = b_max - b_min
 N = std.ns[0]
+V = std.V
+E = std.E
 debug_view = True
 
-# E is list of index pair
-V_list = std.c_list
-def make_edges(V):
-    n_vert = len(V)
-    E = np.array(zip(range(n_vert), np.array(range(n_vert)) + 1))
-    E[n_vert-1][1] = 0 
-    return E
-E_list = map(make_edges, V_list)
-
-V = V_list[0]
-E = E_list[0]
-for i in range(len(E_list)-1):
-    E_append = E_list[i+1] + len(V)
-    E = np.vstack((E, E_append))
-    V_append = V_list[i+1]
-    V = np.vstack((V, V_append))
 
 ts = time.time()
 # first, do some scaling 
