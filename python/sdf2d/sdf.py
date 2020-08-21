@@ -5,7 +5,7 @@ from gen_testdataset import SampleTestData
 import time
 from math import *
 
-std = SampleTestData(100, n_interval=3)
+std = SampleTestData(30, n_interval=3)
 pts = np.array(zip(std.X.flatten(), std.Y.flatten()))
 
 b_min = std.b_min
@@ -21,7 +21,7 @@ ts = time.time()
 # first, do some scaling 
 
 n_vert = len(V)
-scale = N/w
+scale = (N-1)/w
 V_rescaled = (V - np.repeat(b_min.reshape(1, 2), n_vert, 0)) \
         * np.repeat(scale.reshape(1, 2), n_vert, 0)
 
