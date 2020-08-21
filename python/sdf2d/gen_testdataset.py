@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt 
 from skimage import measure
+import json
 
 def sdf_sphere(X, c, r):
     n_points = X.shape[0]
@@ -62,6 +63,16 @@ class SampleTestData:
             ax.scatter(c[:, 0], c[:, 1])
         plt.show()
 
+    def save(self):
+        data = {}
+        data["b_min"] = list(self.b_min)
+        data["b_max"] = list(self.b_max)
+        data["n"] = list(self.ns)
+        data["contours"] = [[list(e) for e in c] for c in self.c_list]
+        with open("contour_test.json", 'w') as f:
+            json.dump(data, f, indent=2)
+
 if __name__=='__main__':
     std = SampleTestData()
+    std.save()
     std.show()
