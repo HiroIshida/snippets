@@ -2,6 +2,8 @@ import copy
 import numpy as np 
 import scipy.optimize as opt
 
+# see Nocedal & wright, Numerical Optimization, p 516
+
 def compute_grad(f, x):
     dim = len(x)
     eps = 1e-7
