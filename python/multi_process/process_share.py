@@ -19,13 +19,15 @@ class myClassA(Process):
             if next_task is None:
                 print("break the loop")
                 break
-            ans = next_task ** 2
+            ans = next_task["int"] ** 2
             self._result_queue.put(ans)
 
 q_task = Queue()
 q_result = Queue()
 myClassA(q_task, q_result)
 for i in range(100):
-    q_task.put(i)
+    # cannot send lambda as it's not picklable
+    dick = {"int": i, "arr": np.random.randn(100)} 
+    q_task.put(dick)
     ans = q_result.get()
     print("{0}**2 = {1}".format(i, ans))
