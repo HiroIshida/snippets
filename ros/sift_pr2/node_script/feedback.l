@@ -24,6 +24,7 @@
 (objects *pr2*)
 (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
 (send *ri* :wait-interpolation)
+(unix:sleep 3)
 
 (ros::rate (/ 1.0 0.06))
 (dotimes (i 10000)

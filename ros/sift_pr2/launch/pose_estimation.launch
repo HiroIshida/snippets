@@ -1,11 +1,13 @@
 <launch>
   <rosparam param="/use_sim_time">true</rosparam>
-  <node pkg="rosbag" type="play" name="player" output="screen" args="-l --clock $(find sift_pr2)/preparation/estimation2.bag"/>
+  <node pkg="rosbag" type="play" name="player" output="screen" args="-l --clock $(find sift_pr2)/preparation/estimation3.bag"/>
 
   <node name="image_view"
         pkg="image_view" type="image_view">
     <remap from="image" to="/kinect_head/rgb/fridge_detector/debug_image" />
   </node>
+
+  <node type="rviz" name="rviz" pkg="rviz"/>
 
   <node pkg="sift_pr2" type="dummy_subscriber.py" name="dummy_subscriber" output="screen"/>
   <node pkg="sift_pr2" type="estimator.py" name="pose_estimater" output="screen"/>

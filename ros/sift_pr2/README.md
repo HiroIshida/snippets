@@ -12,5 +12,7 @@ From my laptop: (run realtime feedback)
 ```bsah
 roseus feedback.l
 ```
-
-
+## how to run bag file and testing kalman filter
+```bash
+roslaunch sift_pr2 pose_estimation.launch
+```
