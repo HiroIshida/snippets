@@ -67,6 +67,8 @@ class CMA:
         # learning rate for the rank-one update
         alpha_cov = 2
         c1 = alpha_cov / ((n_dim + 1.3) ** 2 + mu_eff)
+
+        # learning rate for the rank-mu update
         cmu = min(
             1 - c1 - 1e-8,  # 1e-8 is for large popsize.
             alpha_cov
