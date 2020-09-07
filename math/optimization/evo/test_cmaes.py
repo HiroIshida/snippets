@@ -47,7 +47,7 @@ def quadratic(x, y):
 import numpy as np
 from cmaes import CMA
 
-fun = quadratic
+fun = himmelblau
 vis = Visualizer(fun)
 
 if __name__ == "__main__":
@@ -59,7 +59,7 @@ if __name__ == "__main__":
         solutions = []
         for _ in range(optimizer.population_size):
             x = optimizer.ask()
-            x_seq.append(x)
+            x_seq.append(optimizer._mean)
             if len(x_seq)%10==1:
                 vis(x_seq)
             print(optimizer._C)
