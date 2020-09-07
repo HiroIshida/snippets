@@ -1,22 +1,15 @@
+import matplotlib.pyplot  as plt
 import numpy as np
 import math
 import sys
-from typing import Any
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Tuple
 
 class CMA:
     """CMA-ES stochastic optimizer class with ask-and-tell interface.
 
     Example:
-
         .. code::
-
            import numpy as np
            from cmaes import CMA
-
 
     Args:
 
@@ -43,19 +36,18 @@ class CMA:
 
     def __init__(
         self,
-        mean: np.ndarray,
-        sigma: float,
-        bounds: Optional[np.ndarray] = None,
-        n_max_resampling: int = 100,
-        seed: Optional[int] = None,
-        population_size: Optional[int] = None,
-    ):
+        mean, 
+        sigma,
+        bounds=None,
+        n_max_resampling = 100,
+        seed = None,
+        population_size = None):
 
         n_dim = len(mean)
         assert n_dim > 1, "The dimension of mean must be larger than 1"
 
         if population_size is None:
-            population_size = 4 + math.floor(3 * math.log(n_dim))  # (eq. 48)
+            population_size = 4 + int(math.floor(3 * math.log(n_dim)))  # (eq. 48)
         assert population_size > 0, "popsize must be non-zero positive value."
 
         mu = population_size // 2
@@ -75,7 +67,6 @@ class CMA:
         # learning rate for the rank-one update
         alpha_cov = 2
         c1 = alpha_cov / ((n_dim + 1.3) ** 2 + mu_eff)
-        # learning rate for the rank-μ update
         cmu = min(
             1 - c1 - 1e-8,  # 1e-8 is for large popsize.
             alpha_cov
@@ -85,7 +76,7 @@ class CMA:
         cmu = 0.0
         print("cmu is set to 0")
         assert c1 <= 1 - cmu, "invalid learning rate for the rank-one update"
-        assert cmu <= 1 - c1, "invalid learning rate for the rank-μ update"
+        assert cmu <= 1 - c1, "invalid learning rate for the rank-mu update"
 
         min_alpha = min(
             1 + c1 / cmu,  # eq.50
@@ -140,8 +131,8 @@ class CMA:
         self._mean = mean
         self._C = np.eye(n_dim)
         self._sigma = sigma
-        self._D: Optional[np.ndarray] = None
-        self._B: Optional[np.ndarray] = None
+        self._D = None
+        self._B = None
 
         # bounds contains low and high of each parameter.
         assert (
@@ -159,13 +150,13 @@ class CMA:
         self._tolfun = 1e-12
         self._tolconditioncov = 1e14
 
-        self._funhist_term = 10 + math.ceil(30 * n_dim / population_size)
+        self._funhist_term = 10 + int(math.ceil(30 * n_dim / population_size))
         self._funhist_values = np.empty(self._funhist_term * 2)
 
         # for avoid numerical errors
         self._epsilon = 1e-8
 
-    def __getstate__(self) -> Dict[str, Any]:
+    def __getstate__(self):
         attrs = {}
         for name in self.__dict__:
             # Remove _rng in pickle serialized object.
@@ -178,7 +169,7 @@ class CMA:
             attrs[name] = getattr(self, name)
         return attrs
 
-    def __setstate__(self, state: Dict[str, Any]) -> None:
+    def __setstate__(self, state):
         state["_C"] = _decompress_symmetric(state["_c_1d"])
         del state["_c_1d"]
         self.__dict__.update(state)
@@ -186,29 +177,29 @@ class CMA:
         setattr(self, "_rng", np.random.RandomState())
 
     @property
-    def dim(self) -> int:
+    def dim(self):
         """A number of dimensions"""
         return self._n_dim
 
     @property
-    def population_size(self) -> int:
+    def population_size(self):
         """A population size"""
         return self._popsize
 
     @property
-    def generation(self) -> int:
+    def generation(self):
         """Generation number which is monotonically incremented
         when multi-variate gaussian distribution is updated."""
         return self._g
 
-    def set_bounds(self, bounds: Optional[np.ndarray]) -> None:
+    def set_bounds(self, bounds):
         """Update boundary constraints"""
         assert (
             bounds is None or (self._mean.size, 2) == bounds.shape
         ), "bounds should be (n_dim, 2)-dim matrix"
         self._bounds = bounds
 
-    def ask(self) -> np.ndarray:
+    def ask(self):
         """Sample a parameter"""
         for i in range(self._n_max_resampling):
             x = self._sample_solution()
@@ -218,7 +209,7 @@ class CMA:
         x = self._repair_infeasible_params(x)
         return x
 
-    def _eigen_decomposition(self) -> Tuple[np.ndarray, np.ndarray]:
+    def _eigen_decomposition(self):
         if self._B is not None and self._D is not None:
             return self._B, self._D
 
@@ -230,21 +221,21 @@ class CMA:
         self._B, self._D = B, D
         return B, D
 
-    def _sample_solution(self) -> np.ndarray:
+    def _sample_solution(self):
         B, D = self._eigen_decomposition()
         z = self._rng.randn(self._n_dim)  # ~ N(0, I)
         y = B.dot(np.diag(D)).dot(z)  # ~ N(0, C)
-        x = self._mean + self._sigma * y  # ~ N(m, σ^2 C)
+        x = self._mean + self._sigma * y  # ~ N(m, sigma^2 C)
         return x
 
-    def _is_feasible(self, param: np.ndarray) -> bool:
+    def _is_feasible(self, param):
         if self._bounds is None:
             return True
         return np.all(param >= self._bounds[:, 0]) and np.all(
             param <= self._bounds[:, 1]
         )
 
-    def _repair_infeasible_params(self, param: np.ndarray) -> np.ndarray:
+    def _repair_infeasible_params(self, param):
         if self._bounds is None:
             return param
 
@@ -253,7 +244,7 @@ class CMA:
         param = np.where(param > self._bounds[:, 1], self._bounds[:, 1], param)
         return param
 
-    def tell(self, solutions: List[Tuple[np.ndarray, float]]) -> None:
+    def tell(self, solutions):
         """Tell evaluation values"""
         if len(solutions) != self._popsize:
             raise ValueError("Must tell popsize-length solutions.")
@@ -271,7 +262,7 @@ class CMA:
         B, D = self._eigen_decomposition()
         self._B, self._D = None, None
 
-        x_k = np.array([s[0] for s in solutions])  # ~ N(m, σ^2 C)
+        x_k = np.array([s[0] for s in solutions])  # ~ N(m, sigma^2 C)
         y_k = (x_k - self._mean) / self._sigma  # ~ N(0, C)
 
         # Selection and recombination
@@ -329,7 +320,7 @@ class CMA:
             + self._cmu * rank_mu
         )
 
-    def should_stop(self) -> bool:
+    def should_stop(self):
         B, D = self._eigen_decomposition()
         dC = np.diag(self._C)
 
@@ -372,7 +363,7 @@ class CMA:
         return False
 
 
-def _compress_symmetric(sym2d: np.ndarray) -> np.ndarray:
+def _compress_symmetric(sym2d):
     assert len(sym2d.shape) == 2 and sym2d.shape[0] == sym2d.shape[1]
     n = sym2d.shape[0]
     dim = (n * (n + 1)) // 2
@@ -384,7 +375,7 @@ def _compress_symmetric(sym2d: np.ndarray) -> np.ndarray:
     return sym1d
 
 
-def _decompress_symmetric(sym1d: np.ndarray) -> np.ndarray:
+def _decompress_symmetric(sym1d):
     n = int(np.sqrt(sym1d.size * 2))
     assert (n * (n + 1)) // 2 == sym1d.size
     R, C = np.triu_indices(n)
@@ -393,20 +384,57 @@ def _decompress_symmetric(sym1d: np.ndarray) -> np.ndarray:
     out[C, R] = sym1d
     return out
 
+class Visualizer:
+    def __init__(self, f):
+        N = 200
+        xlin = np.linspace(-6.0, 6.0, N)
+        ylin = np.linspace(-6.0, 6.0, N)
+        X, Y = np.meshgrid(xlin, ylin)
+
+        self.N = N
+        self.X = X
+        self.Y = Y
+        self.pts = np.array(list(zip(X.flatten(), Y.flatten())))
+        self.f = f
+
+    def __call__(self, x_seq=None):
+        fs = self.f(self.pts[:, 0], self.pts[:, 1])
+        Z = fs.reshape((self.N, self.N))
+        fig, ax = plt.subplots()
+        ax.contourf(self.X, self.Y, Z, levels=[0, 10, 30, 50, 70, 90, 200, 300, 400, 600])
+
+        if x_seq is not None:
+            for i in range(len(x_seq) - 1):
+                x0 = x_seq[i]
+                x1 = x_seq[i+1]
+                ax.plot([x0[0], x1[0]], [x0[1], x1[1]], 'ro')
+
+        plt.show()
+
 if __name__=='__main__':
-   def quadratic(x1, x2):
-       return (x1 - 3) ** 2 + (10 * (x2 + 2)) ** 2
+    def himmelblau(x, y):
+        return (x**2 + y - 11)**2 + (x + y**2 - 7)**2
 
-   optimizer = CMA(mean=np.zeros(2), sigma=1.3)
+    def quadratic(x, y):
+        return (x - 5.0)**2 + (y - 5.0)**2
 
-   for generation in range(50):
-       solutions = []
-       for _ in range(optimizer.population_size):
-           # Ask a parameter
-           x = optimizer.ask()
-           value = quadratic(x[0], x[1])
-           solutions.append((x, value))
-           print(f"#{generation} {value} (x1={x[0]}, x2 = {x[1]})")
 
-       # Tell evaluation values.
-       optimizer.tell(solutions)
+    fun = quadratic
+    vis = Visualizer(fun)
+    optimizer = CMA(mean=np.zeros(2), sigma=1.3)
+
+    x_seq = []
+
+    for generation in range(50):
+        solutions = []
+        for _ in range(optimizer.population_size):
+            x = optimizer.ask()
+            x_seq.append(optimizer._mean)
+            if len(x_seq)%5==1:
+                vis(x_seq)
+            print(optimizer._C)
+            value = fun(x[0], x[1])
+            solutions.append((x, value))
+            print(x)
+        optimizer.tell(solutions)
+
