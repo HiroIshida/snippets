@@ -1,7 +1,8 @@
-# Natural Evolution Strategy (2008)
+# Natural Evolution Strategy, IJML (2014) algorithm 5
 
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.linalg import sqrtm
 
 def create_fax_unless_specifeid(fax):
     if fax is None:
@@ -30,6 +31,50 @@ class Rosen:
         fig, ax = create_fax_unless_specifeid(fax)
         ax.contourf(X, Y, Z, levels=[2**n for n in range(17)])
 
+class NaturalEvolution:
+    def __init__(self, x_init):
+        self.x_mean = x_init
+        self.cov = np.diag((1, 1)) 
+        self.A = np.linalg.cholesky(self.cov).T
+        self.lam = 10
+        self.n_dim = len(x_init)
+
+    def step(self, fun):
+        cov_inv = np.linalg.inv(self.cov)
+
+        x_rands = np.random.multivariate_normal(self.x_mean, self.cov, self.lam)
+        costs = fun(x_rands)
+
+        diffs = [(x_rand - self.x_mean).reshape(1, self.n_dim) for x_rand in x_rands]
+        nabla_x_lst = [diff.dot(cov_inv) for diff in diffs]
+        nabla_cov_lst = [0.5 * cov_inv.dot(np.outer(diff, diff)).dot(cov_inv) - 0.5 * cov_inv \
+                for diff in diffs]
+
+        nabla_A_lst = [self.A.dot(nabla_cov + nabla_cov.T).reshape((1, self.n_dim**2)) for nabla_cov in nabla_cov_lst]
+        print(nabla_A_lst)
+
+        # making a big Phi matrix
+        left = np.vstack(diffs)
+        middle = np.vstack(nabla_A_lst)
+        right = np.ones((self.lam, 1))
+        Phi = np.hstack((left, middle, right))
+        print(np.linalg.matrix_rank(Phi))
+
+        Phi_psudo_inv = np.linalg.inv(Phi.T.dot(Phi)).dot(Phi.T)
+        #R = costs.reshape((self.lam, 1))
+
+#        d_theta = Phi_psudo_inv.dot(R)
+
+
+
+
+        
+
+
+
+
 fun = Rosen()
-fun.show()
-plt.show()
+nes = NaturalEvolution(np.ones(2))
+nes.step(fun)
+#fun.show()
+#plt.show()
