@@ -21,13 +21,14 @@ def compute(theta):
     L_inv = np.linalg.inv(L)
     cov_inv = L_inv.T.dot(L_inv)
 
-    I_tril = np.zeros((dim, dim)) # lower triangle of fisher info mat
-    for (i, j) in generate_pair(dim):
+    dim_param = len(theta)
+    I_tril = np.zeros((dim_param, dim_param)) # lower triangle of fisher info mat
+    for (i, j) in generate_pair(dim_param):
         def cov_partderiv(idx):
-            L_copied = copy(L)
+            L_deriv = np.zeros((dim, dim))
             i_, j_ = pair_lst[idx]
-            L_copied[i_, j_] = 1.0
-            cov_deriv = L_copied.dot(L.T) + L.dot(L_copied.T)
+            L_deriv[i_, j_] = 1.0
+            cov_deriv = L_deriv.dot(L.T) + L.dot(L_deriv.T)
             return cov_deriv
 
         cov_deriv_i, cov_deriv_j  = cov_partderiv(i), cov_partderiv(j)
@@ -81,4 +82,5 @@ def compute_mc(theta):
     I_mc = sum(rank1_mat_lst) * (1.0/N_mc)
     print(I_mc)
 
+compute([1, 0.5, 1])
 compute_mc([1, 0.5, 1])
