@@ -37,7 +37,7 @@ def frobenius_metric(param_dim):
 
     M = np.eye(param_dim)
     for i in range(param_dim):
-        M[i, i] = np.sqrt(2)
+        M[i, i] = 2.0
     for i in range(mat_dim):
         M[i, i] = 1.0
     return M
