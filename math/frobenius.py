@@ -1,5 +1,7 @@
+from math import *
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.patches import Ellipse
 """
 test how the frobenius norm works between symmetric matrices
 """
@@ -30,9 +32,47 @@ def frobenius_norm(param):
     norm = np.sqrt(diag_norm + nondiag_norm)
     return norm
 
-import time 
-param = np.array([1, 1.0, 0.5])
-norm = frobenius_norm(param)
+def frobenius_metric(param_dim):
+    mat_dim = int((-1 + np.sqrt(1 + 8*param_dim)) * 0.5)
 
-V, E = np.linalg.eig([[1, 0.5], [0.5, 1.0]])
-print(norm)
+    M = np.eye(param_dim)
+    for i in range(param_dim):
+        M[i, i] = np.sqrt(2)
+    for i in range(mat_dim):
+        M[i, i] = 1.0
+    return M
+
+def plot_ellipse(param, ax, color="blue", alpha=0.1):
+
+    def symmetrize(A):
+        return A + A.T - np.diag(A.diagonal())
+
+    dim_mat = calculate_dim(param)
+    M_tmp = np.eye(2)
+    for ((i, j), val) in zip(generate_pair(dim_mat), param):
+        M_tmp[i, j] = val
+    M = symmetrize(M_tmp)
+    E, V = np.linalg.eig(M)
+
+    v_principle = V[:, 0]
+    angle = atan2(v_principle[1], v_principle[0]) * 180 /pi
+
+    e = Ellipse((0, 0), E[0], E[1], angle, color=color, fill=False)
+    e.set_alpha(alpha)
+    e.set_clip_box(ax.bbox)
+    ax.add_artist(e)
+
+import time 
+param_center = np.array([1, 1.0, 0.5])
+
+M = frobenius_metric(3)
+params_rand = np.random.multivariate_normal(param_center, np.linalg.inv(M) * 0.05, 1000)
+
+fig, ax = plt.subplots(subplot_kw={'aspect': 'equal'})
+b = 1.5
+ax.set_xlim([-b, b])
+ax.set_ylim([-b, b])
+for param in params_rand:
+    plot_ellipse(param, ax)
+plot_ellipse(param_center, ax, color="red", alpha=1.0)
+plt.show()
