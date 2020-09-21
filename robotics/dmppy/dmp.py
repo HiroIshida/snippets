@@ -17,34 +17,19 @@ class DMP(object):
         dmp.w = dmp._imitate(X, tau, n_features)
         return dmp
 
-    def phase(self, n_steps, t=None):
+    def phase(self, n_steps):
         phases = np.exp(-self.alpha_t * np.linspace(0, 1, n_steps))
-        if t is None:
-            return phases
-        else:
-            return phases[t]
+        return phases
 
     def spring_damper(self, x0, g, tau, s, X, Xd):
         return self.alpha * (self.beta * (g - X) - tau * Xd) / tau ** 2
 
-    def forcing_term(self, x0, g, tau, w, s, X, scale=False):
+    def forcing_term(self, x0, g, tau, w, s, X):
         n_features = w.shape[1]
         f = np.dot(w, self._features(tau, n_features, s))
-        if scale:
-            f *= g - x0
-
-        if X.ndim == 3:
-            F = np.empty_like(X)
-            F[:, :] = f
-            return F
-        else:
-            return f
+        return f
 
     def _features(self, tau, n_features, s):
-        if n_features == 0:
-            return np.array([])
-        elif n_features == 1:
-            return np.array([1.0])
         c = self.phase(n_features)
         h = np.diff(c)
         h = np.hstack((h, [h[-1]]))
@@ -117,12 +102,12 @@ class DMP(object):
 t_seq = np.linspace(0, 1.0, 100)
 x_seq = np.vstack((np.sin(t_seq), np.cos(t_seq))).T
 tau = 1.0
-dmp = DMP.imitate(x_seq, 1.0, 20)
+dmp = DMP.imitate(x_seq, 1.0, 5)
 X, _, _ = dmp.trajectory(np.zeros(2), 1.0, 1e-2)
 
 import matplotlib.pyplot as plt
 plt.plot(X[:, 0], "ro")
 plt.plot(X[:, 1], "ro")
-
+plt.show()
 
 
