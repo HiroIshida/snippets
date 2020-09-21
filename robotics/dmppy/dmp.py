@@ -1,12 +1,19 @@
 import numpy as np
 
 class DMP(object):
-    def __init__(self):
+    def __init__(self, w=None):
         # Transformation system
         self.alpha = 25.0             # = D = 20.0
         self.beta = self.alpha / 4.0  # = K / D = 100.0 / 20.0 = 5.0
         # Canonical system
         self.alpha_t = self.alpha / 3.0
+        self.w = w
+
+    @classmethod
+    def imitate(cls, X, tau, n_features):
+        dmp = DMP()
+        dmp.w = dmp._imitate(X, tau, n_features)
+        return dmp
 
     def phase(self, n_steps, t=None):
         phases = np.exp(-self.alpha_t * np.linspace(0, 1, n_steps))
@@ -42,14 +49,13 @@ class DMP(object):
         phi = np.exp(-h * (s - c) ** 2)
         return s * phi / phi.sum()
 
-    def imitate(self, X, tau, n_features):
+    def _imitate(self, X, tau, n_features):
         n_steps, n_dims = X.shape
         dt = tau / float(n_steps - 1)
         g = X[:, -1]
 
         Xd = np.vstack((np.zeros((1, n_dims)), np.diff(X, axis=0) / dt))
         Xdd = np.vstack((np.zeros((1, n_dims)), np.diff(Xd, axis=0) / dt))
-        print Xdd
 
         F = tau * tau * Xdd - self.alpha * (self.beta * (g[:, np.newaxis] - X)
                                             - tau * Xd)
@@ -67,8 +73,7 @@ class DMP(object):
 t_seq = np.linspace(0, 1.0, 100)
 x_seq = np.vstack((np.sin(t_seq), np.cos(t_seq))).T
 tau = 1.0
-dmp = DMP()
-w = dmp.imitate(x_seq, 1.0, 5)
+dmp = DMP.imitate(x_seq, 1.0, 5)
 
 
 """
