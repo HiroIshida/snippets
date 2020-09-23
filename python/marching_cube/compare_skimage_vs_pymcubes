@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from mpl_toolkits.mplot3d import Axes3D
 from skimage import measure
+import mcubes
 
 N = 20
 w = 1.2
@@ -15,7 +16,13 @@ def func(X):
 
 F = func(pts).reshape(N, N, N)
 
+import time
+ts = time.time()
 verts, faces = measure.marching_cubes(F, 0.0)
+print(time.time() - ts)
+ts = time.time()
+verts, faces = mcubes.marching_cubes(F, 0)
+print(time.time() - ts)
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
