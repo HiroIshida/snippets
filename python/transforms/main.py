@@ -40,7 +40,8 @@ if (sarg <= -0.99999) {
 """
 
 def myrpy(q):
-    x, y, z, w = q
+    w, x, y, z = q
+    #x, y, z, w = q
     xx = x * x
     yy = y * y
     zz = z * z
@@ -118,19 +119,19 @@ def jac_rpy_qut_numerical_tfs(q):
         J[:, i] = hoge
     return J
 
-def convert_wxyz2xyzw(q):
-    q_ = copy.copy(q)
-    q_[0] = q[1]
-    q_[1] = q[2]
-    q_[2] = q[3]
-    q_[3] = q[0]
-    return q_
-
 if __name__=='__main__':
-    quat = tfs.quaternion_from_euler(0.19, 0.28, 0.38)
-    quat_xyzw = convert_wxyz2xyzw(quat)
-    print(myrpy(quat_xyzw))
 
+    def compare(quat2rpy):
+        eps = 1e-8
+        quat = tfs.quaternion_from_euler(0.19, 0.28, 0.38)
+        rpy0 = quat2rpy(quat)
+        print("rpy: {0}".format(rpy0))
+        quat[0]+=eps
+        rpy1 = quat2rpy(quat)
+        print("rpy: {0}".format(rpy1))
+
+    compare(tfs.euler_from_quaternion)
+    compare(myrpy)
 
     #print(jac_rpy_qut_numerical_tfs(quat))
     #jac_rpy_qut_numerical_mine(quat)
