@@ -6,7 +6,7 @@ class DMP(object):
         self.alpha = 25.0             # = D = 20.0
         self.beta = self.alpha / 4.0  # = K / D = 100.0 / 20.0 = 5.0
         # Canonical system
-        self.alpha_t = self.alpha / 3.0
+        self.alpha_t = 2
         self.w = w
         self.g = g
 
@@ -52,9 +52,10 @@ class DMP(object):
                            for s in self.phase(n_steps)])
         #w = np.linalg.lstsq(design, F)[0].T
         from sklearn.linear_model import Ridge
-        lr = Ridge(alpha=1.0, fit_intercept=False)
+        lr = Ridge(alpha=1.01, fit_intercept=False)
         lr.fit(design, F)
         w = lr.coef_
+        print(w)
 
         return w
 
@@ -68,9 +69,11 @@ class DMP(object):
 
         # Internally, we do Euler integration usually with a much smaller step size
         # than the step size required by the system
-        internal_dt = min(0.001, dt)
+        internal_dt = dt
         n_internal_steps = int(tau / internal_dt)
         steps_between_measurement = int(dt / internal_dt)
+        t_seq = [0]
+                
 
         # Usually we would initialize t with 0, but that results in floating point
         # errors for very small step sizes. To ensure that the condition t < tau
@@ -81,6 +84,7 @@ class DMP(object):
         S = self.phase(n_internal_steps + 1)
         while t < tau:
             t += internal_dt
+            t_seq.append(t)
             ti += 1
             s = S[ti]
 
@@ -91,23 +95,24 @@ class DMP(object):
             f = self.forcing_term(x0, self.g, tau, self.w, s, x) 
             xdd = sd + f 
 
-            if ti % steps_between_measurement == 0:
-                X.append(x.copy())
-                Xd.append(xd.copy())
-                Xdd.append(xdd.copy())
+            X.append(x.copy())
+            Xd.append(xd.copy())
+            Xdd.append(xdd.copy())
 
-        return np.array(X), np.array(Xd), np.array(Xdd)
+        return np.array(X), np.array(t_seq)
 
 
-t_seq = np.linspace(0, 1.0, 100)
-x_seq = np.vstack((np.sin(t_seq), np.cos(t_seq))).T
+print("This implementation doesn't work (under construction)")
+t_end = 2.0
+t_seq = np.linspace(0, t_end, 100)
+x_seq = np.vstack((np.cos(t_seq), np.sin(t_seq))).T
 tau = 1.0
-dmp = DMP.imitate(x_seq, 1.0, 5)
-X, _, _ = dmp.trajectory(np.zeros(2), 1.0, 1e-2)
+dmp = DMP.imitate(x_seq, t_end, 1000)
+X, T = dmp.trajectory(np.zeros(2), t_end, 1e-2)
 
 import matplotlib.pyplot as plt
-plt.plot(X[:, 0], "ro")
-plt.plot(X[:, 1], "ro")
+plt.plot(T, X[:, 0], "ro")
+plt.plot(t_seq, x_seq[:, 0], "bo")
 plt.show()
 
 
