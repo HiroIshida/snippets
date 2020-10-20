@@ -15,9 +15,15 @@ class Rosen:
             pts = np.array([pts])
         a = 2.0
         b = 100.0
+
+        angle = 0.8
+        c = np.cos(angle); s = np.sin(angle)
+        mat = np.array([[c, s],[-s, c]])
+        pts = pts.dot(mat)
+
         X, Y = pts[:, 0], pts[:, 1]
-        f = (a - X) ** 2 + b * (Y - X**2)**2
-        f = X ** 2 + Y ** 2
+        #f = (a - X) ** 2 + b * (Y - X**2)**2
+        f = X ** 2 * np.cos(angle)**2 + Y ** 2 * np.sin(angle)**2  * 0.4
         return f
 
     def show(self, fax=None):
@@ -38,13 +44,14 @@ class Optimizer(object):
         self.n = len(x_init)
         self.sigma = sigma
         self.fun = fun
-        self.N_mc = 100
+        self.N_mc = 20
 
         # see hansen, ., auger 2015 evolution strategies Algorithm 4
         self.mu = int(self.N_mc * 0.25)
-        self.d = 3 * self.n
+        self.di = 3 * self.n
+        self.d = 1 + np.sqrt(self.mu / self.n)
         self.s = np.zeros(self.n)
-        self.c_sigma = np.sqrt(self.mu / ((self.n + self.mu) * 1.0)) * 1
+        self.c_sigma = np.sqrt(self.mu / ((self.n + self.mu) * 1.0)) * 1.0
 
     def step(self):
         rands = np.random.randn(self.N_mc, self.n) # z
@@ -56,13 +63,13 @@ class Optimizer(object):
 
         coef =  np.sqrt(self.c_sigma * (2 - self.c_sigma)) * np.sqrt(self.mu)/self.mu
         self.s = (1 - self.c_sigma) * self.s + coef * sum(rands[idxes_elite])
-        self.sigma = self.sigma * np.exp(np.abs(self.s) / 1.0 - 1)**(1.0/self.d) \
+        self.sigma = self.sigma * np.exp(np.abs(self.s) / 1.0 - 1)**(1.0/self.di) \
                 * np.exp(np.linalg.norm(self.s)/np.sqrt(self.n) - 1.0)**(self.c_sigma/self.d)
 
 
 
 func = Rosen()
-opt = Optimizer(np.array([5.0, 5.0]), func)
+opt = Optimizer(np.array([0.0, 8.0]), func)
 path = [opt.x]
 for i in range(30):
     opt.step()
