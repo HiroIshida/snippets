@@ -1,4 +1,3 @@
-# https://gpytorch.readthedocs.io/en/latest/examples/04_Variational_and_Approximate_GPs/Non_Gaussian_Likelihoods.html?highlight=classif
 import torch
 import gpytorch
 from matplotlib import pyplot as plt
@@ -17,14 +16,21 @@ class GPClassificationModel(ApproximateGP):
         super(GPClassificationModel, self).__init__(variational_strategy)
         self.mean_module = gpytorch.means.ConstantMean()
         kern = gpytorch.kernels.RBFKernel(ard_num_dims=2)
-        kern.lengthscale = torch.tensor([0.5, 0.5])
+        kern.lengthscale = torch.tensor([0.5, 0.1])
         self.covar_module = gpytorch.kernels.ScaleKernel(kern)
         self.likelihood = gpytorch.likelihoods.BernoulliLikelihood()
 
         self.train()
         self.likelihood.train()
 
-        optimizer = torch.optim.Adam(self.parameters(), lr=0.1)
+        def custom_auto_tune_params():
+            """ this is how we can remove certain params from optimization """
+            for param in self.named_parameters():
+                name = param[0]
+                if name != "covar_module.base_kernel.raw_lengthscale":
+                    yield param[1]
+
+        optimizer = torch.optim.Adam(custom_auto_tune_params(), lr=0.1)
 
         mll = gpytorch.mlls.VariationalELBO(self.likelihood, self, train_y.numel())
 
@@ -33,7 +39,6 @@ class GPClassificationModel(ApproximateGP):
             output = self.__call__(train_x)
             loss = -mll(output, train_y)
             loss.backward()
-            print(loss)
             optimizer.step()
 
         self.eval()
