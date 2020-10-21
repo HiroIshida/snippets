@@ -5,15 +5,12 @@ import gpytorch
 from matplotlib import pyplot as plt
 from matplotlib import cm
 
-train_x = torch.tensor([[0.5, 0.2], [0.6, 0.5], [0.5, 0.9], [0.4, 0.5], [0.3, 0.9]])
-train_y = torch.tensor([0, 1, 0, 1, 0])
-
 from gpytorch.models import ApproximateGP
 from gpytorch.variational import CholeskyVariationalDistribution
 from gpytorch.variational import UnwhitenedVariationalStrategy
 
 class GPClassificationModel(ApproximateGP):
-    def __init__(self, train_x):
+    def __init__(self, train_x, train_y):
         variational_distribution = CholeskyVariationalDistribution(train_x.size(0))
         variational_strategy = UnwhitenedVariationalStrategy(
             self, train_x, variational_distribution, learn_inducing_locations=False
@@ -23,6 +20,31 @@ class GPClassificationModel(ApproximateGP):
         kern = gpytorch.kernels.RBFKernel(ard_num_dims=2)
         kern.lengthscale = torch.tensor([0.5, 0.5])
         self.covar_module = gpytorch.kernels.ScaleKernel(kern)
+        self.likelihood = gpytorch.likelihoods.BernoulliLikelihood()
+
+        self.train()
+        self.likelihood.train()
+
+        optimizer = torch.optim.Adam(self.parameters(), lr=0.1)
+
+        # "Loss" for GPs - the marginal log likelihood
+        # num_data refers to the number of training datapoints
+        mll = gpytorch.mlls.VariationalELBO(self.likelihood, self, train_y.numel())
+
+        for i in range(30):
+            # Zero backpropped gradients from previous iteration
+            optimizer.zero_grad()
+            # Get predictive output
+            output = self.__call__(train_x)
+            # Calc loss and backprop gradients
+            loss = -mll(output, train_y)
+            loss.backward()
+            print(loss)
+            optimizer.step()
+
+        # Go into eval mode
+        self.eval()
+        self.likelihood.eval()
 
     def forward(self, x):
         mean_x = self.mean_module(x)
@@ -30,48 +52,23 @@ class GPClassificationModel(ApproximateGP):
         latent_pred = gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
         return latent_pred
 
-# Initialize model and likelihood
-model = GPClassificationModel(train_x)
-likelihood = gpytorch.likelihoods.BernoulliLikelihood()
+if __name__=='__main__':
+    # Initialize model and likelihood
+    train_x = torch.tensor([[0.5, 0.2], [0.6, 0.5], [0.5, 0.9], [0.4, 0.5], [0.3, 0.9]])
+    train_y = torch.tensor([0, 1, 0, 1, 0])
 
-# this is for running the notebook in our testing framework
-import os
+    model = GPClassificationModel(train_x, train_y)
 
-# Find optimal model hyperparameters
-model.train()
-likelihood.train()
+    fig, ax = plt.subplots(1, 1, figsize=(14, 10))
+    N = 100
+    import numpy as np
+    xlin = ylin = np.linspace(0, 1, N)
+    X, Y = np.meshgrid(xlin, ylin)
+    pts = torch.tensor([[x,y] for x, y in list(zip(X.flatten(), Y.flatten()))]).float()
 
-# Use the adam optimizer
-optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
-
-# "Loss" for GPs - the marginal log likelihood
-# num_data refers to the number of training datapoints
-mll = gpytorch.mlls.VariationalELBO(likelihood, model, train_y.numel())
-
-for i in range(30):
-    # Zero backpropped gradients from previous iteration
-    optimizer.zero_grad()
-    # Get predictive output
-    output = model(train_x)
-    # Calc loss and backprop gradients
-    loss = -mll(output, train_y)
-    loss.backward()
-    optimizer.step()
-
-# Go into eval mode
-model.eval()
-likelihood.eval()
-
-fig, ax = plt.subplots(1, 1, figsize=(14, 10))
-N = 100
-import numpy as np
-xlin = ylin = np.linspace(0, 1, N)
-X, Y = np.meshgrid(xlin, ylin)
-pts = torch.tensor([[x,y] for x, y in list(zip(X.flatten(), Y.flatten()))]).float()
-
-# Make predictions
-with torch.no_grad(), gpytorch.settings.fast_computations(log_prob=False, covar_root_decomposition=False):
-    predictions = likelihood(model(pts))
-    mean = predictions.mean.detach().numpy()
-ax.contourf(X, Y, mean.reshape((N, N)))
-plt.show()
+    # Make predictions
+    with torch.no_grad(), gpytorch.settings.fast_computations(log_prob=False, covar_root_decomposition=False):
+        predictions = model.likelihood(model(pts))
+        mean = predictions.mean.detach().numpy()
+    ax.contourf(X, Y, mean.reshape((N, N)))
+    plt.show()
