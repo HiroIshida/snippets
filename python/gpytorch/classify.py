@@ -1,5 +1,4 @@
 # https://gpytorch.readthedocs.io/en/latest/examples/04_Variational_and_Approximate_GPs/Non_Gaussian_Likelihoods.html?highlight=classif
-import math
 import torch
 import gpytorch
 from matplotlib import pyplot as plt
@@ -27,22 +26,16 @@ class GPClassificationModel(ApproximateGP):
 
         optimizer = torch.optim.Adam(self.parameters(), lr=0.1)
 
-        # "Loss" for GPs - the marginal log likelihood
-        # num_data refers to the number of training datapoints
         mll = gpytorch.mlls.VariationalELBO(self.likelihood, self, train_y.numel())
 
         for i in range(30):
-            # Zero backpropped gradients from previous iteration
             optimizer.zero_grad()
-            # Get predictive output
             output = self.__call__(train_x)
-            # Calc loss and backprop gradients
             loss = -mll(output, train_y)
             loss.backward()
             print(loss)
             optimizer.step()
 
-        # Go into eval mode
         self.eval()
         self.likelihood.eval()
 
@@ -66,7 +59,6 @@ if __name__=='__main__':
     X, Y = np.meshgrid(xlin, ylin)
     pts = torch.tensor([[x,y] for x, y in list(zip(X.flatten(), Y.flatten()))]).float()
 
-    # Make predictions
     with torch.no_grad(), gpytorch.settings.fast_computations(log_prob=False, covar_root_decomposition=False):
         predictions = model.likelihood(model(pts))
         mean = predictions.mean.detach().numpy()
