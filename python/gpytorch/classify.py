@@ -1,28 +1,48 @@
-# https://gpytorch.readthedocs.io/en/latest/examples/04_Variational_and_Approximate_GPs/Non_Gaussian_Likelihoods.html?highlight=classif
-import math
 import torch
 import gpytorch
 from matplotlib import pyplot as plt
 from matplotlib import cm
-
-train_x = torch.tensor([[0.5, 0.2], [0.6, 0.5], [0.5, 0.9], [0.4, 0.5], [0.3, 0.9]])
-train_y = torch.tensor([0, 1, 0, 1, 0])
 
 from gpytorch.models import ApproximateGP
 from gpytorch.variational import CholeskyVariationalDistribution
 from gpytorch.variational import UnwhitenedVariationalStrategy
 
 class GPClassificationModel(ApproximateGP):
-    def __init__(self, train_x):
+    def __init__(self, train_x, train_y):
         variational_distribution = CholeskyVariationalDistribution(train_x.size(0))
         variational_strategy = UnwhitenedVariationalStrategy(
             self, train_x, variational_distribution, learn_inducing_locations=False
         )
         super(GPClassificationModel, self).__init__(variational_strategy)
         self.mean_module = gpytorch.means.ConstantMean()
-        kern = gpytorch.kernels.RBFKernel()
-        kern.lengthscale = 0.2
+        kern = gpytorch.kernels.RBFKernel(ard_num_dims=2)
+        kern.lengthscale = torch.tensor([0.5, 0.1])
         self.covar_module = gpytorch.kernels.ScaleKernel(kern)
+        self.likelihood = gpytorch.likelihoods.BernoulliLikelihood()
+
+        self.train()
+        self.likelihood.train()
+
+        def custom_auto_tune_params():
+            """ this is how we can remove certain params from optimization """
+            for param in self.named_parameters():
+                name = param[0]
+                if name != "covar_module.base_kernel.raw_lengthscale":
+                    yield param[1]
+
+        optimizer = torch.optim.Adam(custom_auto_tune_params(), lr=0.1)
+
+        mll = gpytorch.mlls.VariationalELBO(self.likelihood, self, train_y.numel())
+
+        for i in range(30):
+            optimizer.zero_grad()
+            output = self.__call__(train_x)
+            loss = -mll(output, train_y)
+            loss.backward()
+            optimizer.step()
+
+        self.eval()
+        self.likelihood.eval()
 
     def forward(self, x):
         mean_x = self.mean_module(x)
@@ -30,53 +50,22 @@ class GPClassificationModel(ApproximateGP):
         latent_pred = gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
         return latent_pred
 
-# Initialize model and likelihood
-model = GPClassificationModel(train_x)
-likelihood = gpytorch.likelihoods.BernoulliLikelihood()
+if __name__=='__main__':
+    # Initialize model and likelihood
+    train_x = torch.tensor([[0.5, 0.2], [0.6, 0.5], [0.5, 0.9], [0.4, 0.5], [0.3, 0.9]])
+    train_y = torch.tensor([0, 1, 0, 1, 0])
 
-# this is for running the notebook in our testing framework
-import os
-smoke_test = ('CI' in os.environ)
-training_iterations = 2 if smoke_test else 50
+    model = GPClassificationModel(train_x, train_y)
 
+    fig, ax = plt.subplots(1, 1, figsize=(14, 10))
+    N = 100
+    import numpy as np
+    xlin = ylin = np.linspace(0, 1, N)
+    X, Y = np.meshgrid(xlin, ylin)
+    pts = torch.tensor([[x,y] for x, y in list(zip(X.flatten(), Y.flatten()))]).float()
 
-# Find optimal model hyperparameters
-model.train()
-likelihood.train()
-
-# Use the adam optimizer
-optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
-
-# "Loss" for GPs - the marginal log likelihood
-# num_data refers to the number of training datapoints
-mll = gpytorch.mlls.VariationalELBO(likelihood, model, train_y.numel())
-
-for i in range(200):
-    # Zero backpropped gradients from previous iteration
-    optimizer.zero_grad()
-    # Get predictive output
-    output = model(train_x)
-    # Calc loss and backprop gradients
-    loss = -mll(output, train_y)
-    loss.backward()
-    print('Iter %d/%d - Loss: %.3f' % (i + 1, training_iterations, loss.item()))
-    optimizer.step()
-
-# Go into eval mode
-model.eval()
-likelihood.eval()
-
-fig, ax = plt.subplots(1, 1, figsize=(14, 10))
-n1, n2 = 30, 30
-xv, yv = torch.meshgrid([torch.linspace(0, 1, n1), torch.linspace(0, 1, n2)])
-
-# Make predictions
-with torch.no_grad(), gpytorch.settings.fast_computations(log_prob=False, covar_root_decomposition=False):
-    test_x = torch.stack([xv.reshape(n1*n2, 1), yv.reshape(n1*n2, 1)], -1).squeeze(1)
-    predictions = likelihood(model(test_x))
-    mean = predictions.mean
-
-extent = (xv.min(), xv.max(), yv.max(), yv.min())
-ax.imshow(mean.detach().numpy().reshape(n1, n2), extent=extent, cmap=cm.jet)
-plt.show()
-
+    with torch.no_grad(), gpytorch.settings.fast_computations(log_prob=False, covar_root_decomposition=False):
+        predictions = model.likelihood(model(pts))
+        mean = predictions.mean.detach().numpy()
+    ax.contourf(X, Y, mean.reshape((N, N)))
+    plt.show()
