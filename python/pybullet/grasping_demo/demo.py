@@ -35,7 +35,7 @@ class Gripper:
         angle, velocity, _, _ = pb.getJointState(self.gripper, 0)
         return angle, velocity
 
-    def set_angle(self, angle, force=False):
+    def set_gripper_width(self, angle, force=False):
         """
         if force, angle is set regardless of the physics
         """
@@ -75,10 +75,10 @@ utils.set_point(table, table_pos)
 utils.set_zrot(table, pi*0.5)
 
 gripper.set_basepose([-0.05, 0.0, 0.72], [pi*0.5, pi*0.5, 0])
-gripper.set_angle(0.05, force=True)
+gripper.set_gripper_width(0.05, force=True)
 
 utils.set_point(dish, [0.0, 0.0, 0.63])
-gripper.set_angle(0.0)
+gripper.set_gripper_width(0.0)
 gripper.set_state([0.0, 0.2, 0.0])
 import time
 time.sleep(2)
