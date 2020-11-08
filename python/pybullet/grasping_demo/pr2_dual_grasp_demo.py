@@ -24,8 +24,6 @@ class RGripper:
                 name_ = joint_info[12].decode('UTF-8')
                 name = heck(name_)
                 link_table[name] = _id
-            print("link", link_table)
-            print("joint", joint_table)
             return link_table, joint_table
 
         self.gripper = pb.loadURDF("pr2_description/urdf/pr2_rgripper.urdf", useFixedBase=True)
@@ -112,9 +110,9 @@ class LGripper:
     def set_basepose(self, pos, rpy):
         utils.set_6dpose(self.gripper, pos, rpy)
 
-    #def set_pose(self, rpy):
-    #    utils.set_pose(self.gripper, rpy)
-
+    def set_pose(self, rpy):
+        quat = utils.quat_from_euler(rpy)
+        utils.set_quat(self.gripper, quat)
 try:
     isInit
 except:
@@ -126,7 +124,6 @@ except:
     pb.configureDebugVisualizer(pybullet.COV_ENABLE_TINY_RENDERER, 0, physicsClientId=CLIENT)
     pb.setGravity(0,0,-10.0)
     table = pb.loadURDF("table/table.urdf", physicsClientId=CLIENT)
-    #dish = pb.loadURDF("dish/dish.urdf", physicsClientId=CLIENT)
     plate = pb.loadURDF("dish/plate.urdf", physicsClientId=CLIENT)
     rgripper = RGripper()
     lgripper = LGripper()
@@ -143,12 +140,9 @@ lgripper.set_gripper_width(0.5, force=True)
 
 time.sleep(7)
 rgripper.set_gripper_width(0.0)
-#lgripper.set_gripper_width(0.0)
-#rgripper.set_state([0.0, 0.0, -0.2])
 rgripper.set_state([-0.2, 0.5, -0.01])
 lgripper.set_state([0, 0, 0.5])
 rgripper.set_pose([-1.54, 0.8, -1.57])
-#time.sleep(2)
 
 for i in range(100):
     pb.stepSimulation(physicsClientId=CLIENT)
