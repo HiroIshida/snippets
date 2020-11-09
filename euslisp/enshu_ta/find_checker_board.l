@@ -38,7 +38,22 @@
 (defun rotate-until-detected ()
   (setq *object-detected* nil)
     (loop 
-        (rotate 0.1)
+        (rotate 0.5)
         (ros::spin-once)
         (when *object-detected* (return))))
+
+(setq *pos* (send (send *target-object* :worldcoords) :pos))
+(defun rotate-until-ceterized ()
+  (loop 
+    (let* ((pos (send (send *target-object* :worldcoords) :pos))
+           (horizontal (aref pos 1)))
+      (print horizontal)
+      (when (< (abs horizontal) 200) (return)))
+    (rotate 0.1)
+    (ros::spin-once)
+    ))
+
 (rotate-until-detected)
+(rotate-until-ceterized)
+
+
