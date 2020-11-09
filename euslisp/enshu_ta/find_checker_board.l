@@ -46,12 +46,12 @@
 (defun rotate-until-ceterized ()
   (loop 
     (let* ((pos (send (send *target-object* :worldcoords) :pos))
-           (horizontal (aref pos 1)))
-      (print horizontal)
-      (when (< (abs horizontal) 200) (return)))
-    (rotate 0.1)
-    (ros::spin-once)
-    ))
+           (angle (atan2 (aref pos 1) (aref pos 0))))
+      (print angle)
+      (when (< (abs angle) 0.01) (return))
+      (let ((Kp 1.0)) ;; p-gain 
+          (rotate (* Kp angle)))
+      (ros::spin-once))))
 
 (rotate-until-detected)
 (rotate-until-ceterized)
