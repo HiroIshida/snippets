@@ -1,7 +1,9 @@
 (load "package://dxl_armed_turtlebot/euslisp/dxl-armed-turtlebot-interface.l")
 (ros::roseus-add-msgs "jsk_recognition_msgs")
 
+
 (dxl-armed-turtlebot-init)
+(setq *robot* *dxl-armed-turtlebot*)
 
 (defvar *topic-name* "/camera/depth_registered/boxes")
 (defvar *bounding-box-list* nil)
@@ -25,7 +27,7 @@
 
 ;(send *ri* :go-pos 0 0 360) 
 (setq *mvbase-tgt* (send *co-new* :copy-worldcoords))
-(send *mvbase-tgt* :translate #f(-200 0 0) :world)
+(send *mvbase-tgt* :translate #f(-450 0 0) :world)
 
 (setq *c* (instance ros::simple-action-client :init "move_base" move_base_msgs::MoveBaseAction))
 (setq goal (instance move_base_msgs::MoveBaseGoal :init))
@@ -41,3 +43,18 @@
 (ros::ros-info "wait for goal ...")
 (send *c* :wait-for-result)
 (ros::ros-info "done")
+
+(unix:sleep 1)
+(ros::spin-once)
+(setq *grasp-coords* (make-coords))
+(send *grasp-coords* :translate (send *co-new* :worldpos))
+(setq *pre-grasp-coords* (send *grasp-coords* :copy-worldcoords))
+(send *pre-grasp-coords* :translate #f(-150 0 0) :world)
+(send *robot* :inverse-kinematics
+      *pre-grasp-coords*
+    :link-list (send *robot* :link-list (send *robot* :arm :end-coords :parent))
+    :move-target (send *robot* :arm :end-coords)
+    :revert-if-fail nil
+    :rotation-axis t :debug-view t)
+
+(send *ri* :angle-vector (send *robot* :angle-vector))
