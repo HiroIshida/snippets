@@ -107,12 +107,12 @@ def gen_scipinized(fun):
 
 import scipy
 class Optimizer:
-    def __init__(self, av_seq_init, pos_target, collision_fk, endcoord_fk, joint_limit, sdf):
+    def __init__(self, av_seq_init, pos_target, collision_fk, endcoord_fk, joint_limit, sdf, sdf_margin=0.08):
         self.av_seq_init = av_seq_init
         self.n_features = 2
         self.collision_fk = collision_fk
         self.endcoord_fk = endcoord_fk
-        self.sdf = sdf
+        self.sdf = lambda X: sdf(X) - sdf_margin
         self.n_wp, self.n_dof = av_seq_init.shape
         self.pos_target = pos_target
         self.joint_limit  = joint_limit
@@ -201,7 +201,7 @@ target_coords = skrobot.coordinates.Coordinates([0.8, -0.5, 0.8], [0, 0, 0])
 res = robot_model.inverse_kinematics(
         target_coords, link_list=link_list, move_target=move_target, rotation_axis=False)
 av_target = get_joint_angles()
-n_wp = 15
+n_wp = 8
 step = (av_target - av_init)/(n_wp - 1)
 init_trajectory = np.array([av_init + i * step for i in range(n_wp)])
 sdf = create_box([0.9, -0.2, 0.9], [0.4, 0.25, 0.3])
