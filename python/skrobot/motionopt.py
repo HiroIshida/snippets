@@ -82,9 +82,11 @@ def endcoord_forward_kinematics(av_seq):
 
 def construct_smoothcost_mat(n_wp):
     acc_block = np.array([[1, -2, 1], [-2, 4, -2], [1, -2, 1]]) 
+    vel_block = np.array([[1, -1], [-1, 1]])
     A = np.zeros((n_wp, n_wp))
     for i in [1 + i for i in range(n_wp - 2)]:
         A[i-1:i+2, i-1:i+2] += acc_block # i-1 to i+1 (3x3)
+        #A[i-1:i+1, i-1:i+1] += vel_block * 2.0
     return A
 
 def construct_smoothcost_fullmat(n_dof, n_wp, weights = None): # A, b and c terms of chomp B
@@ -114,7 +116,8 @@ class Optimizer:
         self.n_wp, self.n_dof = av_seq_init.shape
         self.pos_target = pos_target
         self.joint_limit  = joint_limit
-        self.A = construct_smoothcost_fullmat(self.n_dof, self.n_wp, None) 
+        w = [0.5, 0.5, 0.3, 0.1, 0.1, 0.1, 0.1]
+        self.A = construct_smoothcost_fullmat(self.n_dof, self.n_wp, w) 
 
     def fun_objective(self, x):
         Q = x.reshape(self.n_wp, self.n_dof)
@@ -177,7 +180,7 @@ class Optimizer:
         xi_init = self.av_seq_init.reshape((self.n_dof * self.n_wp, ))
         res = scipy.optimize.minimize(f, xi_init, method='SLSQP', jac=jac,
                 bounds = bounds,
-                constraints=[eq_dict, ineq_dict], options={'ftol': 1e-3, 'disp': False})
+                constraints=[eq_dict, ineq_dict], options={'ftol': 1e-4, 'disp': False})
         print(res)
         traj_opt = res.x.reshape(self.n_wp, self.n_dof)
         return traj_opt
@@ -194,15 +197,15 @@ print("setting")
 time.sleep(1.0)
 interface.angle_vector(robot_model.angle_vector())
 
-target_coords = skrobot.coordinates.Coordinates([0.5, -0.5, 0.4], [0, 0, 0])
+target_coords = skrobot.coordinates.Coordinates([0.8, -0.5, 0.8], [0, 0, 0])
 res = robot_model.inverse_kinematics(
         target_coords, link_list=link_list, move_target=move_target, rotation_axis=False)
 av_target = get_joint_angles()
-n_wp = 20
+n_wp = 15
 step = (av_target - av_init)/(n_wp - 1)
 init_trajectory = np.array([av_init + i * step for i in range(n_wp)])
-sdf = create_box([0.8, -0.2, 1.0], [0.3, 0.15, 1.0])
-opt = Optimizer(init_trajectory, [0.5, -0.6, 0.4], collision_forward_kinematics, endcoord_forward_kinematics, joint_mimax, sdf)
+sdf = create_box([0.9, -0.2, 0.9], [0.4, 0.25, 0.3])
+opt = Optimizer(init_trajectory, [0.7, -0.7, 1.0], collision_forward_kinematics, endcoord_forward_kinematics, joint_mimax, sdf)
 sol_trajectory = opt.solve()
 
 
@@ -213,9 +216,8 @@ for av in sol_trajectory:
     interface.angle_vector(robot_model.angle_vector())
 
     P_link, J_link = collision_forward_kinematics([av])
-    sd1 = sdf(P_link[0].reshape((-1, 3)))
-    sd2 = sdf(rarm_end_coords.worldpos().reshape((-1, 3)))
     print("debug")
+    print(P_link[0].reshape((-1, 3)))
+    sd1 = sdf(P_link[0].reshape((-1, 3)))
     print(sd1)
-    print(sd2)
-    time.sleep(0.2)
+    time.sleep(0.5)
