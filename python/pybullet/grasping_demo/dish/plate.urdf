@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<robot name="box">
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <mesh filename="convert1_ornamentalplate.stl"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <material name="red">
+        <color rgba="1.0 0.0 0.0 2.0"/>
+      </material>
+    </visual>
+    <collision concave="yes">
+      <geometry>
+        <mesh filename="convert1_ornamentalplate.stl"/>
+      </geometry>
+      <origin rpy="0.0 0 0" xyz="0 0 0"/>
+    </collision>
+    <inertial>
+      <mass value="0.162843537854"/>
+      <inertia ixx="5.07325303e-04" ixy="1.20146025e-06" ixz="0" iyy="4.98656710e-04" iyz="0.0" izz="1.00449300e-03"/>
+    </inertial>
+ </link>
+</robot>
