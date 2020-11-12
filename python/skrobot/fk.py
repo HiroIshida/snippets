@@ -114,16 +114,13 @@ def quaternion_relation_mat(coords):
         ])
     return mat * 0.5
 
-av0 = [-0.5]*7 
+av0 = [-0.2]*7 
 set_joint_angles(av0)
 M = quaternion_relation_mat(rarm_end_coords.copy_worldcoords())
 
-J_mine_rot = np.round(compute_jacobain_naively(av0)[3:, :], 2)
-J_skrobot_rot = np.round(compute_jacobian_skrobot(av0, np.eye(3), rotalso=True)[3:, :], 2)
+J_mine_rot = compute_jacobain_naively(av0)[3:, :]
+J_skrobot_rot = compute_jacobian_skrobot(av0, np.eye(3), rotalso=True)[3:, :]
 
-
-print(np.round(M.dot(J_skrobot_rot), 2))
-print(J_mine_rot)
-print(np.round(J_mine_rot - np.round(M.dot(J_skrobot_rot), 2), 2))
+print(np.round(J_mine_rot - M.dot(J_skrobot_rot), 2))
 
 
