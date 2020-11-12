@@ -97,18 +97,26 @@ def quaternion_relation_mat(coords):
     q3 = -q[3]
     q4 = q[0]
 
+    """ from jaxa quaternion
     mat = np.array([
         [q4, -q3, q2],
         [q3, q4, -q1],
         [-q2, q1, q4],
         [-q1, -q2, -q3]
         ])
+    """
+
+    mat = np.array([
+        [q1, q2, q3],
+        [q4, -q3, q2],
+        [q3, q4, -q1],
+        [-q2, q1, q4],
+        ])
     return mat * 0.5
 
-av0 = [-0.2]*7 
+av0 = [-0.5]*7 
 set_joint_angles(av0)
 M = quaternion_relation_mat(rarm_end_coords.copy_worldcoords())
-#M = np.eye(3)
 
 J_mine_rot = np.round(compute_jacobain_naively(av0)[3:, :], 2)
 J_skrobot_rot = np.round(compute_jacobian_skrobot(av0, np.eye(3), rotalso=True)[3:, :], 2)
@@ -116,5 +124,6 @@ J_skrobot_rot = np.round(compute_jacobian_skrobot(av0, np.eye(3), rotalso=True)[
 
 print(np.round(M.dot(J_skrobot_rot), 2))
 print(J_mine_rot)
+print(np.round(J_mine_rot - np.round(M.dot(J_skrobot_rot), 2), 2))
 
 
