@@ -29,46 +29,92 @@ except:
 
 set_joint_angles = lambda av: [j.joint_angle(a) for j, a in zip(joint_list, av)]
 
+from math import *
+def pimat(r, p, y): 
+    a1 = -r
+    a2 = -p
+    a3 = -y
+    """
+    mat = np.array([
+        [cos(a3)/cos(a1), -sin(a3)/cos(a2), 0.0],
+        [sin(a3), cos(a3), 0.0],
+        [-cos(a3)*sin(a2)/cos(a2), sin(a3)*sin(a2)/cos(a2), 1.0]
+        ])
+    """
 
-def compute_jacobian_skrobot(av0):
+    mat = np.array([
+        [0, sin(a3)/cos(a2), cos(a3)/cos(a2)],
+        [0, cos(a3), -sin(a3)],
+        [1.0, sin(a3)*sin(a2)/cos(a3), cos(a3)*sin(a2)/cos(a2)]])
+    return mat
+
+def compute_jacobian_skrobot(av0, mat, rotalso=False):
     set_joint_angles(av0)
 
     base_link = robot_model.link_list[0]
-    J = robot_model.calc_jacobian_from_link_list([move_target], link_list, transform_coords=base_link)
+    J = robot_model.calc_jacobian_from_link_list([move_target], link_list, transform_coords=base_link, rotation_axis=rotalso)
+    J[3:, :] = mat.dot(J[3:, :])
     return J
 
-def compute_jacobain_naively(av0): # by finite diff
-    set_joint_angles(av0)
-    current_coords = rarm_end_coords.copy_worldcoords()
-    pos0 = current_coords._translation
-    J = np.zeros((3, 7))
+from skrobot.coordinates.math import rpy_angle
 
-    eps = -1e-5
+
+def compute_jacobain_naively(av0): # by finite diff
+
+    def get_rpy(coords):
+        co = coords.copy_worldcoords()
+        return co.quaternion
+
+    set_joint_angles(av0)
+
+    pos0 = rarm_end_coords.worldpos()
+    rot0 = get_rpy(rarm_end_coords)
+
+    J = np.zeros((7, 7))
+
+    eps = -1e-8
     for idx in range(7):
         av1 = copy.copy(av0)
         av1[idx] += eps 
         set_joint_angles(av1)
 
-        tweaked_coords = rarm_end_coords.copy_worldcoords()
-        pos1 = tweaked_coords._translation
+        pos1 = rarm_end_coords.worldpos()
+        rot1 = get_rpy(rarm_end_coords)
         pos_diff = (pos1 - pos0)/eps
-        J[:, idx] = pos_diff
+        rot_diff = (rot1 - rot0)/eps
+        J[:3, idx] = pos_diff
+        J[3:, idx] = rot_diff
 
     set_joint_angles(av0) # recover to the original state
     return J
 
-def compare_jacobian(av0):
-    J_mine = compute_jacobain_naively(av0)
-    J_skrobot = compute_jacobian_skrobot(av0)
-    diff = J_mine - J_skrobot
-    print(np.round(diff, 3))
 
-#av = [0.1]+[0]*6
-av = [-0.3]*7
+def quaternion_relation_mat(coords):
+    q = coords.quaternion
+    print(q)
+    q1 = -q[1]
+    q2 = -q[2]
+    q3 = -q[3]
+    q4 = q[0]
 
-compare_jacobian(av) 
+    mat = np.array([
+        [q4, -q3, q2],
+        [q3, q4, -q1],
+        [-q2, q1, q4],
+        [-q1, -q2, -q3]
+        ])
+    return mat * 0.5
 
-set_joint_angles([0.1]+[0]*6)
-current_coords = rarm_end_coords.copy_worldcoords()
-pos0 = current_coords._translation
+av0 = [-0.2]*7 
+set_joint_angles(av0)
+M = quaternion_relation_mat(rarm_end_coords.copy_worldcoords())
+#M = np.eye(3)
+
+J_mine_rot = np.round(compute_jacobain_naively(av0)[3:, :], 2)
+J_skrobot_rot = np.round(compute_jacobian_skrobot(av0, np.eye(3), rotalso=True)[3:, :], 2)
+
+
+print(np.round(M.dot(J_skrobot_rot), 2))
+print(J_mine_rot)
+
 
