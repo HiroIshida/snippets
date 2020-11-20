@@ -31,17 +31,25 @@ class RapidlyExploringRandomTree(object):
         self.isGoal = pred_goal_condition
 
         # reserving memory is the key 
-        self.Q_sample = np.zeros((N_maxiter, cspace.n_dof))
-        self.idxes_parents = np.zeros(N_maxiter, dtype='int64')
+        self._Q_sample = np.zeros((N_maxiter, cspace.n_dof))
+        self._idxes_parents = np.zeros(N_maxiter, dtype='int64')
 
         # set initial sample
         self.n_sample = 1
-        self.Q_sample[0] = q_start
-        self.idxes_parents[0] = 0 # self reference
+        self._Q_sample[0] = q_start
+        self._idxes_parents[0] = 0 # self reference
 
     @property
     def q_start(self):
-        return self.X_sample[0]
+        return self.Q_sample[0]
+
+    @property
+    def Q_sample(self): # safer 
+        return self._Q_sample[:self.n_sample]
+
+    @property
+    def idxes_parents(self): # safer 
+        return self._idxes_parents[:self.n_sample]
 
     def extend(self):
         if self.n_sample ==  self.N_maxiter:
@@ -51,7 +59,7 @@ class RapidlyExploringRandomTree(object):
             return vec/np.linalg.norm(vec)
 
         q_rand = self.cspace.sample()
-        sqdists = np.sum((self.Q_sample[:self.n_sample] - q_rand[None, :])**2, axis=1)
+        sqdists = np.sum((self.Q_sample - q_rand[None, :])**2, axis=1)
         idx_nearest = np.argmin(sqdists)
         q_nearest = self.Q_sample[idx_nearest]
         if np.linalg.norm(q_rand - q_nearest) > self.eps:
@@ -62,8 +70,8 @@ class RapidlyExploringRandomTree(object):
         # update tree
         q_new_reshaped = q_new.reshape(1, -1)
         if self.isValid(q_new_reshaped):
-            self.Q_sample[self.n_sample] = q_new
-            self.idxes_parents[self.n_sample] = idx_nearest
+            self._Q_sample[self.n_sample] = q_new
+            self._idxes_parents[self.n_sample] = idx_nearest
             self.n_sample += 1
             return self.isGoal(q_new)
         return False # not goal
@@ -74,8 +82,8 @@ class RapidlyExploringRandomTree(object):
         else:
             fig, ax = fax
         n = self.n_sample
-        ax.scatter(self.Q_sample[:n, 0], self.Q_sample [:n, 1], c="black")
-        for q, parent_idx in zip(self.Q_sample[:n], self.idxes_parents[:n]):
+        ax.scatter(self.Q_sample[:, 0], self.Q_sample[:, 1], c="black")
+        for q, parent_idx in zip(self.Q_sample, self.idxes_parents):
             q_parent = self.Q_sample[parent_idx]
             ax.plot([q[0], q_parent[0]], [q[1], q_parent[1]], color="red")
 
@@ -90,7 +98,7 @@ class BidirectionalRRT(object):
         # because setting it is mutual referencial, we can set 
         # pred_goal_condition only after initialization of rrt1 and rrt2
         def goalpred_for_rrt1(q):
-            diffs = self.rrt2.Q_sample[:self.rrt2.n_sample] - q[None, :]
+            diffs = self.rrt2.Q_sample - q[None, :]
             sqdists = np.sum(diffs ** 2, axis=1)
             idx_min = np.argmin(sqdists)
             if sqdists[idx_min] < self.rrt1.eps ** 2:
