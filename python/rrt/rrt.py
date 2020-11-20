@@ -14,11 +14,13 @@ class ConfigurationSpace(object):
         return np.random.rand(self.n_dof) * w + self.b_min
 
 class RapidlyExploringRandomTree(object): 
-    def __init__(self, cspace, x_start, x_goal, N_maxiter=10000):
+    def __init__(self, cspace, x_start, x_goal, sdf, N_maxiter=10000):
         self.cspace = cspace
         self.eps = 0.1
+        self.n_resolution = 10
         self.N_maxiter = N_maxiter
         self.x_goal = np.array(x_goal)
+        self.sdf = sdf
 
         # reserving memory is the key 
         self.X_sample = np.zeros((N_maxiter, cspace.n_dof))
@@ -33,7 +35,7 @@ class RapidlyExploringRandomTree(object):
     def x_start(self):
         return self.X_sample[0]
 
-    def extend(self, debug=False):
+    def extend(self):
         def unit_vec(vec):
             return vec/np.linalg.norm(vec)
 
@@ -49,9 +51,10 @@ class RapidlyExploringRandomTree(object):
             x_new = x_rand
 
         # update tree
-        self.X_sample[self.n_sample] = x_new
-        self.idxes_parents[self.n_sample] = idx_nearest
-        self.n_sample += 1
+        if sdf(x_new) > 0:
+            self.X_sample[self.n_sample] = x_new
+            self.idxes_parents[self.n_sample] = idx_nearest
+            self.n_sample += 1
 
     def show(self):
         fig, ax = plt.subplots()
@@ -66,11 +69,12 @@ if __name__=='__main__':
     b_min = np.zeros(2)
     b_max = np.ones(2)
     cspace = ConfigurationSpace(b_min, b_max)
-    rrt = RapidlyExploringRandomTree(cspace, [0.1, 0.1], [0.9, 0.9])
+    sdf = lambda x: np.linalg.norm(x - np.array([0.5, 0.5])) - 0.3
+    rrt = RapidlyExploringRandomTree(cspace, [0.1, 0.1], [0.9, 0.9], sdf)
     import time
     ts = time.time()
     for i in range(2000):
-        rrt.extend(debug=False)
+        rrt.extend()
     print(time.time() - ts)
     rrt.show()
     plt.show()
