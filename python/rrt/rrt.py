@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt 
 
-#np.random.seed(0)
+np.random.seed(10)
 
 class ConfigurationSpace(object):
     def __init__(self, b_min, b_max):
@@ -114,6 +114,7 @@ class BidirectionalRRT(object):
         p1 = self.rrt1.Q_sample[self.connect_pair[0][0]]
         p2 = self.rrt2.Q_sample[self.connect_pair[0][1]]
         ax.plot([p1[0], p2[0]], [p1[1], p2[1]], color="blue")
+        return fig, ax
 
 if __name__=='__main__':
     b_min = np.zeros(2)
@@ -129,6 +130,7 @@ if __name__=='__main__':
         connectd = brrt.extend()
         if connectd:
             break
-    brrt.show()
+    fig, ax = brrt.show()
+    ax.axis("equal")
     plt.show()
 
