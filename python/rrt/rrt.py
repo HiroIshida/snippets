@@ -14,13 +14,16 @@ class ConfigurationSpace(object):
         return np.random.rand(self.n_dof) * w + self.b_min
 
 class RapidlyExploringRandomTree(object): 
-    def __init__(self, cspace, q_start, q_goal, sdf, N_maxiter=10000):
+    def __init__(self, cspace, q_start, q_goal, sdf, 
+            forward_kinematics= lambda Q: Q,
+            N_maxiter=10000):
         self.cspace = cspace
         self.eps = 0.1
         self.n_resolution = 10
         self.N_maxiter = N_maxiter
         self.q_goal = np.array(q_goal)
         self.sdf = sdf
+        self.fk = forward_kinematics
 
         # reserving memory is the key 
         self.Q_sample = np.zeros((N_maxiter, cspace.n_dof))
@@ -51,7 +54,7 @@ class RapidlyExploringRandomTree(object):
             q_new = q_rand
 
         # update tree
-        if sdf(q_new) > 0:
+        if self.sdf(self.fk(q_new)) > 0:
             self.Q_sample[self.n_sample] = q_new
             self.idxes_parents[self.n_sample] = idx_nearest
             self.n_sample += 1
