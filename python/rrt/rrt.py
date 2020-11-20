@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt 
 
-np.random.seed(0)
+#np.random.seed(0)
 
 class ConfigurationSpace(object):
     def __init__(self, b_min, b_max):
@@ -14,12 +14,19 @@ class ConfigurationSpace(object):
         return np.random.rand(self.n_dof) * w + self.b_min
 
 class RapidlyExploringRandomTree(object): 
-    def __init__(self, cspace, q_start, pred_goal_condition, pred_valid_config,
+    def __init__(self, cspace, q_start, pred_goal_condition=None, pred_valid_config=None,
             N_maxiter=10000):
         self.cspace = cspace
-        self.eps = 0.1
+        self.eps = 0.05
         self.n_resolution = 10
         self.N_maxiter = N_maxiter
+
+        if pred_goal_condition is None:
+            pred_goal_condition = lambda q: False
+
+        if pred_valid_config is None:
+            pred_valid_config = lambda q : True
+
         self.isValid = pred_valid_config
         self.isGoal = pred_goal_condition
 
@@ -44,9 +51,7 @@ class RapidlyExploringRandomTree(object):
             return vec/np.linalg.norm(vec)
 
         q_rand = self.cspace.sample()
-        q_rand_copied = np.repeat(q_rand.reshape(1, -1), self.n_sample, axis=0)
-
-        sqdists = np.sum((self.Q_sample[:self.n_sample] - q_rand_copied)**2, axis=1)
+        sqdists = np.sum((self.Q_sample[:self.n_sample] - q_rand[None, :])**2, axis=1)
         idx_nearest = np.argmin(sqdists)
         q_nearest = self.Q_sample[idx_nearest]
         if np.linalg.norm(q_rand - q_nearest) > self.eps:
@@ -63,27 +68,67 @@ class RapidlyExploringRandomTree(object):
 
         return self.isGoal(q_new)
 
-    def show(self):
-        fig, ax = plt.subplots()
+    def show(self, fax=None):
+        if fax is None:
+            fig, ax = plt.subplots()
+        else:
+            fig, ax = fax
         n = self.n_sample
         ax.scatter(self.Q_sample[:n, 0], self.Q_sample [:n, 1], c="black")
         for q, parent_idx in zip(self.Q_sample[:n], self.idxes_parents[:n]):
             q_parent = self.Q_sample[parent_idx]
             ax.plot([q[0], q_parent[0]], [q[1], q_parent[1]], color="red")
 
+class BidirectionalRRT(object):
+    def __init__(self, cspace, q_start, q_goal, pred_valid_config,
+            N_maxiter=10000):
+        self.rrt1 = RapidlyExploringRandomTree(cspace, q_start, pred_valid_config=pred_valid_config)
+        self.rrt2 = RapidlyExploringRandomTree(cspace, q_goal, pred_valid_config=pred_valid_config)
+
+        self.connect_pair = [] # [idx_of_rrt1, idx_or_rrt2]
+
+        # because setting it is mutual referencial, we can set 
+        # pred_goal_condition only after initialization of rrt1 and rrt2
+        def goalpred_for_rrt1(q):
+            diffs = self.rrt2.Q_sample[:self.rrt2.n_sample] - q[None, :]
+            sqdists = np.sum(diffs ** 2, axis=1)
+            idx_min = np.argmin(sqdists)
+            if sqdists[idx_min] < self.rrt1.eps ** 2:
+                idx_self = self.rrt1.n_sample - 1
+                idx_other = idx_min
+                self.connect_pair.append([idx_self, idx_other])
+                return True
+            return False
+
+        self.rrt1.isGoal = goalpred_for_rrt1 # overwrite!
+
+    def extend(self):
+        self.rrt2.extend()
+        return self.rrt1.extend()
+
+    def show(self):
+        fax = plt.subplots()
+        self.rrt1.show(fax)
+        self.rrt2.show(fax)
+        fig, ax = fax
+        p1 = self.rrt1.Q_sample[self.connect_pair[0][0]]
+        p2 = self.rrt2.Q_sample[self.connect_pair[0][1]]
+        ax.plot([p1[0], p2[0]], [p1[1], p2[1]], color="blue")
+
 if __name__=='__main__':
     b_min = np.zeros(2)
     b_max = np.ones(2)
     cspace = ConfigurationSpace(b_min, b_max)
+    q_start = np.array([0.1, 0.1])
     q_goal = np.array([0.9, 0.9])
     sdf = lambda q: np.linalg.norm(q - np.array([0.5, 0.5])) - 0.3
     pred_valid_config = lambda q: sdf(q) > 0.0
-    pred_goal_condition = lambda q : np.linalg.norm(q - q_goal)
-    rrt = RapidlyExploringRandomTree(cspace, [0.1, 0.1], pred_goal_condition, pred_valid_config)
-    import time
-    ts = time.time()
-    for i in range(2000):
-        rrt.extend()
-    print(time.time() - ts)
-    rrt.show()
+
+    brrt = BidirectionalRRT(cspace, q_start, q_goal, pred_valid_config)
+    while True:
+        connectd = brrt.extend()
+        if connectd:
+            break
+    brrt.show()
     plt.show()
+
