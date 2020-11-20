@@ -14,16 +14,14 @@ class ConfigurationSpace(object):
         return np.random.rand(self.n_dof) * w + self.b_min
 
 class RapidlyExploringRandomTree(object): 
-    def __init__(self, cspace, q_start, q_goal, sdf, 
-            forward_kinematics= lambda Q: Q,
+    def __init__(self, cspace, q_start, pred_goal_condition, pred_valid_config,
             N_maxiter=10000):
         self.cspace = cspace
         self.eps = 0.1
         self.n_resolution = 10
         self.N_maxiter = N_maxiter
-        self.q_goal = np.array(q_goal)
-        self.sdf = sdf
-        self.fk = forward_kinematics
+        self.isValid = pred_valid_config
+        self.isGoal = pred_goal_condition
 
         # reserving memory is the key 
         self.Q_sample = np.zeros((N_maxiter, cspace.n_dof))
@@ -39,6 +37,9 @@ class RapidlyExploringRandomTree(object):
         return self.X_sample[0]
 
     def extend(self):
+        if self.n_sample ==  self.N_maxiter:
+            raise Exception
+
         def unit_vec(vec):
             return vec/np.linalg.norm(vec)
 
@@ -54,10 +55,13 @@ class RapidlyExploringRandomTree(object):
             q_new = q_rand
 
         # update tree
-        if self.sdf(self.fk(q_new)) > 0:
+        q_new_reshaped = q_new.reshape(1, -1)
+        if self.isValid(q_new_reshaped):
             self.Q_sample[self.n_sample] = q_new
             self.idxes_parents[self.n_sample] = idx_nearest
             self.n_sample += 1
+
+        return self.isGoal(q_new)
 
     def show(self):
         fig, ax = plt.subplots()
@@ -67,13 +71,15 @@ class RapidlyExploringRandomTree(object):
             q_parent = self.Q_sample[parent_idx]
             ax.plot([q[0], q_parent[0]], [q[1], q_parent[1]], color="red")
 
-
 if __name__=='__main__':
     b_min = np.zeros(2)
     b_max = np.ones(2)
     cspace = ConfigurationSpace(b_min, b_max)
+    q_goal = np.array([0.9, 0.9])
     sdf = lambda q: np.linalg.norm(q - np.array([0.5, 0.5])) - 0.3
-    rrt = RapidlyExploringRandomTree(cspace, [0.1, 0.1], [0.9, 0.9], sdf)
+    pred_valid_config = lambda q: sdf(q) > 0.0
+    pred_goal_condition = lambda q : np.linalg.norm(q - q_goal)
+    rrt = RapidlyExploringRandomTree(cspace, [0.1, 0.1], pred_goal_condition, pred_valid_config)
     import time
     ts = time.time()
     for i in range(2000):
