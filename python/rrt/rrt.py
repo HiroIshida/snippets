@@ -14,26 +14,33 @@ class ConfigurationSpace(object):
         return np.random.rand(self.n_dof) * w + self.b_min
 
 class RapidlyExploringRandomTree(object): 
-    def __init__(self, cspace, x_start, x_goal):
+    def __init__(self, cspace, x_start, x_goal, N_maxiter=10000):
         self.cspace = cspace
-        self.x_goal = np.array(x_goal)
-        self.X_sample = [np.array(x_start)]
-        self.idxes_parents = [0] # 0 indicates to self-reference
         self.eps = 0.1
+        self.N_maxiter = N_maxiter
+        self.x_goal = np.array(x_goal)
+
+        # reserving memory is the key 
+        self.X_sample = np.zeros((N_maxiter, cspace.n_dof))
+        self.idxes_parents = np.zeros(N_maxiter, dtype='int64')
+
+        # set initial sample
+        self.n_sample = 1
+        self.X_sample[0] = x_start
+        self.idxes_parents[0] = 0 # self reference
 
     @property
     def x_start(self):
         return self.X_sample[0]
 
-    def extend(self):
+    def extend(self, debug=False):
         def unit_vec(vec):
             return vec/np.linalg.norm(vec)
 
         x_rand = self.cspace.sample()
-        n_sample = len(self.X_sample)
-        x_rand_copied = np.repeat(x_rand.reshape(1, -1), n_sample, axis=0)
-        sqdists = np.sum((np.vstack(self.X_sample) - x_rand_copied)**2, axis=1)
+        x_rand_copied = np.repeat(x_rand.reshape(1, -1), self.n_sample, axis=0)
 
+        sqdists = np.sum((self.X_sample[:self.n_sample] - x_rand_copied)**2, axis=1)
         idx_nearest = np.argmin(sqdists)
         x_nearest = self.X_sample[idx_nearest]
         if np.linalg.norm(x_rand - x_nearest) > self.eps:
@@ -42,16 +49,18 @@ class RapidlyExploringRandomTree(object):
             x_new = x_rand
 
         # update tree
-        self.X_sample.append(x_new)
-        self.idxes_parents.append(idx_nearest)
+        self.X_sample[self.n_sample] = x_new
+        self.idxes_parents[self.n_sample] = idx_nearest
+        self.n_sample += 1
 
     def show(self):
         fig, ax = plt.subplots()
-        X_sample_numpy = np.vstack(self.X_sample)
-        ax.scatter(X_sample_numpy[:, 0], X_sample_numpy [:, 1], c="black")
-        for x, parent_idx in zip(self.X_sample, self.idxes_parents):
+        n = self.n_sample
+        ax.scatter(self.X_sample[:n, 0], self.X_sample [:n, 1], c="black")
+        for x, parent_idx in zip(self.X_sample[:n], self.idxes_parents[:n]):
             x_parent = self.X_sample[parent_idx]
             ax.plot([x[0], x_parent[0]], [x[1], x_parent[1]], color="red")
+
 
 if __name__=='__main__':
     b_min = np.zeros(2)
@@ -60,6 +69,8 @@ if __name__=='__main__':
     rrt = RapidlyExploringRandomTree(cspace, [0.1, 0.1], [0.9, 0.9])
     import time
     ts = time.time()
-    for i in range(1000):
-        rrt.extend()
+    for i in range(2000):
+        rrt.extend(debug=False)
     print(time.time() - ts)
+    rrt.show()
+    plt.show()
