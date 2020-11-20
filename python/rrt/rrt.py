@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt 
 
-np.random.seed(10)
+#np.random.seed(0)
 
 class ConfigurationSpace(object):
     def __init__(self, b_min, b_max):
@@ -65,8 +65,8 @@ class RapidlyExploringRandomTree(object):
             self.Q_sample[self.n_sample] = q_new
             self.idxes_parents[self.n_sample] = idx_nearest
             self.n_sample += 1
-
-        return self.isGoal(q_new)
+            return self.isGoal(q_new)
+        return False # not goal
 
     def show(self, fax=None):
         if fax is None:
