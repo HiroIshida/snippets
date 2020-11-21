@@ -92,10 +92,10 @@ class RapidlyExploringRandomTree(object):
         else:
             fig, ax = fax
         n = self.n_sample
-        ax.scatter(self.Q_sample[:, 0], self.Q_sample[:, 1], c="black")
+        ax.scatter(self.Q_sample[:, 0], self.Q_sample[:, 1], c="black", s=5)
         for q, parent_idx in zip(self.Q_sample, self.idxes_parents):
             q_parent = self.Q_sample[parent_idx]
-            ax.plot([q[0], q_parent[0]], [q[1], q_parent[1]], color="red")
+            ax.plot([q[0], q_parent[0]], [q[1], q_parent[1]], color="red", linewidth=0.5)
 
 class BidirectionalRRT(object):
     def __init__(self, cspace, q_start, q_goal, pred_valid_config,
