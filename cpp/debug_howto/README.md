@@ -1,3 +1,6 @@
+### TUI mode
+layout next
+
 ### when you cannot attach the process
 ```
 echo 0 | sudo tee /proc/sys/kernel/yama/ptrace_scope
