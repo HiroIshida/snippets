@@ -15,7 +15,7 @@ class ConfigurationSpace(object):
 
 class RapidlyExploringRandomTree(object): 
     def __init__(self, cspace, q_start, pred_goal_condition=None, pred_valid_config=None,
-            N_maxiter=10000):
+            N_maxiter=30000):
         self.cspace = cspace
         self.eps = 0.05
         self.n_resolution = 10
@@ -76,6 +76,16 @@ class RapidlyExploringRandomTree(object):
             return self.isGoal(q_new)
         return False # not goal
 
+    def backward_path(self, idx_end):
+        q_seq = [self.Q_sample[idx_end]]
+        idx_parent = self.idxes_parents[idx_end]
+        idx_root = 0
+        while idx_parent != idx_root:
+            q_seq.append(self.Q_sample[idx_parent])
+            idx_parent = self.idxes_parents[idx_parent]
+        q_seq.append(self.q_start)
+        return q_seq
+
     def show(self, fax=None):
         if fax is None:
             fig, ax = plt.subplots()
@@ -93,7 +103,8 @@ class BidirectionalRRT(object):
         self.rrt1 = RapidlyExploringRandomTree(cspace, q_start, pred_valid_config=pred_valid_config)
         self.rrt2 = RapidlyExploringRandomTree(cspace, q_goal, pred_valid_config=pred_valid_config)
 
-        self.connect_pair = [] # [idx_of_rrt1, idx_or_rrt2]
+        self.connect_pair = None # [idx_of_rrt1, idx_or_rrt2]
+        self.solution = None
 
         # because setting it is mutual referencial, we can set 
         # pred_goal_condition only after initialization of rrt1 and rrt2
@@ -104,25 +115,43 @@ class BidirectionalRRT(object):
             if sqdists[idx_min] < self.rrt1.eps ** 2:
                 idx_self = self.rrt1.n_sample - 1
                 idx_other = idx_min
-                self.connect_pair.append([idx_self, idx_other])
+                self.connect_pair = [idx_self, idx_other]
                 return True
             return False
 
         self.rrt1.isGoal = goalpred_for_rrt1 # overwrite!
 
-    def extend(self):
-        self.rrt2.extend()
-        return self.rrt1.extend()
+    def solve(self):
+        while self.connect_pair is None:
+            self.rrt2.extend()
+            self.rrt1.extend()
+        print("solved")
 
-    def show(self):
-        fax = plt.subplots()
+        sol_forward = self.rrt1.backward_path(self.connect_pair[0])
+        sol_forward.reverse()
+        sol_backward = self.rrt2.backward_path(self.connect_pair[1])
+        solution = sol_forward + sol_backward
+        self.solution = solution
+        return solution
+
+    def show(self, fax=None):
+        if fax is None:
+            fax = plt.subplots()
         self.rrt1.show(fax)
         self.rrt2.show(fax)
         fig, ax = fax
-        p1 = self.rrt1.Q_sample[self.connect_pair[0][0]]
-        p2 = self.rrt2.Q_sample[self.connect_pair[0][1]]
-        ax.plot([p1[0], p2[0]], [p1[1], p2[1]], color="blue")
+        if self.solution is not None:
+            for i in range(len(self.solution) - 1):
+                x = [self.solution[i][0], self.solution[i+1][0]]
+                y = [self.solution[i][1], self.solution[i+1][1]]
+                ax.plot(x, y, color="green")
+
+            # show connected pair
+            p1 = self.rrt1.Q_sample[self.connect_pair[0]]
+            p2 = self.rrt2.Q_sample[self.connect_pair[1]]
+            ax.plot([p1[0], p2[0]], [p1[1], p2[1]], color="blue")
         return fig, ax
+
 
 if __name__=='__main__':
     b_min = np.zeros(2)
@@ -134,11 +163,7 @@ if __name__=='__main__':
     pred_valid_config = lambda q: sdf(q) > 0.0
 
     brrt = BidirectionalRRT(cspace, q_start, q_goal, pred_valid_config)
-    while True:
-        connectd = brrt.extend()
-        if connectd:
-            break
+    brrt.solve()
     fig, ax = brrt.show()
     ax.axis("equal")
     plt.show()
-
