@@ -1,5 +1,6 @@
 import skrobot
 import numpy as np
+import time
 from skrobot.models import Box, MeshLink, Axis, Sphere
 from sklearn.covariance import EmpiricalCovariance
 
@@ -13,10 +14,13 @@ def debug_view(h_center_min, h_center_max, R, verts_mapped):
     plt.show()
 
 def compute_swept_sphere(visual_mesh, 
-        n_sphere=5, 
-        margin_factor=1.01, 
-        with_debug_view=False):
-
+        n_sphere=-1, 
+        tol=0.1, 
+        margin_factor=1.01):
+    """
+    n_sphere : if set -1, number of sphere is automatically determined.
+    tol : tolerance
+    """
     verts = visual_mesh.vertices
     mean = np.mean(verts, axis=0)
     verts_slided = verts - mean[None, :]
@@ -73,19 +77,35 @@ def compute_swept_sphere(visual_mesh,
     h_center_max = get_h_center_max()
     h_center_min = get_h_center_min()
 
-    if with_debug_view:
-        debug_view(h_center_min, h_center_max, R, verts_mapped)
+    def create_centers_feature_space(n_sphere):
+        h_centers = np.linspace(h_center_min, h_center_max, n_sphere)
+        centers = np.zeros((n_sphere, 3))
+        centers[:, principle_axis] = h_centers
+        return centers
 
-    h_centers = np.linspace(h_center_min, h_center_max, n_sphere)
-
-    centers_feature_space = np.zeros((n_sphere, 3)) # reserve
-    centers_feature_space[:, principle_axis] = h_centers
+    if n_sphere == -1: # n_sphere is automatically determined
+        n_sphere = 1
+        while True:
+            centers_feature_space = create_centers_feature_space(n_sphere)
+            dists_foreach_sphere = np.array([np.sqrt(np.sum((verts_mapped - c[None, :])**2, axis=1)) for c in centers_feature_space])
+            sdfs = np.min(dists_foreach_sphere, axis=0) - R
+            maxsdf = np.max(sdfs)
+            err_ratio = maxsdf/R
+            print(err_ratio)
+            print(tol)
+            if err_ratio < tol:
+                break
+            n_sphere+=1
+    else:
+        centers_feature_space = create_centers_feature_space(n_sphere)
     centers_original_space = inverse_map(centers_feature_space)
+
     return centers_original_space, R
 
 if __name__=='__main__':
-    m = MeshLink("./forearm.obj") # PR2
-    centers, R = compute_swept_sphere(m.visual_mesh, 30, False)
+    #m = MeshLink("./forearm.obj") # PR2
+    m = MeshLink("./gripper_palm.obj") # PR2
+    centers, R = compute_swept_sphere(m.visual_mesh, -1)
     verts = m.visual_mesh.vertices
     # any v in verts must be include at least a sphere
     logicals_list = [np.sum((verts - c[None, :])**2, axis=1) < R**2 \
@@ -93,14 +113,9 @@ if __name__=='__main__':
     logicals_array = np.array(logicals_list)
     res_for_each_vert = np.any(logicals_array, axis=0)
     res = np.all(res_for_each_vert)
-    assert res, "test fail"
-    print(res)
+    #assert res, "test fail"
 
-    # testing
-    if False: # visualize
-        import time
-        viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
-        [viewer.add(s) for s in [Sphere(radius=R, pos=c) for c in centers]]
-        viewer.add(m)
-        viewer.show()
-        time.sleep(3)
+    viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
+    [viewer.add(s) for s in [Sphere(radius=R, pos=c) for c in centers]]
+    viewer.add(m)
+    viewer.show()
