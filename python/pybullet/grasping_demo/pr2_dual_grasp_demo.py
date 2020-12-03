@@ -140,8 +140,8 @@ lgripper.set_gripper_width(0.5, force=True)
 
 time.sleep(7)
 rgripper.set_gripper_width(0.0)
-rgripper.set_state([-0.2, 0.5, -0.01])
-lgripper.set_state([0, 0, 0.5])
+rgripper.set_state([-0.2, 0.5, 0.0])
+lgripper.set_state([0, 0, 0])
 rgripper.set_pose([-1.54, 0.8, -1.57])
 
 for i in range(100):
@@ -149,7 +149,7 @@ for i in range(100):
     time.sleep(0.005)
 
 rgripper.set_state([0.0, -0.5, 0.0])
-lgripper.set_state([0.0, -0.5, 0.1])
+lgripper.set_state([0.0, -0.5, 0.0])
 for i in range(1000):
     pb.stepSimulation(physicsClientId=CLIENT)
     time.sleep(0.005)
