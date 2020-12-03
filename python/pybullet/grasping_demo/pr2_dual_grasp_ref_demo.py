@@ -169,7 +169,7 @@ class Simulator(object):
             print("plate ID", self.plate)
             self.rgripper = RGripper()
             self.lgripper = LGripper()
-        self.try_num = 5
+        self.try_num = 100
         self.frames = []
         pb.resetDebugVisualizerCamera(2.0, 90, -0.0, (0.0, 0.0, 1.0))
         
@@ -187,11 +187,17 @@ class Simulator(object):
         table_pos = np.array([0.0, 0.0, 0.0])
         utils.set_point(self.table, table_pos)
         utils.set_zrot(self.table, pi*0.5)
-        utils.set_point(self.plate, [0.0, 0.0, 0.63])
-        self.rgripper.set_basepose([0, 0.25, 0.78], [-1.54, 0.6, -1.57])
+        table_x = np.random.rand()-0.5
+        table_y = np.random.rand()-0.5
+        #utils.set_point(self.plate, [0.0, 0.0, 0.63])
+        utils.set_point(self.plate, [table_x, table_y, 0.63])
+        #self.rgripper.set_basepose([0, 0.25, 0.78], [-1.54, 0.6, -1.57])
+        plate_pos = utils.get_point(self.plate) #Get target obj center position
+        self.rgripper.set_basepose(np.array([0, 0.25, 0.78]) + np.array([plate_pos[0], plate_pos[1], 0]), [-1.54, 0.5, -1.57])
         self.rgripper.set_state([0, 0, 0])
         self.rgripper.set_angle(self.rgripper.gripper, 0)
-        self.lgripper.set_basepose([0, -0.23, 0.77], [1.54, 0.65, 1.57])
+        #self.lgripper.set_basepose([0, -0.23, 0.77], [1.54, 0.65, 1.57])
+        self.lgripper.set_basepose(np.array([0, -0.24, 0.78]) + np.array([plate_pos[0], plate_pos[1], 0]), [1.54, 0.65, 1.57])
         self.lgripper.set_state([0, 0, 0])
         self.lgripper.set_angle(self.lgripper.gripper, 0)
         self.rgripper.set_gripper_width(0.5, force=True)
@@ -203,26 +209,43 @@ class Simulator(object):
         try:
             for try_count in six.moves.range(self.try_num):
                 self.reset()
-                self.rgripper.set_gripper_width(0.0)
-                self.rgripper.set_state([-0.2, 0.5, -0.01])
-                self.lgripper.set_state([0, 0, 0.5])
-                self.rgripper.set_pose([-1.54, 0.8, -1.57])
-                time.sleep(3)
-                for i in range(100):
+                # Get target obj state
+                plate_pos = utils.get_point(self.plate) #Get target obj center position
+
+                # Approaching and close right gripper
+                roll = np.random.rand() * pi * 2 
+                pitch = np.random.rand() * pi / 8 + pi / 8 
+                print("pitch", pitch)
+                yaw = np.random.rand() * pi * 2 
+                #self.rgripper.set_state(np.array([0, 0.5, 0]) + np.array([plate_pos[0], plate_pos[1], 0])) #np.array(plate_pos))
+                self.rgripper.set_state([-0.3, 0.5, 0]) #Success position
+                #self.lgripper.set_state(np.array([0, 0, 0]) + np.array([plate_pos[0], plate_pos[1], 0])) # np.array(plate_pos))
+                self.lgripper.set_state([-0.2, 0.1, 0]) #Success position
+                #self.rgripper.set_pose([-1.54, 0.8, -1.57]) #Success Scooping
+                for i in range(40):
                     pb.stepSimulation()
+                    
+                    if len(pb.getContactPoints(bodyA=1, bodyB=3)):
+                        self.rgripper.set_state([0.3-i, 0.5+i, 0])
+                    else:
+                        self.rgripper.set_state([0.3+i, 0.5+i, 0])
                     width, height, rgbImg, depthImg, segImg = pb.getCameraImage(
                             360,
                             240,
                             viewMatrix=self.viewMatrix)
                     self.frames.append(rgbImg)
-                    time.sleep(0.005)
+                    if len(pb.getContactPoints(bodyA=2, bodyB=3)):
+                        self.rgripper.set_pose([-1.54, pitch, -1.57]) #Random Scooping
+                        #self.rgripper.set_pose([-1.54, 0.7, -1.57]) #Random Scooping
+                        self.rgripper.set_gripper_width(0.0)
 
                 # Picking up
                 self.rgripper.set_state([0.0, -0.5, 0.0])
-                self.lgripper.set_state([0.0, -0.5, 0.1])
+                self.lgripper.set_state([0.0, -0.5, 0.0])
+                self.rgripper.set_angle(self.rgripper.gripper, 0)
 
                 contact_len = 0
-                for i in range(100):
+                for i in range(50):
                     pb.stepSimulation()
                     width, height, rgbImg, depthImg, segImg = pb.getCameraImage(
                             width=360,
@@ -237,7 +260,6 @@ class Simulator(object):
                     print("Failed!!!")
                 else:
                     print("Succeeded!!!")
-                self.reset()
             save_video(self.frames, "sample.mp4")
 
         except KeyboardInterrupt:
@@ -246,5 +268,5 @@ class Simulator(object):
 if __name__ == '__main__':
     sim = Simulator()
     sim.rollout()
-    self.pybullet.disconnect()
+    pb.disconnect()
 
