@@ -1,6 +1,11 @@
 <?xml version="1.0"?>
 <robot name="box">
   <link name="base_link">
+    <contact>
+      <lateral_friction value="0.99"/>
+      <rolling_friction value="0.99"/>
+      <spinning_friction value="0.99"/>
+    </contact>
     <visual>
       <geometry>
         <mesh filename="convert1_ornamentalplate.stl"/>
