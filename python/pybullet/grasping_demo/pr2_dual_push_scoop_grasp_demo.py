@@ -189,6 +189,7 @@ class Simulator(object):
         table_x = np.random.rand()-0.5
         table_y = np.random.rand()-0.5
         utils.set_point(self.plate, [table_x, table_y, 0.63])
+        plate_pos = utils.get_point(self.plate) #Get target obj center position
         self.rgripper.set_basepose(np.array([0, 0.25, 0.78]) + np.array([plate_pos[0], plate_pos[1], 0]), [-1.54, 0.5, -1.57])
         self.rgripper.set_state([0, 0, 0])
         self.rgripper.set_angle(self.rgripper.gripper, 0)
@@ -197,7 +198,6 @@ class Simulator(object):
         self.lgripper.set_angle(self.lgripper.gripper, 0)
         self.rgripper.set_gripper_width(0.5, force=True)
         self.lgripper.set_gripper_width(0.5, force=True)
-        plate_pos = utils.get_point(self.plate) #Get target obj center position
         """
         Currently, 
         If plate is on the right side, grasping tactics is rotational grasping.
