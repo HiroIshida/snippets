@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.4 FATAL_ERROR)
+add_subdirectory("subsub_module")
+include_directories("subsub_module")
+add_library(moduleA STATIC "a.cpp")
+target_link_libraries(moduleA moduleB)

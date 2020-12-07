@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.4 FATAL_ERROR)
+add_subdirectory("sub_module")
+include_directories("sub_module")
+add_executable(out main.cpp)
+target_link_libraries(out moduleA)
