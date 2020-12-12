@@ -10,6 +10,9 @@ import numpy as np
 import time
 import six
 import utils
+import skrobot
+from skrobot.models import PR2
+from skrobot.interfaces import PybulletRobotInterface
 from grasp_utils import *
 
 from gripper import RGripper, LGripper
@@ -35,6 +38,9 @@ class Simulator(object):
             print("plate ID", self.plate)
             self.rgripper = RGripper()
             self.lgripper = LGripper()
+            #self.robot_model = skrobot.models.urdf.RobotModelFromURDF(urdf_file=skrobot.data.pr2_urdfpath())
+            self.robot_model = PR2()
+            interface = PybulletRobotInterface(self.robot_model)
         self.try_num = 100 #Simulator loop times
         self.frames = [] #Movie buffer
         pb.resetDebugVisualizerCamera(2.0, 90, -0.0, (0.0, 0.0, 1.0))
@@ -54,9 +60,9 @@ class Simulator(object):
         table_pos = np.array([0.0, 0.0, 0.0])
         utils.set_point(self.table, table_pos)
         utils.set_zrot(self.table, pi*0.5)
-        table_x = np.random.rand()-0.5
-        table_y = np.random.rand()-0.5
-        utils.set_point(self.plate, [table_x, table_y, 0.63])
+        plate_x = np.random.rand()-0.5
+        plate_y = np.random.rand()-0.5
+        utils.set_point(self.plate, [plate_x, plate_y, 0.63])
         plate_pos = utils.get_point(self.plate) #Get target obj center position
         self.rgripper.set_basepose(np.array([0, 0.25, 0.78]) + np.array([plate_pos[0], plate_pos[1], 0]), [-1.54, 0.5, -1.57])
         self.rgripper.set_state([0, 0, 0])
@@ -66,6 +72,11 @@ class Simulator(object):
         self.lgripper.set_angle(self.lgripper.gripper, 0)
         self.rgripper.set_gripper_width(0.5, force=True)
         self.lgripper.set_gripper_width(0.5, force=True)
+        """
+        Initialize robot state
+        """
+        #self.robot_model = 
+
         """
         Currently, 
         If plate is on the right side, grasping tactics is rotational grasping.
