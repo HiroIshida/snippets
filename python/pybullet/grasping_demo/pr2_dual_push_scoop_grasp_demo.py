@@ -17,24 +17,20 @@ from gripper import RGripper, LGripper
 
 class Simulator(object):
     def __init__(self):
-        try:
-            isInit
-        except:
-            isInit = True
-            CLIENT = pybullet.connect(pybullet.GUI)
-            print("client",CLIENT)
-            pb.setAdditionalSearchPath(pybullet_data.getDataPath()) #used by loadURDF
-            plane = pybullet.loadURDF("plane.urdf")
-            print("plane ID", plane)
-            #pb.configureDebugVisualizer(pybullet.COV_ENABLE_GUI, 0, physicsClientId=CLIENT)
-            #pb.configureDebugVisualizer(pybullet.COV_ENABLE_TINY_RENDERER, 0, physicsClientId=CLIENT)
-            pb.setGravity(0,0,-10.0)
-            self.table = pb.loadURDF("table/table.urdf")
-            print("table ID", self.table)
-            self.plate = pb.loadURDF("dish/plate.urdf")
-            print("plate ID", self.plate)
-            self.rgripper = RGripper()
-            self.lgripper = LGripper()
+        CLIENT = pybullet.connect(pybullet.GUI)
+        print("client",CLIENT)
+        pb.setAdditionalSearchPath(pybullet_data.getDataPath()) #used by loadURDF
+        plane = pybullet.loadURDF("plane.urdf")
+        print("plane ID", plane)
+        #pb.configureDebugVisualizer(pybullet.COV_ENABLE_GUI, 0, physicsClientId=CLIENT)
+        #pb.configureDebugVisualizer(pybullet.COV_ENABLE_TINY_RENDERER, 0, physicsClientId=CLIENT)
+        pb.setGravity(0,0,-10.0)
+        self.table = pb.loadURDF("table/table.urdf")
+        print("table ID", self.table)
+        self.plate = pb.loadURDF("dish/plate.urdf")
+        print("plate ID", self.plate)
+        self.rgripper = RGripper()
+        self.lgripper = LGripper()
         self.try_num = 100 #Simulator loop times
         self.frames = [] #Movie buffer
         pb.resetDebugVisualizerCamera(2.0, 90, -0.0, (0.0, 0.0, 1.0))
@@ -159,7 +155,10 @@ class Simulator(object):
             sys.exit()
 
 if __name__ == '__main__':
-    sim = Simulator()
-    sim.rollout()
-    pb.disconnect()
+    try:
+        sim
+    except:
+        sim = Simulator()
+        sim.rollout()
+        pb.disconnect()
 
