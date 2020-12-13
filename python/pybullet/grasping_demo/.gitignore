@@ -1,3 +1,4 @@
 *.pyc
-*/meshes
-
+*.swo
+*/meshes/*
+*.mp4
