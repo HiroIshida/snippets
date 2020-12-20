@@ -25,9 +25,7 @@ class TestRefMove // using move
 {
   public:
     vector<double> heck;
-    TestRefMove(vector<double>& aho){
-      heck = move(aho);
-    }
+    TestRefMove(vector<double> aho) : heck(std::move(aho)) {}
 };
 
 int main(){
@@ -52,7 +50,7 @@ int main(){
 
   {
     clock_t start = clock();
-    auto x = TestRefMove(a);
+    auto x = TestRefMove(std::move(a));
     clock_t end = clock();
     cout << end - start << endl;
   }
