@@ -35,16 +35,19 @@ struct SubMatrix
   double& get(int i, int j){
     return _data[this->get_idx(i, j)];
   }
+  double& operator() (int i, int j){
+    return _data[this->get_idx(i, j)];
+  }
 };
 
 int main(){
   {
     MatrixXd m(8, 6);
     auto bm = SubMatrix(m, 2, 2, 2, 2);
-    bm.get(0, 0) = 1;
-    bm.get(0, 1) = 2;
-    bm.get(1, 0) = 3;
-    bm.get(1, 1) = 4;
+    bm(0, 0) = 1;
+    bm(0, 1) = 2;
+    bm(1, 0) = 3;
+    bm(1, 1) = 4;
     std::cout << m << std::endl; 
   }
 
@@ -61,7 +64,7 @@ int main(){
 
       for(int i=0; i<N; i++){
         for(int j=0; j<M; j++){
-          bm.get(i, j) = 1.0;
+          bm(i, j) = 1.0;
         }
       }
     }
