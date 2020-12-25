@@ -2,10 +2,11 @@
 #include<Eigen/Core>
 #include <cassert>
 #include <time.h>
+
 using namespace Eigen;
 using namespace std;
 
-struct EasyBlockMatrix
+struct SubMatrix
 {
   double* _data; // beginning of the block matrix
   int _i_begin;
@@ -17,20 +18,17 @@ struct EasyBlockMatrix
   int _n_whole;
   int _m_whole;
 
-  EasyBlockMatrix(Eigen::MatrixXd& mat, int i_begin, int j_begin, int n, int m) : 
+  SubMatrix(Eigen::MatrixXd& mat, int i_begin, int j_begin, int n, int m) : 
     _data(mat.data()),
     _i_begin(i_begin), _j_begin(j_begin),
     _n_block(n), _m_block(m),
     _n_whole(mat.rows()), _m_whole(mat.cols()) {}
 
-  int get_idx(int i, int j){
-    int i_global = i + _i_begin;
-    int j_global = j + _j_begin;
-
+  inline int get_idx(int i, int j){
     assert(i<_n_whole && "out of index");
     assert(j<_m_whole && "out of index");
 
-    int idx = _n_whole * j_global + i_global;
+    int idx = _n_whole * (j+_j_begin) + (i+_i_begin);
     return idx;
   }
 
@@ -42,7 +40,7 @@ struct EasyBlockMatrix
 int main(){
   {
     MatrixXd m(8, 6);
-    auto bm = EasyBlockMatrix(m, 2, 2, 2, 2);
+    auto bm = SubMatrix(m, 2, 2, 2, 2);
     bm.get(0, 0) = 1;
     bm.get(0, 1) = 2;
     bm.get(1, 0) = 3;
@@ -59,7 +57,7 @@ int main(){
     for(int k=0; k<n_itr; k++){
 
       MatrixXd m(N, M);
-      auto bm = EasyBlockMatrix(m, 0, 0, N, M);
+      auto bm = SubMatrix(m, 0, 0, N, M);
 
       for(int i=0; i<N; i++){
         for(int j=0; j<M; j++){
@@ -76,9 +74,10 @@ int main(){
     for(int k=0; k<n_itr; k++){
 
       MatrixXd m(N, M);
+      double* ptr = m.data();
       for(int i=0; i<N; i++){
         for(int j=0; j<M; j++){
-          m(i, j) = 1.0;
+          ptr[j*N+i] = 1.0;
         }
       }
     }
