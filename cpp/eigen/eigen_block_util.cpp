@@ -1,6 +1,7 @@
 #include<iostream>
 #include<Eigen/Core>
 #include <cassert>
+#include <time.h>
 using namespace Eigen;
 using namespace std;
 
@@ -39,12 +40,50 @@ struct EasyBlockMatrix
 };
 
 int main(){
-  MatrixXd m(6, 6);
-  auto bm = EasyBlockMatrix(m, 2, 2, 2, 2);
-  bm.get(0, 0) = 1;
-  bm.get(0, 1) = 2;
-  bm.get(1, 0) = 3;
-  bm.get(1, 1) = 4;
-  std::cout << m << std::endl; 
-  bm.get(1, 10) = 4;
+  {
+    MatrixXd m(8, 6);
+    auto bm = EasyBlockMatrix(m, 2, 2, 2, 2);
+    bm.get(0, 0) = 1;
+    bm.get(0, 1) = 2;
+    bm.get(1, 0) = 3;
+    bm.get(1, 1) = 4;
+    std::cout << m << std::endl; 
+  }
+
+  // check how does it slow
+  int n_itr = 1000;
+  int N = 100;
+  int M = 100;
+  {
+    clock_t start = clock();
+    for(int k=0; k<n_itr; k++){
+
+      MatrixXd m(N, M);
+      auto bm = EasyBlockMatrix(m, 0, 0, N, M);
+
+      for(int i=0; i<N; i++){
+        for(int j=0; j<M; j++){
+          bm.get(i, j) = 1.0;
+        }
+      }
+    }
+    clock_t end = clock();
+    cout << end - start << endl;
+  }
+
+  {
+    clock_t start = clock();
+    for(int k=0; k<n_itr; k++){
+
+      MatrixXd m(N, M);
+      for(int i=0; i<N; i++){
+        for(int j=0; j<M; j++){
+          m(i, j) = 1.0;
+        }
+      }
+    }
+    clock_t end = clock();
+    cout << end - start << endl;
+  }
+  // bm.get(1, 10) = 4; assertion error
 }
