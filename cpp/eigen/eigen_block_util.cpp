@@ -82,42 +82,16 @@ int main(){
     }
     std::cout << m_ << std::endl; 
   }
-
-  // check how does it slow
-  int n_itr = 1000;
-  int N = 100;
-  int M = 100;
-  {
-    clock_t start = clock();
-    for(int k=0; k<n_itr; k++){
-
-      MatrixXd m(N, M);
-      auto bm = SubMatrix(m, 0, 0, N, M);
-
-      for(int i=0; i<N; i++){
-        for(int j=0; j<M; j++){
-          bm(i, j) = 1.0;
-        }
+  MatrixXd m_(30, 30);
+  SubMatrix m(m_); 
+  for(int i=0; i<3; i++){
+    SubMatrix a = m.block(10*i, 10*i, 10, 10);
+    for(int j=0; j<10; j++){
+      SubMatrix c = a.slice(j);
+      for(int k=0; k<10; k++){
+        c[k] = k;
       }
     }
-    clock_t end = clock();
-    cout << end - start << endl;
   }
-
-  {
-    clock_t start = clock();
-    for(int k=0; k<n_itr; k++){
-
-      MatrixXd m(N, M);
-      double* ptr = m.data();
-      for(int i=0; i<N; i++){
-        for(int j=0; j<M; j++){
-          ptr[j*N+i] = 1.0;
-        }
-      }
-    }
-    clock_t end = clock();
-    cout << end - start << endl;
-  }
-  // bm.get(1, 10) = 4; assertion error
+  std::cout << m_ << std::endl; 
 }
