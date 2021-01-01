@@ -90,7 +90,7 @@ b_door.translate([0.0, 0.5 * width, 0.0])
 xml_door_link = create_xml_link("door_link", [b_door])
 
 # create handle_link
-b_handle = Box([0.1, 0.02, 0.2]
+b_handle = Box([0.1, 0.02, 0.2])
 xml_handle_link = create_xml_link("handle_link", [b_handle], with_collision=False)
 
 xml_door_joint = create_xml_joint("door_joint", "revolute", "base_link", "door_link", [0, 0, 1], xyz=[-0.5*width, -0.5*width, 0.5*height], rpy=[0, 0, 0])
