@@ -10,10 +10,12 @@ function main()
         push!(idxes, i)
     end
 
+    ids = 0
     function bench1()
         for i in 1:10000
             for j in 1:100
                 joint = joints[j]
+                ids = joint.id
             end
         end
     end
@@ -24,6 +26,7 @@ function main()
             for j in 1:100
                 idx = idxes[j]
                 joint = joints[idx]
+                ids = joint.id
             end
         end
     end
