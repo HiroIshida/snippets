@@ -1,3 +1,12 @@
+## ROS のTFの定義
+
+```
+tf_source_to_target = self.listener.lookupTransform(
+    target_frame, source_frame, rospy.Time(0))
+```
+としたとき, source = camera, target=baseとしたとき, z=1.7となるので. targetからみたsourceの座標系となっている. つまりsourceの基底をtargetの基底に変換している. 
+
+
 ## typical example 
 ```python
 import rospy
