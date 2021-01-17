@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find pr2_base_trajectory_action)/launch/pr2_base_trajectory_action.launch"/>
+  <include file="$(find pr2_gazebo)/launch/pr2_empty_world.launch"/>
+</launch>
+
