@@ -1,7 +1,8 @@
 const liblapack = Base.liblapack_name
+import LinearAlgebra.LAPACK: chklapackerror
 import LinearAlgebra.BLAS.@blasfunc
-import LinearAlgebra: BlasFloat, BlasInt, LAPACKException,
-    DimensionMismatch, SingularException, PosDefException, chkstride1, checksquare
+import LinearAlgebra: BlasFloat, BlasInt, LAPACKException, I, cholesky
+    DimensionMismatch, SingularException, PosDefException, chkstride1, checksquare,
 
 using LinearAlgebra: triu, tril, dot
 
@@ -20,6 +21,8 @@ function dpbtf!(uplo::AbstractChar, n::Integer, kd::Integer, AB::AbstractMatrix{
            Ref{BlasInt},
            Ptr{BlasInt}),
           uplo, n, kd, AB, LDAB, info)
+    chklapackerror(info[])
+    return AB
 end
 # as for doc for dpbtrf
 # http://www.netlib.org/lapack/lapack-3.1.1/html/dpbtrf.f.html
@@ -27,14 +30,16 @@ end
 # https://www.netlib.org/lapack/lug/node124.html
 #
 # Fro cholesky to be done, A must be positive definite. So, it is strange that Toussaint's paper claims that they can use dpbtf to the least square norm which is positive semi-defintie.
-AB = [1 -1; 2 -1; 1 0.]
+#AB = [1+0.01 -1; 2+0.01 -1; 1+0.01 0.]
+AB = [1.01 2.01 1.01; -1. -1 0]
 uplo = 'L'
-dpbtf!(uplo, 3, 1, AB)
+out = dpbtf!(uplo, 3, 1, AB)
 
 A = [1 -1 0.;
      -1 2 -1;
      0 -1 1]
-cholesky(A)
+lambda = 0.01
+cholesky(A+lambda * Matrix{Float64}(I, 3, 3))
 
 
 
