@@ -1,4 +1,5 @@
 import copy
+import time
 import numpy as np 
 import scipy.optimize as opt
 
@@ -17,13 +18,13 @@ def compute_grad(f, x):
     return grad
 
 def check_kkt_condition(x_sol, lam_sol, f, ceq, cineq): 
-    Lag = lambda x: f(x) - lam_sol[0] * ceq(x) - lam_sol[1] * cineq(x)
+    Lag = lambda x: f(x)[0] - lam_sol[0] * ceq(x)[0] - lam_sol[1] * cineq(x)[0]
     grad_Lag = compute_grad(Lag, x_sol)
 
     eps = 1e-3
     assert np.linalg.norm(grad_Lag) < eps, "grad of lag is {0}".format(grad_Lag)
     print("passed condition of laggrad")
-    assert ceq(x_sol) < eps
+    assert ceq(x_sol)[0] < eps
     print("passed eq feasiblity")
 
     assert cineq(x_sol) > 0 - eps
@@ -32,8 +33,8 @@ def check_kkt_condition(x_sol, lam_sol, f, ceq, cineq):
     assert lam_sol[1] > 0 - eps
     print("passed multiplier condition")
 
-    assert abs(lam_sol[0] *  ceq(x_sol)) < eps
-    assert abs(lam_sol[1] *  cineq(x_sol)) < eps
+    assert abs(lam_sol[0] *  ceq(x_sol)[0]) < eps
+    assert abs(lam_sol[1] *  cineq(x_sol)[0]) < eps
     print("passed dual condition")
 
 
@@ -49,23 +50,47 @@ def auglag(x0, lam0, mu, tau, f, ceq, cineq):
         else:
             return - 0.5 * mu * sigma ** 2
 
-    for i in range(40):
-        Lag = lambda x: f(x) - lam_now[0] * ceq(x) + 1.0/(2 * mu_now) * ceq(x)**2 \
-                + psi(cineq(x), lam_now[1], mu_now)
+    for i in range(50):
+        def Lag(x):
+            obj_val, obj_grad = obj(x)
+            ceq_val, ceq_grad = ceq(x)
+            cineq_val, cineq_grad = cineq(x)
 
-        res = opt.minimize(Lag, x_now, method='BFGS', options={'disp': False, 'gtol': tau})
+            lag_val =  obj_val - lam_now[0] * ceq_val + 1.0/(2 * mu_now) * ceq_val ** 2 \
+                    + psi(cineq_val, lam_now[1], mu_now)
+            return lag_val
+
+        #res = opt.minimize(Lag, x_now, method='BFGS', options={'disp': False, 'gtol': tau})
+
+        ts = time.time()
+        res = opt.least_squares(Lag, x_now, ftol=1e-03)
+        te = time.time()
+        print(te - ts)
+
         x_star_approx = res.x
 
         x_now = x_star_approx
-        lam_now[0] -= ceq(x_star_approx)/mu_now
-        lam_now[1] = max(lam_now[1] - cineq(x_star_approx)/mu_now, 0)
+        lam_now[0] -= ceq(x_star_approx)[0]/mu_now
+        lam_now[1] = max(lam_now[1] - cineq(x_star_approx)[0]/mu_now, 0)
         mu_now *= 0.9 # if I set it to smaller, the x_opt diverges ...
         tau_now *= 0.1
 
     check_kkt_condition(x_now, lam_now, f, ceq, cineq)
     return x_now
 
-f = lambda x : x[0] ** 2 + x[1]**2
-ceq = lambda x : x[1] - ((x[0]-1)**2 + 1)
-cineq = lambda x: x[1] - (x[0] + 2)
-x_opt = auglag([30.0, 30.0], [100.0, 100.0], 10.0, 1e-3, f, ceq, cineq)
+def obj(x): 
+    f = x[0] ** 2 + x[1]**2
+    grad = 2 * x
+    return f, grad
+
+def ceq(x):
+    f = x[1] - ((x[0]-1)**2 + 1)
+    grad = np.array([- 2 * x[0], 1])
+    return f, grad
+
+def cineq(x):
+    f = x[1] - (x[0] + 2)
+    grad = np.array([-1, 1])
+    return f, grad
+
+x_opt = auglag([30.0, 30.0], [100.0, 100.0], 10.0, 1e-3, obj, ceq, cineq)
