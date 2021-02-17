@@ -3,6 +3,7 @@ from sklearn.metrics import pairwise
 import matplotlib.pyplot as plt 
 import numpy as np
 import math
+from math import *
 
 def circle_metric(X_sub, Y_sub): # circle subspace
     X_vec = np.vstack([np.cos(X_sub), np.sin(X_sub)]).T
@@ -49,7 +50,7 @@ def generate_cylinder_kernel(gammas = None):
         for j in range(n_y):
             Y_repeated = np.repeat(np.array([Y_[j]]), n_x, axis=0)
             dists = cylinder_metric(X_, Y_repeated)
-            mat[:, j] = np.exp(- 0.01 * dists**2)
+            mat[:, j] = np.exp(- 10 * dists**2)
         return mat
     return kern
 
@@ -57,18 +58,37 @@ def generate_cylinder_kernel(gammas = None):
 
 use_svm = True
 if use_svm:
-    dataset1 = [
-            [[0, 0], [0, 0], [1, 1]],
-            [0, 0, 1]
-            ]
-    dataset2 = [
-            [[0, 0], [1., 1]],
-            [0, 1]
-            ]
-    kern = generate_cylinder_kernel()
-    clf = svm.SVC(kernel = kern)
+    slide = 2.0 
+    radius = 1.0
+    scale = 1.0
+    n_positive = 20
+    X_positive = np.array([[radius * cos(2 * pi * i/n_positive), radius * sin(2 * pi * i/n_positive)] for i in range(n_positive)])
+    X_positive[:, 0] *= scale
+    X_positive[:, 0] += slide
+    Y = [1] * n_positive
+
+    n_negative = 20
+    X_negative = []
+    while(True):
+        x_cand = np.random.rand(2) * 2 - np.ones(2)
+        if np.sqrt(x_cand[0] ** 2 + x_cand[1] ** 2) < radius * 0.8:
+            X_negative.append(x_cand)
+        if len(X_negative) == n_negative:
+            break
+    X_negative = np.array(X_negative)
+    X_negative[:, 0] *= scale
+    X_negative[:, 0] += slide
+    X = np.vstack((X_positive, X_negative))
+    Y.extend([0] * n_negative)
+    dataset = [X, Y]
+    use_cylinde = True
+    if use_cylinde:
+        kern = generate_cylinder_kernel()
+        clf = svm.SVC(kernel = kern, C=100)
+    else:
+        clf = svm.SVC()
     myfit = lambda dataset : clf.fit(dataset[0], dataset[1])
-    myfit(dataset2)
+    myfit(dataset)
 
     N = 100
     lin_circle = np.linspace(-math.pi, math.pi, N)
@@ -80,5 +100,7 @@ if use_svm:
 
     fig, ax = plt.subplots()
     cs = ax.contourf(lin_circle, lin_euclidean, preds, cmap = 'jet')
+    ax.scatter(X_negative[:, 0], X_negative[:, 1], c="red")
+    ax.scatter(X_positive[:, 0], X_positive[:, 1], c="blue")
     plt.show()
 
