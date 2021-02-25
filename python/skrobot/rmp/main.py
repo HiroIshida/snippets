@@ -5,12 +5,8 @@ import numpy as np
 import tinyfk
 from common import * 
 
-def rmp_target(x_goal, x, xd):
-    alpha = 5.0
-    beta = 40.0
-    diff = x_goal - x
-    xdd = alpha * diff/np.linalg.norm(diff) - beta * xd
-    return xdd
+def soft_normalizer(vec):
+    return vec / np.linalg.norm(vec)
 
 class RiemannianMotionPolicy(object):
     dim = 3 # for simplicity 
@@ -21,13 +17,17 @@ class RiemannianMotionPolicy(object):
         self.f = f
         self.A = A
 
+class CollisionRMP(RiemannianMotionPolicy):
+    def __init__(self): 
+        pass
+
 class TargetRMP(RiemannianMotionPolicy):
     def __init__(self, x_goal):
         def f_acc(x, xd):
             alpha = 5.0
             beta = 40.0
             diff = x_goal - x
-            xdd = alpha * diff/np.linalg.norm(diff) - beta * xd
+            xdd = alpha * soft_normalizer(diff) - beta * xd
             return xdd
         super(TargetRMP, self).__init__(f_acc)
 
