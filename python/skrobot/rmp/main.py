@@ -5,6 +5,7 @@ from skrobot.planner.utils import get_robot_config, set_robot_config
 from skrobot.model import Box
 import numpy as np
 import tinyfk
+import common
 from common import * 
 
 def normalize(vec):
@@ -13,12 +14,73 @@ def normalize(vec):
 def soft_normalizer(vec):
     return vec / np.linalg.norm(vec)
 
+def pull_back(rmp, jac):
+
+    def A_pullback(x, xd):
+        return jac.T.dot(rmp.A(x, xd)).dot(jac)
+
+    def f_acc_pullback(x, xd):
+        coef_f_pullback = np.linalg.pinv(A_pullback(x, xd)).dot(jac.T)
+        return coef_f_pullback.dot(rmp.f(x, xd)) 
+    return RiemannianMotionPolicy(f_acc_pullback, A_pullback)
+
+
 class RiemannianMotionPolicy(object):
     dim = 3 # for simplicity 
     def __init__(self, f, A):
         # f be function
         self.f = f
         self.A = A
+
+class RobotCollisionRMP(RiemannianMotionPolicy):
+    """
+    with respect to the configuration space
+    """
+
+    def __init__(self, sdf, with_base=False):
+        # delete dependency on skrobot PR2()
+        robot = skrobot.models.PR2()
+
+        #urdf_path = skrobot.data.pr2_urdfpath()
+        self.joint_list = common.rarm_joint_list(robot)
+        self.coll_link_list = common.rarm_coll_link_list(robot)
+
+        # start initializing 
+        self.with_base = False
+        self.fksolver = robot.fksolver
+        self.joint_ids = robot.fksolver.get_joint_ids([j.name for j in self.joint_list])
+        self.coll_link_ids = robot.fksolver.get_link_ids([l.name for l in self.coll_link_list])
+
+        self.rmp_collision = CollisionRMP(sdf)
+
+    def resolve(self, q, qd):
+        points, jacs_tmp = robot_model.fksolver.solve_forward_kinematics(
+                [q], self.coll_link_ids, self.joint_ids, 
+                with_rot=False, with_base=self.with_base, with_jacobian=True, use_cache=False)
+
+        n_coll_points = len(points) 
+        n_joint = len(self.joint_ids)
+
+        jacs = jacs_tmp.reshape(n_coll_points, 3, n_joint)
+
+        A_list = []
+        f_list = []
+        for x, jac in zip(points, jacs):
+            rmp_pb = pull_back(self.rmp_collision, jac)
+            xd = jac.dot(qd)
+            f = rmp_pb.f(x, xd)
+            A = rmp_pb.A(x, xd)
+
+            A_list.append(A)
+            f_list.append(f)
+
+        A_sum = sum(A_list)
+        Af_sum = sum([A.dot(f) for A, f in zip(A_list, f_list)])
+
+        A_merged = A_sum
+        f_merged = np.linalg.pinv(A_sum).dot(Af_sum)
+        return f_merged, A_merged
+
 
 class CollisionRMP(RiemannianMotionPolicy):
     def __init__(self, sdf_): 
@@ -28,13 +90,17 @@ class CollisionRMP(RiemannianMotionPolicy):
 
         def alpha(x):
             dist = sdf(x)
-            assert dist > 0.0
-            score = np.inf
-            a = min(1.0/dist, score)
+
+            cutoff = 0.01
+            minimum = 1e-8
+            a = min(max(cutoff - (cutoff * 10.0) * dist, minimum), cutoff)
+            a = 1e-8
             return a 
 
         def weight(x):
-            return 1.0/sdf(x)
+            #return alpha(x)
+            #return 1.0/sdf(x)
+            return 1e-8
 
         def f_acc_inner(x, xd):
             grad = np.zeros(3)
@@ -45,7 +111,7 @@ class CollisionRMP(RiemannianMotionPolicy):
                 x1[i] += eps
                 grad[i] = (sdf(x1) - d0)/eps
             v_hat = normalize(grad)
-            return alpha(x) * v_hat
+            return alpha(x) * v_hat# - beta(x) * np.outer(v_hat, v_hat).dot(xd)
 
         def f_acc(x, xd):
             xdd = f_acc_inner(x, xd)
@@ -62,8 +128,8 @@ class CollisionRMP(RiemannianMotionPolicy):
 class TargetRMP(RiemannianMotionPolicy):
     def __init__(self, x_goal):
         def f_acc(x, xd):
-            alpha = 5.0
-            beta = 40.0
+            alpha = 10.0
+            beta = 20.0
             diff = x_goal - x
             xdd = alpha * soft_normalizer(diff) - beta * xd
             return xdd
@@ -72,16 +138,6 @@ class TargetRMP(RiemannianMotionPolicy):
             return np.eye(3)
 
         super(TargetRMP, self).__init__(f_acc, A)
-
-def pull_back(rmp, jac):
-
-    def A_pullback(x, xd):
-        return jac.T.dot(rmp.A(x, xd)).dot(jac)
-
-    def f_acc_pullback(x, xd):
-        coef_f_pullback = np.linalg.pinv(A_pullback(x, xd)).dot(jac.T)
-        return coef_f_pullback.dot(rmp.f(x, xd)) 
-    return RiemannianMotionPolicy(f_acc_pullback, A_pullback)
 
 def sum_rmp(rmp1, rmp2):
     def A_sum(x, xd):
@@ -99,8 +155,8 @@ def sum_rmp(rmp1, rmp2):
 
 if __name__=='__main__':
     robot_model = skrobot.models.PR2()
-    table = Box(extents=[0.6, 0.2, 0.2], with_sdf=True)
-    table.translate([0.5, -0.4, 0.8])
+    table = Box(extents=[0.6, 0.1, 0.1], with_sdf=True)
+    table.translate([0.5, -0.4, 1.4])
 
     #fksolver = tinyfk.RobotModel(robot_model.urdf_path)
     coll_link_list = rarm_coll_link_list(robot_model)
@@ -121,12 +177,14 @@ if __name__=='__main__':
     x_goal = np.array([0.4, -0.8, 0.7])
     rmp_target = TargetRMP(x_goal)
     rmp_collision = CollisionRMP(table.sdf)
+    rmp_rc = RobotCollisionRMP(table.sdf)
 
     time.sleep(1.0)
 
 
-    dt = 5e-2
-    for i in range(300):
+    dt = 1e-2
+    for i in range(10000):
+        print(i)
         P, J = robot_model.fksolver.solve_forward_kinematics(
                 [q], [ef_id], joint_ids, 
                 with_rot=False, with_base=False, with_jacobian=True, use_cache=False)
@@ -135,8 +193,15 @@ if __name__=='__main__':
         rmp_pullback_target = pull_back(rmp_target, J)
         rmp_pullback_collision = pull_back(rmp_collision, J)
 
+        ts = time.time()
+        f1, A1 = rmp_rc.resolve(q, qd)
+        f2 = rmp_pullback_target.f(x, x_dot)
+        A2 = rmp_pullback_target.A(x, x_dot)
+        f_whole = np.linalg.pinv(A1 + A2).dot(A1.dot(f1) + A2.dot(f2))
+        #print(time.time() - ts)
+
         rmp_sum = sum_rmp(rmp_pullback_target, rmp_pullback_collision)
-        qdd_sum = rmp_sum.f(x, x_dot)
+        qdd_sum = f_whole
         qd = qd + qdd_sum * dt
         q = get_robot_config(robot_model, joint_list, with_base=False)
         set_robot_config(robot_model, joint_list, q + qd * dt, with_base=False)
