@@ -1,5 +1,10 @@
 #include <Python.h>
 
+#if PY_MAJOR_VERSION >= 3
+// https://stackoverflow.com/questions/32295927/failed-c-extension-compilation-for-python
+#define PY3K
+#endif
+
 static PyObject *method_fputs(PyObject *self, PyObject *args) {
     char *str, *filename = NULL;
     PyObject* pymat;
@@ -30,6 +35,7 @@ static PyMethodDef FputsMethods[] = {
 };
 
 
+#ifdef PY3K
 static struct PyModuleDef fputsmodule = {
     PyModuleDef_HEAD_INIT,
     "fputs",
@@ -41,3 +47,9 @@ static struct PyModuleDef fputsmodule = {
 PyMODINIT_FUNC PyInit_fputs(void) {
     return PyModule_Create(&fputsmodule);
 }
+
+#else
+PyMODINIT_FUNC PyInit_fputs(){
+    Py_InitModule3("fputs", method_fputs, "doc TODO");
+}
+#endif
