@@ -51,11 +51,11 @@ class CostMapManager(object):
 
         self._map_msg = msg
 
-        # ATO DE KESU
+        # TODO NOTE delete this later
         points = np.random.randn(100, 2)
-        points_converted = self._convert_world_to_map(points)
-        itp = self._create_map_interpolator()
-        print("itp created")
+        points_converted = self.compute_cost(points)
+        print(points_converted)
+
 
     def _convert_world_to_map(self, points):
         n_points = len(points)
@@ -77,19 +77,19 @@ class CostMapManager(object):
         xlin, ylin = [np.linspace(b_min[i], b_max[i], N_grid[i]) for i in range(2)]
 
         data_arr = np.array(self._map_msg.data).reshape(N_grid)
-        f_interp = itp.RegularGridInterpolator((xlin, ylin), data_arr)
-        return f_interp
+        f_interp = itp.RegularGridInterpolator((xlin, ylin), data_arr, bounds_error=False, fill_value=np.inf)
+        return f_interp, xlin, ylin
 
     def compute_cost(self, points):
         # these points must be w.r.t. the world frame
-        pass
-
-
-
+        points_converted = self._convert_world_to_map(points)
+        itp, xlin, ylin = self._create_map_interpolator()
+        costs = itp(points_converted)
+        return costs
 
 if __name__=='__main__':
 
     rospy.init_node('overlap_finder')
     tf_listener = tf.TransformListener()
-    CostMapManager(tf_listener)
+    CostMapManager(tf_listener, world_frame="base_link")
     rospy.spin()
