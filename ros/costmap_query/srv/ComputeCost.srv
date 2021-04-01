@@ -1,0 +1,3 @@
+geometry_msgs/PoseArray poses
+---
+std_msgs/Float32MultiArray costs
