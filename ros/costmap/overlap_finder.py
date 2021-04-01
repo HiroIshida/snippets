@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import time
 import numpy as np
 import scipy.interpolate as itp
@@ -51,12 +52,6 @@ class CostMapManager(object):
 
         self._map_msg = msg
 
-        # TODO NOTE delete this later
-        points = np.random.randn(100, 2)
-        points_converted = self.compute_cost(points)
-        print(points_converted)
-
-
     def _convert_world_to_map(self, points):
         n_points = len(points)
         map_origin = self._map_msg.info.origin
@@ -76,7 +71,7 @@ class CostMapManager(object):
         b_max = N_grid * info.resolution
         xlin, ylin = [np.linspace(b_min[i], b_max[i], N_grid[i]) for i in range(2)]
 
-        data_arr = np.array(self._map_msg.data).reshape(N_grid)
+        data_arr = np.array(self._map_msg.data).reshape(N_grid).T
         f_interp = itp.RegularGridInterpolator((xlin, ylin), data_arr, bounds_error=False, fill_value=np.inf)
         return f_interp, xlin, ylin
 
@@ -87,9 +82,24 @@ class CostMapManager(object):
         costs = itp(points_converted)
         return costs
 
+    def debug_plot(self):
+        N_grid = np.array([100, 100])
+        b_min = -np.ones(2) * 3
+        b_max = +np.ones(2) * 3
+        xlin, ylin = [np.linspace(b_min[i], b_max[i], N_grid[i]) for i in range(2)]
+        grids = np.meshgrid(xlin, ylin)
+        pts = np.array(zip(*[g.flatten() for g in grids]))
+        vals = self.compute_cost(pts).reshape(N_grid)
+
+        import matplotlib.pyplot as plt
+        plt.contourf(grids[0], grids[1], vals)
+        plt.colorbar()
+        plt.show()
+
 if __name__=='__main__':
 
     rospy.init_node('overlap_finder')
     tf_listener = tf.TransformListener()
-    CostMapManager(tf_listener, world_frame="base_link")
+    cmm = CostMapManager(tf_listener, world_frame="base_link")
     rospy.spin()
+    #cmm.debug_plot()
