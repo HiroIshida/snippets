@@ -30,6 +30,7 @@ end
 
 function eval_jac_g(x, mode, rows, cols, values)
   if mode == :Structure
+      println("structure is set!!!")
     # Constraint (row) 1
     rows[1] = 1; cols[1] = 1
     rows[2] = 1; cols[2] = 2
@@ -64,7 +65,10 @@ g_U = [2.0e19, 40.0]
 
 prob = createProblem(n, x_L, x_U, m, g_L, g_U, 8, 10,
                      eval_f, eval_g, eval_grad_f, eval_jac_g, nothing)
+# see this page for more options
+# https://coin-or.github.io/Ipopt/OPTIONS.html 
 addOption(prob, "hessian_approximation", "limited-memory")
+addOption(prob, "print_level", 3) # 1 ~ 12; 12 is most verbose
 
 #prob.x = [1.0, 5.0, 5.0, 1.0]
 function solve(prob, x)
@@ -73,6 +77,5 @@ function solve(prob, x)
 end
 using BenchmarkTools
 solve(prob, [100.0, 100.0, 100.0, 100.0])
-println(Ipopt.ApplicationReturnStatus[status])
 println(prob.x)
 println(prob.obj_val)
