@@ -11,4 +11,5 @@ chmod +x action.sh
     echo '/build'
     echo 'action.sh'
 } > .gitignore
+echo ''>> CMakeLists.txt # create CMake is not exists
 
