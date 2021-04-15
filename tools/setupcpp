@@ -1,0 +1,14 @@
+#!/bin/bash
+mkdir -p build
+chmod +x action.sh
+{
+    echo 'cd build'
+    echo 'cmake ..'
+    echo 'make -j4'
+} > action.sh
+
+{
+    echo '/build'
+    echo 'action.sh'
+} > .gitignore
+
