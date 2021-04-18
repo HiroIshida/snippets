@@ -1,7 +1,7 @@
 import numpy as np
 
 class CubicSpline(object):
-    def __init__(self, x, y):
+    def __init__(self, x, y, method='natural', dydx_start=None, dydx_end=None):
         n_piece = len(x) - 1
         n_coef = n_piece * 4
 
@@ -14,7 +14,7 @@ class CubicSpline(object):
         xx = x**2
         xxx = x**3
 
-        phi = np.vstack([ones, x, xx, xxx]).T
+        phi = np.vstack([ones, x, xx, xxx]).T # vstack of [1, x, x^2, x^3]
         phi_d = np.vstack([zeros, ones, 2 * x, 3 * xx]).T
         phi_dd = np.vstack([zeros, zeros, 2 * ones, 6 * x]).T
 
@@ -44,18 +44,27 @@ class CubicSpline(object):
             A[idx, 4*(i+1):4*(i+2)] = -phi_dd[i+1, :]
             idx += 1
 
-        # natural spline condition for start
-        A[idx, 0:4] = phi_dd[0, :]
-        idx += 1
+        if method=='natural':
+            # natural spline condition for start
+            A[idx, 0:4] = phi_dd[0, :]
+            idx += 1
 
-        # natural spline condition for end
-        A[idx, -4:] = phi_dd[n_piece, :]
-        idx += 1
+            # natural spline condition for end
+            A[idx, -4:] = phi_dd[n_piece, :]
+            idx += 1
+        elif method=='deriv':
+            A[idx, 0:4] = phi_d[0, :]
+            b[idx] = dydx_start
+            idx += 1
 
-        w = np.linalg.solve(A, b)
+            A[idx, -4:] = phi_d[n_piece, :]
+            b[idx] = dydx_end
+            idx += 1
+        else:
+            raise Exception
 
         self.x = x
-        self.w = w
+        self.w = np.linalg.solve(A, b)
 
     def __call__(self, x_query):
         i = min(np.where(x_query < self.x))[0] - 1
@@ -70,12 +79,13 @@ if __name__=='__main__':
     import time
     ts = time.time()
     for i in range(1000):
-        itp = CubicSpline(x, y)
+        itp = CubicSpline(x, y, 'deriv', 0.0, 0.0)
+        #itp = CubicSpline(x, y)
     print((time.time() - ts)/1000)
 
     y = itp(2.0)
 
-    xs = np.linspace(0.1, 8.9, 100)
+    xs = np.linspace(0.0001, 8.999, 100)
     ys = [itp(x) for x in xs]
     import matplotlib.pyplot as plt
     plt.plot(xs, ys)
