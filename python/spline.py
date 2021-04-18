@@ -1,7 +1,7 @@
 import numpy as np
 
-if __name__=='__main__':
-    def create_interp(x, y):
+class CubicSpline(object):
+    def __init__(self, x, y):
         n_piece = len(x) - 1
         n_coef = n_piece * 4
 
@@ -54,19 +54,29 @@ if __name__=='__main__':
 
         w = np.linalg.solve(A, b)
 
-        def interp(a):
-            i = min(np.where(a < x))[0] - 1
-            return np.dot(w[i * 4: (i+1) * 4], np.array([1, a, a**2, a**3]))
-        return interp
+        self.x = x
+        self.w = w
 
+    def __call__(self, x_query):
+        i = min(np.where(x_query < self.x))[0] - 1
+        return np.dot(self.w[i * 4: (i+1) * 4], 
+                np.array([1, x_query, x_query**2, x_query**3]))
+
+
+if __name__=='__main__':
     x = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     y = np.array([1, 2, 3, 2, 1.5, 1.3, 1.1, 1.0, 0.9, 0.6])
-    itp = create_interp(x, y)
+
+    import time
+    ts = time.time()
+    for i in range(1000):
+        itp = CubicSpline(x, y)
+    print((time.time() - ts)/1000)
+
     y = itp(2.0)
 
     xs = np.linspace(0.1, 8.9, 100)
     ys = [itp(x) for x in xs]
-
     import matplotlib.pyplot as plt
     plt.plot(xs, ys)
     plt.show()
