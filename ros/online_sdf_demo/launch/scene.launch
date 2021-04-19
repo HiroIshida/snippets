@@ -1,0 +1,34 @@
+<launch>
+  <!-- copied from pr2eus_tutorial and modified a bit-->
+  <arg name="gui" default="true" />
+  <arg name="physics" default="ode" />
+
+  <!-- load scene in gazebo -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="world_name" value="$(find online_sdf)/worlds/withfridge.world" />
+    <arg name="physics" value="$(arg physics)" />
+  </include>
+  <include file="$(find pr2_gazebo)/launch/pr2.launch">
+    <arg name="KINECT1" value="true" />
+    <arg name="KINECT2" value="false" />
+  </include>
+
+  <node name="kinect_throttled_points" pkg="topic_tools" type="throttle"
+        args="messages /head_mount_kinect/depth_registered/points 5.0 /kinect_head/depth_registered/throttled/points">
+    <rosparam>
+      lazy: true
+    </rosparam>
+  </node>
+  <!-- publish /kinect_head/rgb/throttled/image_rect_color like real PR2 robot -->
+  <group ns="head_mount_kinect/rgb">
+    <node name="image_proc" pkg="image_proc" type="image_proc" />
+  </group>
+  <node name="kinect_throttled_rgb" pkg="topic_tools" type="throttle"
+        args="messages /head_mount_kinect/rgb/image_rect_color 5.0 /kinect_head/rgb/throttled/image_rect_color">
+    <rosparam>
+      lazy: true
+    </rosparam>
+  </node>
+
+</launch>
