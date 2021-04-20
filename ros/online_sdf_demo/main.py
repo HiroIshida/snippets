@@ -14,6 +14,7 @@ from skrobot.model.primitives import Box
 from utils import *
 
 with_real_robot = True
+with_move_base = False
 
 robot_model = skrobot.models.PR2()
 
@@ -32,14 +33,17 @@ coll_link_list = [
 tjoint_angle = robot_model.torso_lift_joint.joint_angle()
 robot_model.reset_manip_pose()
 robot_model.torso_lift_joint.joint_angle(tjoint_angle)
-robot_model.head_tilt_joint.joint_angle(0.8)
-av_start = get_robot_config(robot_model, joint_list, with_base=False)
+robot_model.head_tilt_joint.joint_angle(0.9)
 
 
 if with_real_robot:
     ri = skrobot.interfaces.ros.PR2ROSRobotInterface(robot_model)
     ri.angle_vector(robot_model.angle_vector(), time=1.0, time_scale=1.0)
     ri.wait_interpolation()
+    if with_move_base:
+        # TODO 
+        print("NOTE that, to use this, one needs to remove point cloud on robot")
+        ri.go_pos_unsafe(x=0.1, wait=True)
 
     topic_name = "/voxblox_node/esdf_map_out"
     esdf = EsdfMapClientInterface(0.05, 16, 100.0)
@@ -48,7 +52,7 @@ if with_real_robot:
         esdf.update(msg)
     rospy.Subscriber(topic_name, Layer, callback)
     time.sleep(6.0)
-
+av_start = get_robot_config(robot_model, joint_list, with_base=False)
 
 # solve inverse kinematics to obtain av_goal
 joint_angles = np.deg2rad([-60, 74, -70, -120, -20, -30, 180])
@@ -87,7 +91,7 @@ print("solving time : {0} sec".format(time.time() - ts))
 if with_real_robot:
     for av in av_seq:
         set_robot_config(robot_model, joint_list, av, with_base=False)
-        ri.angle_vector(robot_model.angle_vector(), time=1.0, time_scale=1.0)
+        ri.angle_vector(robot_model.angle_vector(), time=0.5, time_scale=1.0)
         ri.wait_interpolation()
 else:
     viewer = skrobot.viewers.TrimeshSceneViewer(resolution=(640, 480))
@@ -96,4 +100,4 @@ else:
     for av in av_seq:
         set_robot_config(robot_model, joint_list, av, with_base=False)
         viewer.redraw()
-        time.sleep(1.0)
+        time.sleep(2.0)

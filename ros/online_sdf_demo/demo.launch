@@ -1,5 +1,6 @@
 <launch>
     <include file="$(find online_sdf)/launch/scene.launch"/>
     <include file="$(find online_sdf)/launch/voxblox.launch"/>
+    <include file="$(find pr2_base_trajectory_action)/launch/pr2_base_trajectory_action.launch" />
     <node type="rviz" name="rviz" pkg="rviz" args="-d $(find online_sdf)/config/demo_voxblox.rviz"/>
 </launch>
