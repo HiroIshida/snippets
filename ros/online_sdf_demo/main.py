@@ -13,6 +13,8 @@ from skrobot.planner import SweptSphereSdfCollisionChecker
 from skrobot.model.primitives import Box
 from utils import *
 
+with_real_robot = True
+
 robot_model = skrobot.models.PR2()
 
 link_list = [
@@ -27,15 +29,12 @@ coll_link_list = [
     robot_model.r_gripper_palm_link, robot_model.r_gripper_r_finger_link,
     robot_model.r_gripper_l_finger_link]
 
-av_goal = get_robot_config(robot_model, joint_list, with_base=False) - 0.1
-
 tjoint_angle = robot_model.torso_lift_joint.joint_angle()
 robot_model.reset_manip_pose()
 robot_model.torso_lift_joint.joint_angle(tjoint_angle)
 robot_model.head_tilt_joint.joint_angle(0.8)
 av_start = get_robot_config(robot_model, joint_list, with_base=False)
 
-with_real_robot = False
 
 if with_real_robot:
     ri = skrobot.interfaces.ros.PR2ROSRobotInterface(robot_model)
@@ -54,7 +53,7 @@ if with_real_robot:
 # solve inverse kinematics to obtain av_goal
 joint_angles = np.deg2rad([-60, 74, -70, -120, -20, -30, 180])
 set_robot_config(robot_model, joint_list, joint_angles)
-target_coords = skrobot.coordinates.Coordinates([0.8, -0.5, 1.0], [0, 0, 0])
+target_coords = skrobot.coordinates.Coordinates([0.9, -0.4, 1.0], [0, 0, 0])
 
 rarm_end_coords = skrobot.coordinates.CascadedCoords(
     parent=robot_model.r_gripper_tool_frame,
@@ -62,7 +61,7 @@ rarm_end_coords = skrobot.coordinates.CascadedCoords(
 robot_model.inverse_kinematics(
     target_coords=target_coords,
     link_list=link_list,
-    move_target=robot_model.rarm_end_coords, rotation_axis=True)
+    move_target=robot_model.rarm_end_coords, rotation_axis=False)
 av_goal = get_robot_config(robot_model, joint_list, with_base=False)
 
 if with_real_robot:
