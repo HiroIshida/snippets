@@ -12,10 +12,10 @@ float sdBox( vec3 p, vec3 b )
 
 double boxsdf(const Eigen::Vector2d& pos, const Eigen::Vector2d& b)
 {
-  Vector2d q = pos.cwiseAbs() - b;
-  Vector2d left_max(std::max(q(0), 0.0), std::max(q(1), 0.0));
+  Eigen::Vector2d q = pos.cwiseAbs() - b;
+  Eigen::Vector2d left_max(std::max(q(0), 0.0), std::max(q(1), 0.0));
   double left = left_max.norm();
-  double right = std::min(std::max(q(0), q(1)), 0.0);
+  double right = std::min(q.maxCoeff(), 0.0);
   return left + right;
 }
 int main(){
