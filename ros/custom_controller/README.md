@@ -1,4 +1,4 @@
-# buildしたコントローラがどのように呼ばれているか?
+## buildしたコントローラがどのように呼ばれているか?
 例えばgazeboでは`pr2_controller_configuration_gazebo`パッケージ内で
 ```xml
   <!-- Controllers that come up started -->
@@ -25,7 +25,9 @@
 が呼ばれている. 
 
 ## pr2_base_controller.cpp
-コールバック内で, `cmd_vel_t_` (もとの`cmd_vel_msg`をクランプしたもの)をセットしていて, update()内でその値を補間したものを`cmd_vel_`として保存し, `setJointCommands()`でコマンドを送信している. なお, update関数は周期的によばれている. update関数内では`computeDesiredCasterSteer(dT); computeDesiredWheelSpeeds();` などが呼ばれており, 中で`base_kin_`の中の`wheel_speed_cmd_`や`steer_velocity_desired_`などを更新している. 
+コールバック内で, `cmd_vel_t_` (もとの`cmd_vel_msg`をクランプしたもの)をセットしていて, update()内でその値を補間したものを`cmd_vel_`として保存し, `setJointCommands()`でコマンドを送信している. なお, update関数は周期的によばれている. なお, `update`関数内の`desired_vel_`は使用されていない模様. 
+
+update関数内では`computeDesiredCasterSteer(dT); computeDesiredWheelSpeeds();` などが呼ばれており, 中で`base_kin_`の中の`wheel_speed_cmd_`や`steer_velocity_desired_`などを更新している. 
 ```c++
     base_kin_.wheel_[i].wheel_speed_cmd_ = (wheel_point_velocity_projected.linear.x + wheel_caster_steer_component.linear.x) / (base_kin_.wheel_[i].wheel_radius_);
 
