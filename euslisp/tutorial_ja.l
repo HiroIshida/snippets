@@ -18,8 +18,8 @@
 (send *pr2* :torso_lift_joint :joint-angle 40)
 (send *ri* :angle-vector (send *pr2* :angle-vector))
 
-;; ikのターゲットになる座標系を作る
-(setq *co-target* (make-coords :pos #f(500 -200 800) :rpy #f(0.0 0.1 0.1))) 
+;; IKのターゲットになる座標系を作る
+(setq *co-target* (make-coords :pos #f(500 -200 800) :rpy #f(0.0 0.0 0.0))) 
 (objects (list *pr2* *co-target*)) ;; visualize してみる. 
 
 (require "models/arrow-object.l") 
@@ -29,11 +29,16 @@
 
 (objects (list *pr2* *co-vis*))
 
-;; inverse kinematics を解く. 
+;; inverse kinematics を解く. (:rarm を:larmに変えると左手を使ったIKになる)
 (send *pr2* :rarm :inverse-kinematics *co-target* 
       :rotational-axis t
       :use-tosro t)
 (send *ri* :angle-vector (send *pr2* :angle-vector)) ;; 送る
 
+(send *pr2* :rarm :move-end-pos #f(100 0 0) :local) ;; 右手の手先を手先座標系で10cm x方向に動かす
+(send *ri* :angle-vector (send *pr2* :angle-vector)) ;; 送る
+(send *ri* :wait-interpolation) ;; *ri*に送ったangle-vectorの状態に実機がなるまで待つ. 
 
+(send *ri* :start-grasp :rarm) ;; 右手のグラスプ
+(send *ri* :stop-grasp :rarm) ;; 左手のグラスプ
 
