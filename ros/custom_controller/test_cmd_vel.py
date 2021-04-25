@@ -7,7 +7,7 @@ rospy.init_node('tmp', anonymous=True)
 
 tw = Twist() 
 tw.linear.x = 1.0
-for i in range(30):
+for i in range(100):
     print("publishing")
     pub.publish(tw)
     time.sleep(0.2)
