@@ -1,0 +1,13 @@
+<launch>
+    <include file="$(find pr2_gazebo)/launch/pr2_empty_world.launch"/>
+
+    <group ns="base_controller">
+        <node pkg="pr2_base_trajectory_action" type="pr2_base_trajectory_action"
+              name="joint_trajectory_action" respawn="true" output="screen">
+          <rosparam command="load" file="$(find pr2_base_trajectory_action)/config/pr2_base_link.yaml"/>
+          <remap from="command" to="/base_controller/command" />
+          <!--remap from="odom" to="/base_odometry/odom" /-->
+          <remap from="odom" to="/base_pose_ground_truth" />
+        </node>
+    </group>
+</launch>
