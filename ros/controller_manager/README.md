@@ -14,4 +14,9 @@ rosrun pr2_controller_manager pr2_controller_manager start base_controller
 ```
 
 自前のコントローラを使うとき, `base_controller`に関するrosparamをオーバーライトすればよい. 
+```
+rosparam delete base_controller
+rosparam load $(rospack find pr2_controller_configuration)/pr2_base_controller.yaml
+```
+
 
