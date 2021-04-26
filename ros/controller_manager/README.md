@@ -12,3 +12,6 @@ rosrun pr2_controller_manager pr2_controller_manager unload base_controller
 rosrun pr2_controller_manager pr2_controller_manager load base_controller
 rosrun pr2_controller_manager pr2_controller_manager start base_controller
 ```
+
+自前のコントローラを使うとき, `base_controller`に関するrosparamをオーバーライトすればよい. 
+
