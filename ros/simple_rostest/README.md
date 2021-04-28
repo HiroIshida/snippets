@@ -1,6 +1,9 @@
-[![Institut Maupertuis logo](http://www.institutmaupertuis.fr/media/gabarit/logo.png)](http://www.institutmaupertuis.fr)
+## NOTE (Hiro Ishida)
+IF YOU USE CATKIN BUILD please do like `catkin build ekf_localizer --no-deps --catkin-make-args run_tests`
 
-This is a ROS package demonstrating a simple ROS test usage.
+
+ THIS PACKAGE IS COPIED from https://gitlab.com/InstitutMaupertuis/simple_rostest. Please follow the LICENSE in this repository.
+[![Institut Maupertuis logo](http://www.institutmaupertuis.fr/media/gabarit/logo.png)](http://www.institutmaupertuis.fr)
 
 # Directories in the project
 
