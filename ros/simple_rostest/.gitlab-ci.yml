@@ -1,0 +1,37 @@
+image: ros:melodic-robot
+
+before_script:
+  - apt update >/dev/null && apt install -y git >/dev/null
+  - git clone https://gitlab.com/VictorLamoine/ros_gitlab_ci.git
+  - source ros_gitlab_ci/gitlab-ci.bash >/dev/null
+
+catkin lint:
+  stage: build
+  before_script:
+    - apt update  >/dev/null 2>&1
+    - apt install -y python-catkin-lint >/dev/null 2>&1
+  script:
+    - catkin_lint -W3 .
+
+catkin_make:
+  stage: build
+  script:
+    - catkin_make
+
+catkin_make_tests:
+  stage: test
+  script:
+    - catkin_make tests >/dev/null
+    - catkin_make run_tests
+    - catkin_make test
+
+catkin_tools:
+  stage: build
+  script:
+    - catkin build --summarize --no-status --force-color
+
+catkin tools_tests:
+  stage: test
+  script:
+    - catkin run_tests --no-status --force-color
+

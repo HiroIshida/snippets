@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+  <node pkg="simple_rostest" type="simple_rostest_add_two_ints_service" name="add_two_ints_service" />
+  <test pkg="simple_rostest" test-name="add_two_ints_service_client" type="add_two_ints_service_client" />
+</launch>
