@@ -1,3 +1,4 @@
+# see ./generator_python_link.jl
 # same as generator
 function producer(c::Channel)
   put!(c, 1)
@@ -19,4 +20,5 @@ end
 for e in c
   println(e)
 end
+
 
