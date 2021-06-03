@@ -2,24 +2,23 @@
 using namespace std;
 class A{
     public:
-        void say(){cout<< "Im A"<< endl;}
+        virtual void say(){cout<< "Im A"<< endl;}
         int data;
 };
 class B: public A{
     public:
-        void say(){cout<< "Im B"<< endl;}
+        void say() override {cout<< "Im B"<< endl;}
 };
 
 class C{
-    A a;
+    A* a;
     public:
-        C(B b): a(b) {}
-        void say(){a.say();}
+        C(A* ptr): a(ptr) {}
+        void say(){a->say();}
 };
 int main()
 {
-    auto b = B();
-    b.say();
-    auto c = C(b);
-    c.say();
+  A* b = new B();
+  auto c = C(b);
+  c.say();
 }
