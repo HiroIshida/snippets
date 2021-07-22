@@ -1,4 +1,4 @@
-# https://towardsdatascience.com/simulate-images-for-ml-in-pybullet-the-quick-easy-way-859035b2c9dd
+#2 https://towardsdatascience.com/simulate-images-for-ml-in-pybullet-the-quick-easy-way-859035b2c9dd
 import pybullet as p
 import pybullet_data 
 import numpy.random as rn
