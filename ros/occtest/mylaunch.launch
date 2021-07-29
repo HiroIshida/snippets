@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<launch>
+      <node pkg="rosbag" type="play" name="player" output="screen"
+          args="-l --clock $(find occtest)/occtest_pcloud.bag"/>
+
+    <arg name="manager" default="lidar_nodelet_manager" />
+    <node pkg="nodelet" type="nodelet" name="$(arg manager)" args="manager" />
+
+
+    <arg name="output/laserscan" default="virtual_scan/laserscan"/>
+    <arg name="output/pointcloud" default="virtual_scan/pointcloud"/>
+    <arg name="output/ray" default="virtual_scan/ray"/>
+    <arg name="output/stixel" default="virtual_scan/stixel"/>
+  <arg name="output" default="occupancy_grid" />
+
+    <node pkg="nodelet" type="nodelet" name="pointcloud_to_laserscan" args="load pointcloud_to_laserscan/pointcloud_to_laserscan_nodelet $(arg manager)">
+        <remap from="~input/pointcloud" to="/sensing/lidar/no_ground/pointcloud"/>
+        <remap from="~output/laserscan" to="$(arg output/laserscan)"/>
+        <remap from="~output/pointcloud" to="$(arg output/pointcloud)"/>
+        <remap from="~output/ray" to="$(arg output/ray)"/>
+        <remap from="~output/stixel" to="$(arg output/stixel)"/>
+        <rosparam>
+                target_frame: base_link # Leave disabled to output scan in pointcloud frame
+                transform_tolerance: 0.01
+                min_height: 0.0
+                max_height: 2.0
+
+                angle_min: -3.141592 # -M_PI
+                angle_max: 3.141592 # M_PI
+                angle_increment: 0.00436332222 # 0.25*M_PI/180.0
+                scan_time: 0.0
+                range_min: 1.0
+                range_max: 200.0
+                use_inf: true
+                inf_epsilon: 1.0
+
+                # Concurrency level, affects number of pointclouds queued for processing and number of threads used
+                # 0 : Detect number of cores
+                # 1 : Single threaded
+                # 2->inf : Parallelism level
+                concurrency_level: 1
+        </rosparam>
+      </node>
+
+  <node pkg="nodelet" type="nodelet" name="laserscan_to_occupancy_grid_map" args="load laserscan_to_occupancy_grid_map/laserscan_to_occupancy_grid_map_nodelet $(arg manager)">
+    <remap from="~input/laserscan" to="$(arg output/laserscan)" />
+    <remap from="~output/occupancy_grid_map" to="$(arg output)" />
+    <param name="map_resolution" value="0.5" />
+    <param name="use_height_filter" value="true" />
+    <param name="input_obstacle_and_raw_pointcloud" value="false" />
+    <param name="input_obstacle_pointcloud" value="false" />
+  </node>
+
+  <node type="rviz" name="rviz" pkg="rviz" args="-d $(find occtest)/config.rviz"/>
+
+</launch>
