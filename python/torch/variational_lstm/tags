@@ -1,0 +1,79 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+EmbeddingDropout	embed_dropout.py	/^class EmbeddingDropout(nn.Module):$/;"	c
+LockedDropout	locked_dropout.py	/^class LockedDropout(nn.Module):$/;"	c
+RNNClassifier	model.py	/^class RNNClassifier(nn.Module, RecurrentHelper):$/;"	c
+RNNModule	rnn_module.py	/^class RNNModule(nn.Module, RecurrentHelper):$/;"	c
+RecurrentHelper	helpers.py	/^class RecurrentHelper:$/;"	c
+SelfAttention	attention_module.py	/^class SelfAttention(nn.Module):$/;"	c
+V	embed_dropout.py	/^    V = 50          # vocabulary size$/;"	v
+V	test_variational_rnn.py	/^    V = 1000          # vocabulary size$/;"	v
+WeightDrop	weight_drop.py	/^class WeightDrop(torch.nn.Module):$/;"	c
+X	embed_dropout.py	/^    X = embedded_dropout(embed, words, emb_drop)$/;"	v
+__init__	attention_module.py	/^    def __init__(self, attention_size,$/;"	m	class:SelfAttention
+__init__	embed_dropout.py	/^    def __init__(self, num_embeddings, embedding_dim, embedding_dropout=0.):$/;"	m	class:EmbeddingDropout
+__init__	locked_dropout.py	/^    def __init__(self):$/;"	m	class:LockedDropout
+__init__	model.py	/^    def __init__(self, ntokens, nclasses, **kwargs):$/;"	m	class:RNNClassifier
+__init__	rnn_module.py	/^    def __init__(self, ninput,$/;"	m	class:RNNModule
+__init__	weight_drop.py	/^    def __init__(self, module, weights, dropout=0, variational=True):$/;"	m	class:WeightDrop
+_setup	weight_drop.py	/^    def _setup(self):$/;"	m	class:WeightDrop
+_setweights	weight_drop.py	/^    def _setweights(self):$/;"	m	class:WeightDrop
+batch_size	embed_dropout.py	/^    batch_size = 2  # batch size$/;"	v
+batch_size	test_variational_rnn.py	/^    batch_size = 2    # batch size$/;"	v
+bptt	embed_dropout.py	/^    bptt = 10       # sequence length$/;"	v
+bptt	test_variational_rnn.py	/^    bptt = 4          # sequence length$/;"	v
+device	test_variational_rnn.py	/^    device = torch.device('cpu')$/;"	v
+dropoute	test_variational_rnn.py	/^                          dropoute=dropoute,$/;"	v
+dropoute	test_variational_rnn.py	/^    dropoute = 0.2    # dropout to the embedding layer$/;"	v
+dropouti	test_variational_rnn.py	/^    dropouti = 0.2    # dropout to the inputs of the RNN$/;"	v
+dropouto	test_variational_rnn.py	/^    dropouto = 0.3    # dropout to the outputs of the RNN$/;"	v
+dropoutw	test_variational_rnn.py	/^    dropoutw = 0.4    # dropout to the recurrent layers of the RNN$/;"	v
+emb_drop	embed_dropout.py	/^    emb_drop = 0.1  # dropout to be applied to the embedding layer$/;"	v
+emb_size	test_variational_rnn.py	/^                          emb_size=emb_size,$/;"	v
+emb_size	test_variational_rnn.py	/^    emb_size = 5      # embedding size$/;"	v
+embed	embed_dropout.py	/^    embed = torch.nn.Embedding(V, h)$/;"	v
+embedded_dropout	embed_dropout.py	/^def embedded_dropout(embed, words, dropout=0.1):$/;"	f
+forward	attention_module.py	/^    def forward(self, sequence, lengths):$/;"	m	class:SelfAttention
+forward	embed_dropout.py	/^    def forward(self, words):$/;"	m	class:EmbeddingDropout
+forward	locked_dropout.py	/^    def forward(self, x, dropout=0.5):$/;"	m	class:LockedDropout
+forward	model.py	/^    def forward(self, src, lengths=None):$/;"	m	class:RNNClassifier
+forward	rnn_module.py	/^    def forward(self, x, hidden=None, lengths=None, return_h=False):$/;"	m	class:RNNModule
+forward	weight_drop.py	/^    def forward(self, *args):$/;"	m	class:WeightDrop
+h	embed_dropout.py	/^    h = 4           # embedding size$/;"	v
+h0	weight_drop.py	/^    h0 = None$/;"	v
+init_hidden	rnn_module.py	/^    def init_hidden(self, bsz):$/;"	m	class:RNNModule
+initialize_embeddings	model.py	/^    def initialize_embeddings(self, embs, trainable=False):$/;"	m	class:RNNClassifier
+last_by_index	helpers.py	/^    def last_by_index(outputs, lengths):$/;"	m	class:RecurrentHelper
+last_timestep	helpers.py	/^    def last_timestep(self, outputs, lengths, bi=False):$/;"	m	class:RecurrentHelper
+lin	weight_drop.py	/^    lin = WeightDrop(torch.nn.Linear(10, 10), ['weight'], dropout=0.2, variational=True)$/;"	v
+masked_normalization	attention_module.py	/^def masked_normalization(logits, mask):$/;"	f
+model	test_variational_rnn.py	/^    model = RNNClassifier(ntokens=V, nclasses=3,$/;"	v
+origX	embed_dropout.py	/^    origX = embed(words)$/;"	v
+pad_outputs	helpers.py	/^    def pad_outputs(self, out_packed, max_length):$/;"	m	class:RecurrentHelper
+project2vocab	helpers.py	/^    def project2vocab(output, projection):$/;"	m	class:RecurrentHelper
+reorder_hidden	rnn_module.py	/^    def reorder_hidden(self, hidden, order):$/;"	m	class:RNNModule
+rnn_dropouti	test_variational_rnn.py	/^                          rnn_dropouti=dropouti,$/;"	v
+rnn_dropouto	test_variational_rnn.py	/^                          rnn_dropouto=dropouto,$/;"	v
+rnn_dropoutw	test_variational_rnn.py	/^                          rnn_dropoutw=dropoutw)$/;"	v
+rnn_layers	test_variational_rnn.py	/^                          rnn_layers=3,$/;"	v
+rnn_size	test_variational_rnn.py	/^                          rnn_size=[6,7,8],$/;"	v
+run1	weight_drop.py	/^    run1 = [x.sum() for x in lin(x).data]$/;"	v
+run1	weight_drop.py	/^    run1 = [x.sum() for x in wdrnn(x, h0)[0].data]$/;"	v
+run2	weight_drop.py	/^    run2 = [x.sum() for x in lin(x).data]$/;"	v
+run2	weight_drop.py	/^    run2 = [x.sum() for x in wdrnn(x, h0)[0].data]$/;"	v
+sequence_mask	attention_module.py	/^def sequence_mask(lengths, max_len=None):$/;"	f
+sort	helpers.py	/^        def sort(iterable):$/;"	f	function:RecurrentHelper.sort_by
+sort_by	helpers.py	/^    def sort_by(lengths):$/;"	m	class:RecurrentHelper
+split_directions	helpers.py	/^    def split_directions(outputs):$/;"	m	class:RecurrentHelper
+unsort	helpers.py	/^        def unsort(iterable):$/;"	f	function:RecurrentHelper.sort_by
+wdrnn	weight_drop.py	/^    wdrnn = WeightDrop(torch.nn.LSTM(10, 10), ['weight_hh_l0'], dropout=0.9)$/;"	v
+widget_demagnetizer_y2k_edition	weight_drop.py	/^    def widget_demagnetizer_y2k_edition(*args, **kwargs):$/;"	m	class:WeightDrop
+words	embed_dropout.py	/^    words = np.random.random_integers(low=0, high=V - 1, size=(batch_size, bptt))$/;"	v
+words	embed_dropout.py	/^    words = torch.LongTensor(words)$/;"	v
+words	test_variational_rnn.py	/^    words = np.random.random_integers(low=0, high=V - 1, size=(batch_size, bptt))$/;"	v
+words	test_variational_rnn.py	/^    words = torch.LongTensor(words)$/;"	v
+x	weight_drop.py	/^    x = torch.autograd.Variable(torch.randn(2, 1, 10))$/;"	v
