@@ -1,5 +1,6 @@
 using PyPlot
 using LinearAlgebra
+using Revise
 
 mutable struct State 
     x::Vector
@@ -10,9 +11,12 @@ struct Attractor
     center::Vector
     k::Float64
     c::Float64
+    eps::Float64
 end
+Attractor(center, k, c) = Attractor(center, k, c, 0.05)
+
 function propagate(attr::Attractor, state::State, dt)
-    force = - attr.k * (state.x - attr.center) - attr.c * state.v
+    force = - attr.k * (state.x - attr.center) - attr.c * state.v + randn(2) * attr.eps
     state.v += force * dt 
     state.x += state.v * dt
     return state
