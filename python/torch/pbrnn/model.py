@@ -19,12 +19,18 @@ def PhasedSequenceGen(X, splits):
             yield X[:, splits[i-1]:splits[i], :], X[:, splits[i-1]+1:splits[i]+1, :]
 
 class PBRNN(nn.Module):
-    def __init__(self, n_dim, n_pb, n_hid=200):
+    def __init__(self, state_dim, pb_dim, n_hid=200):
         super().__init__()
-        self._n_hid = n_hid
-        self._lstm = nn.LSTM(n_dim, self._n_hid, batch_first=True)
-        self._linear = nn.Linear(self._n_hid, n_dim)
+        self.pb_dim = pb_dim
+        self.n_hid = n_hid
+
+        state_aug_dim = state_dim + pb_dim
+
+        self._lstm = nn.LSTM(state_aug_dim, self.n_hid, batch_first=True)
+        self._linear = nn.Linear(self.n_hid, state_dim)
         self._sigmoid = nn.Sigmoid()
+
+        self._parametric_bias = torch.nn.Parameter(torch.zeros(pb_dim))
 
     def forward(self, X):
         # In order to use as a seq-first data we do like
@@ -37,18 +43,25 @@ class PBRNN(nn.Module):
             _, hc_tuple = self._lstm(x, hc_tuple)
 
     def loss(self, G):
+        # as for retain_graph=True
         # https://discuss.pytorch.org/t/what-exactly-does-retain-variables-true-in-loss-backward-do/3508/25
+
+        # as for repeat parameter
+        # https://discuss.pytorch.org/t/repeat-a-nn-parameter-for-efficient-computation/25659
         hc_tuple = None
         for x, x_pred_gt in G:
-            out, hc_tuple = self._lstm(x, hc_tuple)
+            seq_length = max(x.shape)
+            tmp = self._parametric_bias.repeat(seq_length, 1)
+            x_aug = torch.cat((x, tmp[None, :, :]), 2) # augmented with pb
+            out, hc_tuple = self._lstm(x_aug, hc_tuple)
+
             x_pred = self._linear(out)
-            length = max(x.shape)
-            loss = nn.MSELoss()(x_pred, x_pred_gt) * length
+            loss = nn.MSELoss()(x_pred, x_pred_gt) * seq_length
             loss.backward(retain_graph=True)
 
 if __name__=='__main__':
     X = torch.from_numpy(strange_wave_data()).float()
     G = PhasedSequenceGen(X, [200])
-    model = PBRNN(1)
+    model = PBRNN(1, 3)
     model.loss(G)
 
