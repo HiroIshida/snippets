@@ -56,7 +56,7 @@ class PBRNN(nn.Module):
         # as for repeat parameter
         # https://discuss.pytorch.org/t/repeat-a-nn-parameter-for-efficient-computation/25659
         hc_tuple = None
-        loss_total = 0
+        loss_list = []
         for i, g in enumerate(G):
             x, x_pred_gt = g
             pb = self._parametric_bias_list[i]
@@ -67,25 +67,39 @@ class PBRNN(nn.Module):
 
             x_pred = self._linear(out)
             loss = nn.MSELoss()(x_pred, x_pred_gt) * seq_length
-            loss_total += loss.item()
-            loss.backward(retain_graph=True)
+            loss_list.append(loss.item())
+
+            if self.training:
+                loss.backward(retain_graph=True)
 
             # Because previous pb is connected with the hidden and cell params
             # backprop will affects the previous phase parametric biases a bit
             # so its as it is and no problem!
-        return loss_total
+        return loss_list
 
 if __name__=='__main__':
     X = torch.from_numpy(strange_wave_data()).float()
     model = PBRNN(1, 2, 2)
     model.train()
-    optimizer = optim.Adam(model.parameters(), lr=0.1)
+    optimizer = optim.Adam(model.parameters(), lr=0.01)
 
-    for epoch in range(1000):
-        optimizer.zero_grad()
-        G = PhasedSequenceGen(X, [100])
-        loss_total = model.loss(G)
-        optimizer.step()
-        print("================")
-        print(model.pb0)
-        print(model.pb1)
+    # Ogata algorithm
+    p = 50
+    for i in range(100):
+        print("in the loop")
+
+        for epoch in range(10):
+            partpartition = [p]
+            optimizer.zero_grad()
+            G = PhasedSequenceGen(X, partpartition)
+            loss_list = model.loss(G)
+            optimizer.step()
+        if loss_list[0] < loss_list[1]:
+            p += 5
+        else:
+            p -= 5
+        print(loss_list)
+        print(p)
+
+
+
