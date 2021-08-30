@@ -34,8 +34,11 @@ class PBRNN(nn.Module):
         self._linear = nn.Linear(self.n_hid, state_dim)
         self._sigmoid = nn.Sigmoid()
 
-        #self._parametric_bias_list = [torch.nn.Parameter(torch.zeros(pb_dim)) for i in range(n_pb)]
-        self._parametric_bias_list = [torch.zeros(pb_dim, requires_grad=True) for i in range(n_pb)]
+        self._parametric_bias_list = [torch.nn.Parameter(torch.zeros(pb_dim)) for i in range(n_pb)]
+        #self._parametric_bias_list = [torch.zeros(pb_dim, requires_grad=True) for i in range(n_pb)]
+        for i, pb in enumerate(self._parametric_bias_list):
+            name = "pb" + str(i)
+            self.register_parameter(name, pb)
 
     def forward(self, X):
         # In order to use as a seq-first data we do like
@@ -74,13 +77,15 @@ class PBRNN(nn.Module):
 
 if __name__=='__main__':
     X = torch.from_numpy(strange_wave_data()).float()
-    model = PBRNN(1, 3, 2)
+    model = PBRNN(1, 2, 2)
     model.train()
-    optimizer = optim.Adam(model.parameters(), lr=0.01)
+    optimizer = optim.Adam(model.parameters(), lr=0.1)
 
-    for epoch in range(100):
+    for epoch in range(1000):
         optimizer.zero_grad()
         G = PhasedSequenceGen(X, [100])
         loss_total = model.loss(G)
         optimizer.step()
-        print(loss_total)
+        print("================")
+        print(model.pb0)
+        print(model.pb1)
