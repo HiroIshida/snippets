@@ -4,4 +4,5 @@
 ```
 solution : add `std_srvs` as deps in `package.xml`
 
-
+## cannot find `get_logger`
+`get_logger` method belongs to `rclcpp::Node` class. Typical mistake is interpret as `get_logger` inside node class as a independent function, but actually they are `this->get_logger`.
