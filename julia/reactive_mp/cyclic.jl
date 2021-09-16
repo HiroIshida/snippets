@@ -8,7 +8,9 @@ using Random
 
 @model [ default_factorisation = MeanField() ] function transition_model(n)
     
-    A ~ MatrixDirichlet(ones(3, 3)) 
+    A ~ MatrixDirichlet([1.0 1e-4 100000.0;
+                         0.5 1.0 1e-4;
+                         1e-4 0.5 1e-4])
     B ~ MatrixDirichlet([ 10.0 1.0 1.0; 1.0 10.0 1.0; 1.0 1.0 10.0 ])
     
     s_0 ~ Categorical(fill(1.0 / 3.0, 3))
@@ -67,11 +69,13 @@ function rand_vec(distribution::Categorical)
     s
 end
 
-function generate_data(n_samples; seed = 124)
+function generate_data(n_samples; seed = 1)
     Random.seed!(seed)
     
     # Transition probabilities (some transitions are impossible)
-    A = [0.9 0.0 0.1; 0.1 0.9 0.0; 0.0 0.1 0.9] 
+    A = [0.9 0.0 1.0; 
+         0.1 0.9 0.0; 
+         0.0 0.1 0.0] 
     # Observation noise
     B = [0.9 0.05 0.05; 0.05 0.9 0.05; 0.05 0.05 0.9] 
     # Initial state
@@ -93,10 +97,12 @@ function generate_data(n_samples; seed = 124)
     return x, s
 end
 
-x_data, s_data = generate_data(300);
+x_data, s_data = generate_data(10000);
 @time sbuffer, Abuffer, Bbuffer, fe = inference(x_data, 20);
 s_pred_data = [s.data.p for s in sbuffer[end]]
 
 using Plots
-plot([Float64(argmax(s)) for s in s_data])
-plot!([Float64(argmax(s)) for s in s_pred_data])
+Y = [Float64(argmax(s)) for s in s_data]
+Ypred = [Float64(argmax(s)) for s in s_pred_data]
+plot(Y[1:300])
+plot!(Ypred[1:300])
