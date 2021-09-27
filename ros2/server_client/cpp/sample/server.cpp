@@ -8,6 +8,7 @@ class ServerNode : public rclcpp::Node
 {
   public:
     ServerNode() : Node("server"){
+      RCLCPP_INFO_STREAM(get_logger(), "server init");
       using std::placeholders::_1;
       using std::placeholders::_2;
       using std::placeholders::_3;
