@@ -36,6 +36,7 @@ class ServerClientNode : public rclcpp::Node
       const auto inner_callback = [&](rclcpp::Client<Trigger>::SharedFuture inner_future){
           auto result = inner_future.get();
           RCLCPP_INFO(this->get_logger(), "[inner service] callback executed");
+          RCLCPP_INFO_STREAM(this->get_logger(), result->message);
       };
       auto req = std::make_shared<Trigger::Request>();
       auto future = client_->async_send_request(req, inner_callback);

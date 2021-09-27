@@ -25,6 +25,7 @@ class ServerNode : public rclcpp::Node
       (void)request;
       (void)response;
       RCLCPP_INFO_STREAM(get_logger(), "trigger 2 called");
+      response->message = "I am ishida";
       return true;
     };
   private:
