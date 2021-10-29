@@ -1,3 +1,0 @@
-[submodule "julia/reactive_mp/ReactiveMP.jl"]
-	path = julia/reactive_mp/ReactiveMP.jl
-	url = git@github.com:biaslab/ReactiveMP.jl.git
