@@ -9,6 +9,7 @@ services:
       - DISPLAY=${DISPLAY}
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
+      - ~/.ssh:/home/h-ishida/.ssh
     network_mode: host
     tty: true
     stdin_open: true

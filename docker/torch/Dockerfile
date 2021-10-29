@@ -7,6 +7,9 @@ RUN apt install -y build-essential sudo git vim tmux
 # install gui tools: firefox adn xdg-utils for browse files
 RUN apt install -y xdg-utils firefox
 
+# networking stuff:
+RUN apt install -y openssh-server net-tools
+
 RUN \
   useradd h-ishida && \
   echo "h-ishida ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/h-ishida && \
@@ -17,7 +20,7 @@ RUN \
 
 # set up ssh
 RUN echo 'root:root' | chpasswd
-RUN apt install -y openssh-server && mkdir /var/run/sshd
+RUN mkdir /var/run/sshd
 RUN sed -i 's/\#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 EXPOSE 22
 
