@@ -13,7 +13,7 @@ from mimic.scripts.utils import create_default_logger
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-activation', type=str, default='relu')
+    parser.add_argument('-activation', type=str, default='sigmoid')
     args = parser.parse_args()
     activation = args.activation
     robot_name = 'kuka'
@@ -26,11 +26,11 @@ if __name__=='__main__':
     project_name = 'kinematics'
     logger = create_default_logger(project_name, 'kinemanet_{}'.format(robot_name))
 
-    dataset = KinematicsDataset.from_urdf(urdf_path, joint_names, link_names)
+    dataset = KinematicsDataset.from_urdf(urdf_path, joint_names, link_names, 10**7)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = KinemaNet(device, dataset.meta_data, DenseConfig(200, 6, activation))
 
     ds_train, ds_valid = split_with_ratio(dataset)
     tcache = TrainCache[KinemaNet](project_name, KinemaNet, cache_postfix='_' + robot_name)
-    config = Config(batch_size=1000, n_epoch=3000) 
+    config = Config(batch_size=1000, n_epoch=200) 
     train(model, ds_train, ds_valid, tcache=tcache, config=config)
