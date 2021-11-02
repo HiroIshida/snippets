@@ -13,6 +13,7 @@ from mimic.datatype import ImageDataChunk
 from mimic.datatype import ImageCommandDataChunk
 from mimic.dataset import AutoRegressiveDataset
 from mimic.dataset import BiasedAutoRegressiveDataset
+from mimic.dataset import FirstOrderARDataset
 from mimic.models import LSTMConfig
 from mimic.models import LSTM
 from mimic.models import BiasedLSTM
@@ -20,6 +21,7 @@ from mimic.models import DenseConfig
 from mimic.models import DenseProp
 from mimic.models import ImageAutoEncoder
 from mimic.models import BiasedDenseProp
+from mimic.models import DeprecatedDenseProp
 
 from mimic.scripts.utils import split_with_ratio
 from mimic.scripts.utils import create_default_logger
@@ -49,13 +51,17 @@ if __name__=='__main__':
         dataset = BiasedAutoRegressiveDataset.from_chunk(chunk)
         prop_model = BiasedLSTM(device, dataset.n_state, dataset.n_bias, LSTMConfig())
         tcache = TrainCache[BiasedLSTM](project_name, BiasedLSTM)
+    elif mode==3:
+        dataset = FirstOrderARDataset.from_chunk(chunk)
+        prop_model = DeprecatedDenseProp(device, dataset.n_state, DenseConfig())
+        tcache = TrainCache[DeprecatedDenseProp](project_name, DeprecatedDenseProp)
     else:
         dataset = BiasedAutoRegressiveDataset.from_chunk(chunk)
-        if mode==3:
+        if mode==4:
             model_config = DenseConfig(200, 6)
-        elif mode==4:
-            model_config = DenseConfig(200, 6, 'relu')
         elif mode==5:
+            model_config = DenseConfig(200, 6, 'relu')
+        elif mode==6:
             model_config = DenseConfig(200, 6, 'sigmoid')
         else:
             sys.exit()
