@@ -38,7 +38,10 @@ if __name__=='__main__':
     dataset = BiasedAutoRegressiveDataset.from_chunk(chunk)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    if mode==1:
+    if mode==0:
+        dataset = AutoRegressiveDataset.from_chunk(chunk)
+        prop_model = DenseProp(device, dataset.n_state, DenseConfig())
+    elif mode==1:
         dataset = AutoRegressiveDataset.from_chunk(chunk)
         prop_model = LSTM(device, dataset.n_state, LSTMConfig())
         tcache = TrainCache[LSTM](project_name, LSTM)
