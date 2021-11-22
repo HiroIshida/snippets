@@ -1,5 +1,4 @@
-#FROM pytorch/pytorch:1.9.0-cuda10.2-cudnn7-runtime
-FROM pytorch/pytorch:1.9.1-cuda11.1-cudnn8-runtime
+FROM osrf/ros:noetic-desktop
 RUN apt update 
 
 # install developper tools:
@@ -20,7 +19,6 @@ RUN \
   chsh -s /bin/bash h-ishida
 
 # set up ssh
-# https://github.com/IMC3ofC/db2express-c.docker/issues/12
 RUN echo 'root:root' | chpasswd
 RUN mkdir /var/run/sshd
 RUN sed -i 's/\#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config

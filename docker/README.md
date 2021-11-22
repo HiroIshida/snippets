@@ -17,3 +17,22 @@ stdin_open: true
 tty: true
 ```
 
+# If cannot start ssh server
+こんなエラーがでる. 
+```
+h-ishida@4bc3d2c14905:~$ service ssh start 
+ * Starting OpenBSD Secure Shell server sshd                                                              Could not load host key: /etc/ssh/ssh_host_rsa_key
+Could not load host key: /etc/ssh/ssh_host_ecdsa_key
+Could not load host key: /etc/ssh/ssh_host_ed25519_key
+```
+=> su で行う. 
+
+# 最初にやるかもなこと
+https://www.mtioutput.com/entry/2018/09/20/135157
+```bash
+su
+echo "username:password" | chpasswd
+```
+
+
+                                                     
