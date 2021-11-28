@@ -1,3 +1,9 @@
+# Use the same IP address while maintaining ssh-ability 
+https://stackoverflow.com/questions/62417777/start-docker-container-with-host-network-while-maintaining-the-ability-to-ssh-in
+RUN sed -i 's/\(^Port\)/#\1/' /etc/ssh/sshd_config && echo Port 2233 >> /etc/ssh/sshd_config
+and 
+ssh h-ishida@localhost -p 2233
+
 # How to add  current user to docker group
 ```
 sudo groupadd docker

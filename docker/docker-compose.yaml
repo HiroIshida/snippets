@@ -3,7 +3,7 @@ version: "3"
 
 services:
   app:
-    image: mytorch:latest
+    image: pr2experiment:latest
     build: .
     environment:
       - DISPLAY=${DISPLAY}
