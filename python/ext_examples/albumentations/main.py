@@ -13,19 +13,10 @@ from albumentations.pytorch import ToTensorV2
 im = Image.open("./sample.png")
 rgb_im = np.array(im.convert('RGB'))
 
-aug_lst = []
-aug_lst.append(A.Compose([A.GaussNoise(p=1)]))
-aug_lst.append(A.Compose([A.RGBShift(p=1)]))
-aug_lst.append(A.Compose([A.GaussNoise(p=1), A.RGBShift(p=1)]))
-
-auged = [a(image=rgb_im) for a in aug_lst]
+aug_composed = A.Compose([A.GaussNoise(p=1), A.RGBShift(r_shift_limit=40, g_shift_limit=40, b_shift_limit=40)])
 
 fig = plt.figure()
-ax1 = fig.add_subplot(1, 3, 1)
-ax2 = fig.add_subplot(1, 3, 2)
-ax3 = fig.add_subplot(1, 3, 3)
-
-ax1.imshow(auged[0]['image'])
-ax2.imshow(auged[1]['image'])
-ax3.imshow(auged[2]['image'])
+for i in range(10):
+    ax = fig.add_subplot(1, 10, i+1)
+    ax.imshow(aug_composed(image=rgb_im)['image'])
 plt.show()
