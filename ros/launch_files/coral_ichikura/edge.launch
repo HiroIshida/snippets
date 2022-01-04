@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find coral_usb)/launch/edgetpu_object_detector.launch">
+      <arg name="INPUT_IMAGE" value="/kinova_wrist_camera/color/image_raw" />
+  </include>
+</launch>
