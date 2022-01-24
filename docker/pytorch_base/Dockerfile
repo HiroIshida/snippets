@@ -28,14 +28,16 @@ RUN \
 RUN echo 'root:root' | chpasswd
 RUN echo 'h-ishida:h-ishida' | chpasswd
 
-# set up ssh
-# https://github.com/IMC3ofC/db2express-c.docker/issues/12
-RUN mkdir /var/run/sshd
-RUN sed -i 's/\#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-EXPOSE 22
-
 WORKDIR /home/h-ishida
 USER h-ishida
+
+# set up ssh
+# https://github.com/IMC3ofC/db2express-c.docker/issues/12
+RUN sudo mkdir /var/run/sshd
+RUN sudo sed -i 's/\#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sudo ssh-keygen
+EXPOSE 22
+
 
 RUN sudo apt install python3-pip -y
 RUN pip3 install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
@@ -43,7 +45,9 @@ RUN pip3 install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 
 # setup my own dotfiles (PyYAML is required to intsall)
 RUN git clone https://github.com/HiroIshida/dotfiles2.git
 RUN pip3 install PyYAML
+RUN sudo apt install curl -y
 RUN cd dotfiles2 && ./install --light && exec bash
-RUN echo 'export PATH=\"$PATH:$HOME/.local/bin"' >> ~/.bash/user_specific.sh 
+RUN cd dotfiles2/install_scripts && ./install_latest_nodejs.sh 
+RUN cd dotfiles2/install_scripts && ./install_vim-plug.sh
 
-CMD ["bash"]
+CMD bash
