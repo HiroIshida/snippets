@@ -35,7 +35,6 @@ USER h-ishida
 # https://github.com/IMC3ofC/db2express-c.docker/issues/12
 RUN sudo mkdir /var/run/sshd
 RUN sudo sed -i 's/\#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-RUN sudo ssh-keygen
 EXPOSE 22
 
 
