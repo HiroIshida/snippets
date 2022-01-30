@@ -23,6 +23,21 @@ class BoxDrawer:
             self.patch.set_width(w)
             self.patch.set_height(h)
 
+class BboxKalmanFilter(KalmanFilter):
+    def __init__(self, x):
+        super().__init__(dim_x=4, dim_z=4)
+        self.x = x
+        self.F = np.eye(4)
+        self.Q = np.eye(4) * 30 ** 2
+
+        self.H = np.eye(4)
+        self.R = np.eye(4) * 60 ** 2
+
+    def update(self, sensor_value, dt):
+        self.predict()
+        super().update(sensor_value)
+        return self.x
+
 class DetectionSimulator:
     def __init__(self, x=100., y=100., w=60., h=60.,
             b_min = np.array([0, 0]),
@@ -33,6 +48,7 @@ class DetectionSimulator:
         self.phase = 0 # 0 : normal, 1: anomarry
 
         self.est_state = self.true_state
+        self.filter = BboxKalmanFilter(self.true_state)
 
         plt.ion()
         fig = plt.figure()
@@ -45,6 +61,7 @@ class DetectionSimulator:
         self.fax = (fig, ax)
         self.true_box_drawer = BoxDrawer(self.fax)
         self.est_box_drawer = BoxDrawer(self.fax, color='red')
+        self.kf_box_drawer = BoxDrawer(self.fax, color='green')
 
     def state_cropper(self, state):
         state_new = copy.deepcopy(state)
@@ -56,13 +73,15 @@ class DetectionSimulator:
 
     def update(self, dt):
         self.true_state = self.state_cropper(self.true_state + self.true_velocity * dt)
-        self.true_velocity = np.random.randn(4) * 40
+        self.true_velocity = np.random.randn(4) * 20
         self.est_state = self.state_cropper(self.true_state + np.random.randn(4) * 10)
+        self.kf_state = self.filter.update(self.est_state, dt)
 
     def redraw(self):
         fig, ax = self.fax
         self.true_box_drawer.draw(*self.true_state)
         self.est_box_drawer.draw(*self.est_state)
+        self.kf_box_drawer.draw(*self.kf_state)
         fig.canvas.draw()
 
 if __name__=='__main__':
