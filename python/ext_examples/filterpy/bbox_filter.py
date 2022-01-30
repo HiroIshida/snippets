@@ -39,9 +39,10 @@ class BboxKalmanFilter(KalmanFilter):
         return self.x
 
 class DetectionSimulator:
-    def __init__(self, x=100., y=100., w=60., h=60.,
+    def __init__(self, x=50., y=50., w=60., h=60.,
             b_min = np.array([0, 0]),
-            b_max = np.array([300, 300])
+            b_max = np.array([300, 300]),
+            enable_anomary=True
             ):
         self.true_state = np.array([x, y, w, h])
         self.true_velocity = np.zeros(4)
@@ -49,6 +50,7 @@ class DetectionSimulator:
 
         self.est_state = self.true_state
         self.filter = BboxKalmanFilter(self.true_state)
+        self.enable_anomary = enable_anomary
 
         plt.ion()
         fig = plt.figure()
@@ -72,9 +74,14 @@ class DetectionSimulator:
         return state_new
 
     def update(self, dt):
+        if np.random.rand() < 0.02 and self.enable_anomary:
+            self.phase = (self.phase + 1)%2
         self.true_state = self.state_cropper(self.true_state + self.true_velocity * dt)
         self.true_velocity = np.random.randn(4) * 20
-        self.est_state = self.state_cropper(self.true_state + np.random.randn(4) * 10)
+
+        dummy_base = np.array([150, 150, 100, 100])
+        est_base = self.true_state if self.phase==0 else dummy_base
+        self.est_state = self.state_cropper(est_base + np.random.randn(4) * 10)
         self.kf_state = self.filter.update(self.est_state, dt)
 
     def redraw(self):
