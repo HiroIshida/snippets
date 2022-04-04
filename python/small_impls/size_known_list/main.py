@@ -30,11 +30,18 @@ def load_list(fname, idxes):
             end_positions.append(end_pos)
             start_positions.append(end_pos + 1)
 
+        size = [e - s + 1 for e, s in zip(end_positions, start_positions)]
+        start_positions[0] += 1 # TODO why???
+
+        start_positions_sliced = start_positions[idxes]
+        sizes_sliced = size[idxes]
+
         offset = f.tell() + 1
-        for idx in idxes:
-            f.seek(offset + start_positions[idx])
-            byte_object = f.read(end_positions[idx] - start_positions[idx] + 1)
+
+        for s, size in zip(start_positions_sliced, sizes_sliced):
+            f.seek(offset + s)
+            byte_object = f.read(size)
             data = pickle.loads(byte_object)
 
-dump_list(data_list, 'tmp2')
-load_list('tmp2', [2, 3])
+dump_list(data_list, 'tmp3')
+load_list('tmp3', slice(None, 2))
