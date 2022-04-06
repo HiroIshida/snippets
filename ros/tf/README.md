@@ -1,13 +1,14 @@
-## ROS のTFの定義
+## ROS (ROS2) のTFの定義
 
 ```
 tf_source_to_target = self.listener.lookupTransform(
     target_frame, source_frame, rospy.Time(0))
 ```
 としたとき, source = camera, target=baseとしたとき, z=1.7となるので. targetからみたsourceの座標系となっている. つまりsourceの基底をtargetの基底に変換している. 
+cppの場合同様の方法で取得した２つの`tf_a2b` と `tf_b2c` は `tf_a2c = tf_a2b * tf_b2c` になる. 
+cpp_tf_example/を参照
 
-
-## typical example 
+## 
 ```python
 import rospy
 import tf
