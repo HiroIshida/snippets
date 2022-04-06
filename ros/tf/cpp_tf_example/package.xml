@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>tmp</name>
+  <version>0.0.0</version>
+  <description>The tmp package</description>
+  <maintainer email="h-ishida@todo.todo">h-ishida</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>tf</build_depend>
+</package>
