@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.0.2)
+project(pymodule)
+include(cmake/setup_python_as_submodule.cmake)
+find_package(catkin REQUIRED)
+setup_python_as_submodule()
