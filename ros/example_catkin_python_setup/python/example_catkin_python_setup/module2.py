@@ -1,0 +1,1 @@
+from example_catkin_python_setup.module1 import hoge
