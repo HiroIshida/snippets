@@ -1,4 +1,4 @@
-function(setup_python_as_submodule)
+function(setup_python_as_submodule relative_submodules_dir)
 
   if(ARGN)
     message(FATAL_ERROR "catkin_python_setup() called with unused arguments: ${ARGN}")
@@ -24,7 +24,7 @@ function(setup_python_as_submodule)
     file(TOUCH "${CATKIN_DEVEL_PREFIX}/${PYTHON_INSTALL_DIR}/${PROJECT_NAME}/__init__.py")
   endif()
 
-  file(GLOB PYTHON_SUBMODULE_DIRS "python/*")
+  file(GLOB PYTHON_SUBMODULE_DIRS "${relative_submodules_dir}/*")
   list(LENGTH PYTHON_SUBMODULE_DIRS modules_count)
   math(EXPR modules_range "${modules_count} - 1")
   foreach(index RANGE ${modules_range})
