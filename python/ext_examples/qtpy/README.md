@@ -1,0 +1,2 @@
+QTのwindowを作るには
+QWidgetとQMainWindowを使う方法の２つの方法がある. QMainWindowの方が機能がrichらしい.
