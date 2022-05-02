@@ -17,14 +17,6 @@ bool isInside(ElementT elem, std::unordered_set<ElementT> elemset) {
 template<typename T>
 using VecVec = std::vector< std::vector<T> >;
 
-void print_set(std::unordered_set<size_t> elemset) {
-  for (size_t e : elemset) {
-    std::cout << e << ", ";
-  }
-  std::cout << std::endl;
-}
-
-
 template <typename ElementT>
 class ParkingGraphBase
 {
@@ -46,6 +38,27 @@ public:
       }
     }
     return false;
+  }
+
+  VecVec<ElementT> planCircularPathSequence(ElementT element) const {
+
+    if (hasLoop(element)) {
+      const auto entire_path_seq = computeEntireCircularPathWithLoop(element);
+      return splitPathContainingLoop(entire_path_seq);
+    }
+
+    // No loop case
+    ElementT elem_next = element;
+    std::vector<ElementT> no_loop_path{elem_next};
+    while (true) {
+      const auto elems_cand = get_followings(elem_next);
+      if (elems_cand.empty()) {
+        break;
+      }
+      elem_next = elems_cand.front(); // TODO: case there are more than 1 deadends
+      no_loop_path.push_back(elem_next);
+    }
+    return VecVec<ElementT>{no_loop_path};
   }
 
   std::vector<ElementT> computeEntireCircularPathWithLoop(ElementT element) const {
@@ -157,6 +170,8 @@ public:
     return partial_path_seq;
   }
 
+  virtual ~ParkingGraphBase() {}
+
 private:
   virtual std::vector<ElementT> get_followings(const ElementT & element) const = 0;
   virtual std::vector<ElementT> get_reachables(const ElementT & element) const = 0;
@@ -221,73 +236,92 @@ public:
 };
 
 int main(){
-  std::vector<Node> nodes;
-  for (size_t i = 0; i < 14; i++) {
-    nodes.push_back(Node{i});
-  }
-  nodes[0].add_child(1);
-  nodes[1].add_child(2);
-  nodes[2].add_child(3);
-  nodes[3].add_child(4);
-  nodes[3].add_child(8);
-  nodes[4].add_child(5);
-  nodes[5].add_child(6);
-  nodes[6].add_child(7);
-  nodes[7].add_child(9);
-  nodes[8].add_child(7);
-  nodes[9].add_child(10);
-  nodes[10].add_child(11);
-  nodes[11].add_child(2);
-  nodes[11].add_child(12);
-  nodes[12].add_child(13);
-  const auto graph = SimpleGraph(nodes);
+  {
+    std::vector<Node> nodes;
+    for (size_t i = 0; i < 14; i++) {
+      nodes.push_back(Node{i});
+    }
+    nodes[0].add_child(1);
+    nodes[1].add_child(2);
+    nodes[2].add_child(3);
+    nodes[3].add_child(4);
+    nodes[3].add_child(8);
+    nodes[4].add_child(5);
+    nodes[5].add_child(6);
+    nodes[6].add_child(7);
+    nodes[7].add_child(9);
+    nodes[8].add_child(7);
+    nodes[9].add_child(10);
+    nodes[10].add_child(11);
+    nodes[11].add_child(2);
+    nodes[11].add_child(12);
+    nodes[12].add_child(13);
+    const auto graph = SimpleGraph(nodes);
 
-  // test for "test class"
-  for(size_t i = 0; i < 14 ; ++i) {
-    if (i == 3) {
-      assert(graph.get_followings(nodes[i]).size() == 2);
-    } else if (i == 11) {
-      assert(graph.get_followings(nodes[i]).size() == 2);
-    } else if (i == 13) {
-      assert(graph.get_followings(nodes[i]).size() == 0);
-    } else {
-      assert(graph.get_followings(nodes[i]).size() == 1);
+    // test for "test class"
+    for(size_t i = 0; i < 14 ; ++i) {
+      if (i == 3) {
+        assert(graph.get_followings(nodes[i]).size() == 2);
+      } else if (i == 11) {
+        assert(graph.get_followings(nodes[i]).size() == 2);
+      } else if (i == 13) {
+        assert(graph.get_followings(nodes[i]).size() == 0);
+      } else {
+        assert(graph.get_followings(nodes[i]).size() == 1);
+      }
+    }
+    for (size_t i = 0; i < 3; ++i) {
+      assert(graph.get_reachables(nodes[i]).size() == 14 - i);
+    }
+    for (size_t i = 3; i < 12; ++i) {
+      assert(graph.get_reachables(nodes[i]).size() == 12);
+    }
+    for (size_t i = 12; i < 14; ++i) {
+      assert(graph.get_reachables(nodes[i]).size() == 14 - i);
+    }
+
+
+    // main test
+    for (size_t i = 0; i < 12; ++i) {
+      assert(graph.hasLoop(nodes[i]));
+    }
+    for (size_t i = 12; i < 14; ++i) {
+      assert(!graph.hasLoop(nodes[i]));
+    }
+
+    const auto partial_path_seq = graph.planCircularPathSequence(nodes.at(0));
+    assert(partial_path_seq.size() == 2);
+    {
+      std::vector<size_t> idseq_expected1{0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11};
+      std::vector<size_t> idseq_expected2{11, 2, 3, 8};
+
+      assert(partial_path_seq.at(0).size() == idseq_expected1.size());
+      assert(partial_path_seq.at(1).size() == idseq_expected2.size());
     }
   }
-  for (size_t i = 0; i < 3; ++i) {
-    assert(graph.get_reachables(nodes[i]).size() == 14 - i);
-  }
-  for (size_t i = 3; i < 12; ++i) {
-    assert(graph.get_reachables(nodes[i]).size() == 12);
-  }
-  for (size_t i = 12; i < 14; ++i) {
-    assert(graph.get_reachables(nodes[i]).size() == 14 - i);
-  }
 
-
-  // main test
-  for (size_t i = 0; i < 12; ++i) {
-    assert(graph.hasLoop(nodes[i]));
-  }
-  for (size_t i = 12; i < 14; ++i) {
-    assert(!graph.hasLoop(nodes[i]));
-  }
-
-  const auto entire_path = graph.computeEntireCircularPathWithLoop(nodes[0]);
   {
-    std::vector<size_t> idseq_expected{0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 2, 3, 8};
-    assert(entire_path.size() == idseq_expected.size());
-    for (size_t i = 0; i < entire_path.size(); ++i) {
-      assert(entire_path.at(i).id == idseq_expected.at(i));
+    std::vector<Node> nodes;
+    const size_t n_node = 6;
+    for (size_t i = 0; i < n_node; i++) {
+      nodes.push_back(Node{i});
     }
-  }
 
-  const auto partial_path_seq = graph.splitPathContainingLoop(entire_path);
-  {
-    std::vector<size_t> idseq_expected1{0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11};
-    std::vector<size_t> idseq_expected2{11, 2, 3, 8};
+    for (size_t i = 0; i < n_node - 1; i++) {
+      nodes[i].add_child(i + 1);
+    }
 
-    assert(partial_path_seq.at(0).size() == idseq_expected1.size());
-    assert(partial_path_seq.at(1).size() == idseq_expected2.size());
+    const auto graph = SimpleGraph(nodes);
+    const auto partial_path_seq = graph.planCircularPathSequence(nodes[0]);
+    assert(partial_path_seq.size() == 1);
+    {
+      std::vector<size_t> idseq_expected{0, 1, 2, 3, 4, 5};
+      const auto entire_seq = partial_path_seq.front();
+      assert(entire_seq.size() == idseq_expected.size());
+
+      for (size_t i = 0; i < entire_seq.size(); ++i) {
+        assert(entire_seq.at(i).id == idseq_expected.at(i));
+      }
+    }
   }
 }
