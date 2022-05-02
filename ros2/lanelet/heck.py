@@ -46,7 +46,7 @@ def compute_mean_point(tree) -> Tuple[float, float]:
 
 def rescale_map(tree):
 
-    alpha = 3.0
+    alpha = 4.0
     x_mean, y_mean = compute_mean_point(tree)
 
     def x_hook(e: Element):
