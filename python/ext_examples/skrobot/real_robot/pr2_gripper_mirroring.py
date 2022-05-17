@@ -8,7 +8,7 @@ robot_interface = PR2ROSRobotInterface(robot_model)
 robot_model.angle_vector(robot_interface.angle_vector())
 
 while True:
-    time.sleep(0.5)
+    time.sleep(0.1)
     rarm_state: JointControllerState = robot_interface.gripper_states['rarm']
     larm_state: JointControllerState = robot_interface.gripper_states['larm']
     l_gripper_pos = larm_state.process_value
@@ -19,4 +19,4 @@ while True:
 
     pseudo_target = r_gripper_pos + (target - r_gripper_pos) * 1.0
     target_rarm_gripper_pos = rarm_state.process_value
-    robot_interface.move_gripper('rarm', pseudo_target, effort=100, wait=False)
+    robot_interface.move_gripper('rarm', pseudo_target, effort=25, wait=False)
