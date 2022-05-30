@@ -13,9 +13,19 @@ with open(filename, 'r') as f:
     data = yaml.safe_load(f)
 
 excludes = ['autoware/universe', 'autoware/launcher']
+removes = [
+    'simulator/scenario_simulator',
+    'simulator/tier4_autoware_msgs',
+    'simulator/logsim',
+    'simulator/awml_evaluation',
+    'simulator/ndt_convergence_evaluation']
 
 repos = data['repositories']
-for repo_name, repo in data['repositories'].items():
+
+for key in removes:
+    repos.pop(key)
+
+for repo_name, repo in repos.items():
     if repo_name in excludes:
         continue
 
