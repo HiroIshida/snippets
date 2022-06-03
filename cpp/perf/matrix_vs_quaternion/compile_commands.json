@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/h-ishida/misc/snippets/cpp/perf/matrix_vs_quaternion",
+  "command": "/usr/bin/c++  -DEIGEN_NO_DEBUG -I/usr/include/eigen3  -O3 -DNDEBUG   -o CMakeFiles/main.dir/main.cpp.o -c /home/h-ishida/misc/snippets/cpp/perf/matrix_vs_quaternion/main.cpp",
+  "file": "/home/h-ishida/misc/snippets/cpp/perf/matrix_vs_quaternion/main.cpp"
+}
+]
