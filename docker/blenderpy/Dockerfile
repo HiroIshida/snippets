@@ -28,7 +28,7 @@ USER h-ishida
 # https://github.com/IMC3ofC/db2express-c.docker/issues/12
 RUN sudo mkdir /var/run/sshd
 RUN sudo sed -i 's/\#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-EXPOSE 2233
+EXPOSE 22
 
 # setup my own dotfiles (PyYAML is required to intsall)
 #RUN sudo apt install python3-pip -y
