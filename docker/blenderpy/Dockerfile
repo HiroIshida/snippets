@@ -30,6 +30,13 @@ RUN sudo mkdir /var/run/sshd
 RUN sudo sed -i 's/\#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 EXPOSE 22
 
+RUN \
+    git clone https://github.com/HiroIshida/kubric.git  && \
+    cd kubric && \
+    pip install --upgrade pip wheel && \
+    pip install --upgrade --force-reinstall -r requirements.txt && \
+    pip install --upgrade --force-reinstall -r requirements_full.txt
+
 # setup my own dotfiles (PyYAML is required to intsall)
 #RUN sudo apt install python3-pip -y
 RUN git clone https://github.com/HiroIshida/dotfiles2.git
