@@ -1,22 +1,24 @@
 from torch import nn
-from torch.nn.utils.rnn import pad_packed_sequence
 
-from .helpers import RecurrentHelper
 from .locked_dropout import LockedDropout
 from .weight_drop import WeightDrop
 
 
-class RNNModule(nn.Module, RecurrentHelper):
-    def __init__(self, ninput,
-                 nhidden,
-                 rnn_type='LSTM',
-                 nlayers=1,
-                 bidirectional=False,
-                 dropouti=0.,
-                 dropoutw=0.,
-                 dropouto=0.,
-                 dropout=0.,
-                 pack=True, last=False):
+class RNNModule(nn.Module):
+    def __init__(
+        self,
+        ninput,
+        nhidden,
+        rnn_type="LSTM",
+        nlayers=1,
+        bidirectional=False,
+        dropouti=0.0,
+        dropoutw=0.0,
+        dropouto=0.0,
+        dropout=0.0,
+        pack=True,
+        last=False,
+    ):
         """
         A simple RNN Encoder, which produces a fixed vector representation
         for a variable length sequence of feature vectors, using the output
@@ -37,7 +39,7 @@ class RNNModule(nn.Module, RecurrentHelper):
 
         self.lockdrop = LockedDropout()
 
-        assert rnn_type in ['LSTM', 'GRU'], 'RNN type is not supported'
+        assert rnn_type in ["LSTM", "GRU"], "RNN type is not supported"
 
         if not isinstance(nhidden, list):
             nhidden = [nhidden]
@@ -46,23 +48,30 @@ class RNNModule(nn.Module, RecurrentHelper):
         self.ninp = ninput
         self.nhid = nhidden
         self.nlayers = nlayers
-        self.dropouti = dropouti               # rnn input dropout
-        self.dropoutw = dropoutw               # rnn recurrent dropout
-        self.dropouto = dropouto               # rnn output dropout
-        if dropout == .0 and dropouto != .0:
-            self.dropout = self.dropouto       # rnn output dropout (of the last RNN layer)
+        self.dropouti = dropouti  # rnn input dropout
+        self.dropoutw = dropoutw  # rnn recurrent dropout
+        self.dropouto = dropouto  # rnn output dropout
+        if dropout == 0.0 and dropouto != 0.0:
+            self.dropout = self.dropouto  # rnn output dropout (of the last RNN layer)
 
-        if rnn_type == 'LSTM':
-            self.rnns = [nn.LSTM(input_size=ninput if l == 0 else nhidden[l - 1],
-                                 hidden_size=nhidden[l],
-                                 num_layers=1,
-                                 dropout=0,
-                                 batch_first=True) for l in range(nlayers)]
+        if rnn_type == "LSTM":
+            self.rnns = [
+                nn.LSTM(
+                    input_size=ninput if l == 0 else nhidden[l - 1],
+                    hidden_size=nhidden[l],
+                    num_layers=1,
+                    dropout=0,
+                    batch_first=True,
+                )
+                for l in range(nlayers)
+            ]
 
             # Dropout to recurrent layers (matrices weight_hh AND weight_ih of each layer of the RNN)
             if dropoutw:
-                self.rnns = [WeightDrop(rnn, ['weight_hh_l0', 'weight_ih_l0'],
-                                        dropout=dropoutw) for rnn in self.rnns]
+                self.rnns = [
+                    WeightDrop(rnn, ["weight_hh_l0", "weight_ih_l0"], dropout=dropoutw)
+                    for rnn in self.rnns
+                ]
         # if rnn_type == 'GRU':
         #     self.rnns = [nn.GRU(ninp if l == 0 else nhid, nhid if l != nlayers - 1 else ninp, 1, dropout=0) for l in range(nlayers)]
         #     if wdrop:
@@ -94,14 +103,25 @@ class RNNModule(nn.Module, RecurrentHelper):
         :return:
         """
         weight = next(self.parameters()).data
-        if self.rnn_type == 'LSTM':
-            return [(weight.new(1, bsz, self.nhid[l]).zero_(),
-                     weight.new(1, bsz, self.nhid[l]).zero_())
-                    for l in range(self.nlayers)]
-        elif self.rnn_type == 'GRU':
-            return [weight.new(1, bsz, self.nhid if l != self.nlayers - 1 else (
-                self.ninp if self.tie_weights else self.nhid)).zero_()
-                    for l in range(self.nlayers)]
+        if self.rnn_type == "LSTM":
+            return [
+                (
+                    weight.new(1, bsz, self.nhid[l]).zero_(),
+                    weight.new(1, bsz, self.nhid[l]).zero_(),
+                )
+                for l in range(self.nlayers)
+            ]
+        elif self.rnn_type == "GRU":
+            return [
+                weight.new(
+                    1,
+                    bsz,
+                    self.nhid
+                    if l != self.nlayers - 1
+                    else (self.ninp if self.tie_weights else self.nhid),
+                ).zero_()
+                for l in range(self.nlayers)
+            ]
 
     def forward(self, x, hidden=None, lengths=None, return_h=False):
         """

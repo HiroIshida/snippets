@@ -46,10 +46,10 @@ class WeightDrop(torch.nn.Module):
             self.module.flatten_parameters = self.widget_demagnetizer_y2k_edition
 
         for name_w in self.weights:
-            print('Applying weight drop of {} to {}'.format(self.dropout, name_w))
+            print("Applying weight drop of {} to {}".format(self.dropout, name_w))
             w = getattr(self.module, name_w)
             del self.module._parameters[name_w]
-            self.module.register_parameter(name_w + '_raw', Parameter(w.data))
+            self.module.register_parameter(name_w + "_raw", Parameter(w.data))
 
     def _setweights(self):
         """
@@ -73,7 +73,7 @@ class WeightDrop(torch.nn.Module):
         :return:
         """
         for name_w in self.weights:
-            raw_w = getattr(self.module, name_w + '_raw')
+            raw_w = getattr(self.module, name_w + "_raw")
             w = None
 
             if self.variational:
@@ -81,7 +81,8 @@ class WeightDrop(torch.nn.Module):
                 # Variational dropout (as proposed by Gal & Ghahramani)
                 #######################################################
                 mask = torch.autograd.Variable(torch.ones(raw_w.size(0), 1))
-                if raw_w.is_cuda: mask = mask.cuda()
+                if raw_w.is_cuda:
+                    mask = mask.cuda()
                 mask = torch.nn.functional.dropout(mask, p=self.dropout, training=True)
                 w = mask.expand_as(raw_w) * raw_w
             else:
@@ -96,7 +97,7 @@ class WeightDrop(torch.nn.Module):
         return self.module.forward(*args)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import torch
     from weight_drop import WeightDrop
 
@@ -107,45 +108,45 @@ if __name__ == '__main__':
 
     ###
 
-    print('Testing WeightDrop')
-    print('=-=-=-=-=-=-=-=-=-=')
+    print("Testing WeightDrop")
+    print("=-=-=-=-=-=-=-=-=-=")
 
     ###
 
-    print('Testing WeightDrop with Linear')
+    print("Testing WeightDrop with Linear")
 
-    lin = WeightDrop(torch.nn.Linear(10, 10), ['weight'], dropout=0.2, variational=True)
+    lin = WeightDrop(torch.nn.Linear(10, 10), ["weight"], dropout=0.2, variational=True)
     # lin = WeightDrop(torch.nn.Linear(10, 10), ['weight'], dropout=0.2, variational=False)
     # lin.cuda()
     run1 = [x.sum() for x in lin(x).data]
     run2 = [x.sum() for x in lin(x).data]
 
-    print('All items should be different')
-    print('Run 1:', run1)
-    print('Run 2:', run2)
+    print("All items should be different")
+    print("Run 1:", run1)
+    print("Run 2:", run2)
 
     assert run1[0] != run2[0]
     assert run1[1] != run2[1]
 
-    print('---')
+    print("---")
 
     ###
 
-    print('Testing WeightDrop with LSTM')
+    print("Testing WeightDrop with LSTM")
 
-    wdrnn = WeightDrop(torch.nn.LSTM(10, 10), ['weight_hh_l0'], dropout=0.9)
+    wdrnn = WeightDrop(torch.nn.LSTM(10, 10), ["weight_hh_l0"], dropout=0.9)
     # wdrnn.cuda()
 
     run1 = [x.sum() for x in wdrnn(x, h0)[0].data]
     run2 = [x.sum() for x in wdrnn(x, h0)[0].data]
 
-    print('First timesteps should be equal, all others should differ')
-    print('Run 1:', run1)
-    print('Run 2:', run2)
+    print("First timesteps should be equal, all others should differ")
+    print("Run 1:", run1)
+    print("Run 2:", run2)
 
     # First time step, not influenced by hidden to hidden weights, should be equal
     assert run1[0] == run2[0]
     # Second step should not
     assert run1[1] != run2[1]
 
-    print('---')
+    print("---")

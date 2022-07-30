@@ -1,14 +1,15 @@
-import copy
-import numpy as np
-import pickle
+import math
 import os
+import pickle
+
+import numpy as np
 import torch
 import torch.nn
 import torch.optim
-import math
 import tqdm
 
 from variational_lstm.rnn_module import RNNModule
+
 
 class IshidaLSTM(torch.nn.Module):
     def __init__(self, dim, hid, **kwargs):
@@ -21,6 +22,7 @@ class IshidaLSTM(torch.nn.Module):
         out, _ = self.rnn(x)
         return self.linear(out)
 
+
 class IshidaLSTMDataset(torch.utils.data.Dataset):
     def __init__(self, X):
         self.X = X
@@ -30,6 +32,7 @@ class IshidaLSTMDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         return self.X[idx]
+
 
 class Predictor(object):
     def __init__(self, model):
@@ -43,7 +46,9 @@ class Predictor(object):
             seq = torch.cat((seq, torch.atleast_3d(x_new)), 1)
         return seq
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     n_batch = 400
     n_test = 10
     n_seq = 80
@@ -54,7 +59,7 @@ if __name__ == '__main__':
     # generate data
     X_whole = []
     for i in range(n_batch + n_test):
-        t_seq = np.linspace(0, 5*math.pi, n_seq)
+        t_seq = np.linspace(0, 5 * math.pi, n_seq)
         x = np.atleast_2d(np.sin(t_seq - np.random.randn()) + np.random.randn(n_seq) * 0.1).T
         X_whole.append(x)
     X_whole = np.stack(X_whole)
@@ -69,16 +74,19 @@ if __name__ == '__main__':
     mse = torch.nn.MSELoss()
     filename = "model.pickle"
     if os.path.exists(filename):
-        with open(filename, 'rb') as f:
+        with open(filename, "rb") as f:
             model = pickle.load(f)
+        model.to(device)
     else:
         model = IshidaLSTM(1, 200, dropouti=0.5, dropoutw=0.5, dropouto=0.5)
+        model.to(device)
         optim = torch.optim.Adam(model.parameters(), lr=0.001)
         dataset = IshidaLSTMDataset(X)
         train_loader = torch.utils.data.DataLoader(dataset=dataset, batch_size=10, shuffle=True)
 
         for i in tqdm.tqdm(range(200)):
             for sample in train_loader:
+                sample = sample.to(device)
                 optim.zero_grad()
                 X_feed = sample[:, :-1, :]
                 X_gtruth = sample[:, 1:, :]
@@ -86,14 +94,17 @@ if __name__ == '__main__':
                 loss = mse(X_gtruth, X_pred)
                 loss.backward()
                 optim.step()
-        with open(filename, 'wb') as f:
+        with open(filename, "wb") as f:
             pickle.dump(model, f)
 
     P = Predictor(model)
     import matplotlib.pyplot as plt
+
     fig, ax = plt.subplots()
-    for i in tqdm.tqdm(range(100)):
-        seq = P.predict(X_test[0].view(1, n_seq, 1), 200)
-        y = seq.detach().numpy().flatten()
-        ax.plot(y, c='red', linewidth=0.3)
+    for i in tqdm.tqdm(range(50)):
+        x = X_test[0].view(1, n_seq, 1)
+        x = x.to(device)
+        seq = P.predict(x, 200)
+        y = seq.cpu().detach().numpy().flatten()
+        ax.plot(y, c="red", linewidth=0.3)
     plt.show()
