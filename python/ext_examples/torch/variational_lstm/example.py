@@ -8,8 +8,7 @@ import torch.optim
 import math
 import tqdm
 
-from model import RNNClassifier
-from rnn_module import RNNModule
+from variational_lstm.rnn_module import RNNModule
 
 class IshidaLSTM(torch.nn.Module):
     def __init__(self, dim, hid, **kwargs):

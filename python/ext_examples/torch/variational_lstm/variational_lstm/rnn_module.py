@@ -1,9 +1,9 @@
 from torch import nn
 from torch.nn.utils.rnn import pad_packed_sequence
 
-from helpers import RecurrentHelper
-from locked_dropout import LockedDropout
-from weight_drop import WeightDrop
+from .helpers import RecurrentHelper
+from .locked_dropout import LockedDropout
+from .weight_drop import WeightDrop
 
 
 class RNNModule(nn.Module, RecurrentHelper):
