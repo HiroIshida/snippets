@@ -1,1 +1,1 @@
-python3 deep_pot.py
+python3 ladle.py
