@@ -1,0 +1,41 @@
+<launch>
+ <arg name="respeaker" default="true" />
+  <arg name="real_mode" default="true" />
+  <arg name="launch_respeaker" default="false" />
+  <arg name="launch_soundplay" default="false" />
+  <arg name="realsense_camera" default="true" />
+  <arg name="spherical_camera" default="false" />
+  <arg name="logging" default="false" />
+  <arg name="arm_interpolation" default="minjerk" />
+  <arg name="arm_control_mode" default="position_w_id" />
+  <arg name="moveit" default="true" />
+  <arg name="gui" default="true" />
+  <arg name="lgripper_type" default="softhand" />
+  <arg name="rgripper_type" default="softhand" />
+  <arg name="camera" default="realsense_torso"/>
+  <!-- avoid error of no gripper -->
+  <!-- arg name="rgripper_type" default="parallel" /-->
+  <!-- arg name="rgripper_type" default="softhand-v2" /-->
+  <arg name="launch_tabletop_detector" default="false" />
+  <!--arg name="launch_tabletop_detector" default="false" /-->
+  <arg name="mask" default="true"/>
+  <arg name="orientation" default="true"/>
+  <arg name="select_mask" default="true" />
+  <arg name="node_start_delay" default="0.0"/>
+  <arg name="CLOUD" default="/extract_indices_hair/output"/>
+  <arg name="comb_mode" default="true"/>
+  <arg name="comb_equiped" default="true"/>
+
+  <include file="$(find eus_vive)/launch/baxter/baxter.launch" if="$(arg real_mode)">
+    <arg name="realsense_camera" value="$(arg realsense_camera)" />
+    <arg name="spherical_camera" value="$(arg spherical_camera)" />
+    <arg name="respeaker" value="$(arg respeaker)" />
+    <arg name="logging" value="$(arg logging)" />
+    <arg name="arm_interpolation" value="$(arg arm_interpolation)" />
+    <arg name="arm_control_mode" value="$(arg arm_control_mode)" />
+    <arg name="moveit" value="$(arg moveit)" />
+    <arg name="lgripper_type" value="$(arg lgripper_type)" />
+    <arg name="rgripper_type" value="$(arg rgripper_type)" />
+    <arg name="launch_tabletop_detector" value="$(arg launch_tabletop_detector)" />
+  </include>
+</launch>
