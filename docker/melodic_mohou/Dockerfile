@@ -1,4 +1,5 @@
 FROM osrf/ros:melodic-desktop-full
+SHELL ["/bin/bash", "-c"]
 
 # install developper tools:
 RUN apt update 
@@ -32,6 +33,9 @@ EXPOSE 22
 
 RUN sudo apt install python3-pip -y
 
+# upgrade pip. otherwise source build of opencv-python invoked
+RUN pip3 install pip --upgrade
+
 # setup my personal dotfiles (PyYAML is required to intsall)
 RUN git clone https://github.com/HiroIshida/dotfiles2.git
 RUN pip3 install PyYAML
@@ -44,5 +48,29 @@ RUN sudo apt-get install python3-catkin-pkg-modules python3-rospkg-modules pytho
 RUN sudo apt-get install ros-melodic-catkin python-wstool -y
 RUN sudo apt-get install tree
 RUN tree /opt/ros/melodic
+
+# crate workspace
+RUN \
+    sudo apt-get install python3-catkin-pkg-modules python3-rospkg-modules python3-venv python3-empy -y && \
+    sudo apt-get install python-catkin-tools python-wstool ros-melodic-rostest -y
+RUN \
+    source /opt/ros/melodic/setup.bash && \
+    mkdir -p ~/mohou_ws/src && \
+    cd ~/mohou_ws/src && \
+    git clone https://github.com/HiroIshida/mohou_ros.git && \
+    wstool init && \
+    wstool merge mohou_ros/rosinstall.melodic && \
+    wstool update && \
+    rosdep update && \
+    rosdep install --from-paths . --ignore-src -y -r && \
+    cd ~/mohou_ws && \
+    catkin init && \
+    catkin config -DPYTHON_EXECUTABLE=/usr/bin/python3 -DPYTHON_INCLUDE_DIR=/usr/include/python3.6m -DPYTHON_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython3.6m.so && \
+    catkin build
+
+RUN \
+    source ~/mohou_ws/devel/setup.bash && \
+    pip3 install mohou && \
+    roscd mohou_ros && sudo pip3 install .
 
 CMD bash
