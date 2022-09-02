@@ -1,22 +1,23 @@
 import torch
 from hashlib import md5
+import json
 from typing import Any, Optional, TypeVar, Generic, List, Tuple
-from dataclasses import dataclass, fields
+from dataclasses import asdict, dataclass, fields
 from mohou.model import LSTM, LSTMConfig
 from mohou.model.common import ModelBase
 
 @dataclass
-class ModelAbbreviation:
+class ModelDigest:
 
     @dataclass
-    class ParamSpec:
+    class ParamDigest:
         mean: float
         std: float
         minimum: float
         maximum: float
         # DO NOT USE SUM
 
-        def is_close_enough(self, other: "ModelAbbreviation.ParamSpec", tol: float):
+        def is_close_enough(self, other: "ModelDigest.ParamDigest", tol: float):
             for field in fields(self):
                 val_self = self.__dict__[field.name]
                 val_other = self.__dict__[field.name]
@@ -25,7 +26,7 @@ class ModelAbbreviation:
             return True
 
     structure_hash: str
-    param_specs: List[ParamSpec]
+    param_specs: List[ParamDigest]
 
     @classmethod
     def from_model(cls, model: ModelBase):
@@ -33,7 +34,7 @@ class ModelAbbreviation:
 
         param_spec_list = []
         for param in model.parameters():
-            spec = cls.ParamSpec(
+            spec = cls.ParamDigest(
                 float(torch.mean(param).item()),
                 float(torch.std(param).item()),
                 float(torch.max(param).item()),
@@ -42,10 +43,10 @@ class ModelAbbreviation:
             param_spec_list.append(spec)
         return cls(structure_hash, param_spec_list)
 
-    def is_comparable(self, other: "ModelAbbreviation") -> bool:
+    def is_comparable(self, other: "ModelDigest") -> bool:
         return self.structure_hash == other.structure_hash
 
-    def is_close_enough(self, other: "ModelAbbreviation", tol = 1e-6) -> bool:
+    def is_close_enough(self, other: "ModelDigest", tol = 1e-6) -> bool:
         # NOTE(to future-self): do not replace this function by md5sum + pickle.
 
         assert self.is_comparable(other)
@@ -55,8 +56,26 @@ class ModelAbbreviation:
                 return False
         return True
 
+    def dumps(self) -> str:
+        d = asdict(self)
+        return json.dumps(d, indent=2)
+
+    @classmethod
+    def loads(cls, string: str) -> "ModelDigest":
+        d = json.loads(string)
+        param_specs = []
+        for param_spec_dict in d["param_specs"]:
+            param_specs.append(cls.ParamDigest(**param_spec_dict))
+        d["param_specs"] = param_specs
+        return cls(**d)
+
 
 
 print(str(LSTMConfig(10)))
 model1 = LSTM(LSTMConfig(10))
 model2 = LSTM(LSTMConfig(10))
+mabb = ModelDigest.from_model(model1)
+d = mabb.dumps()
+print(d)
+md = ModelDigest.loads(d)
+
