@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.1-devel-ubuntu20.04
+FROM nvidia/cuda:11.2.0-devel-ubuntu20.04
 
 # To avoid interactive selection of timezeon in apt install procedure
 RUN echo 'Etc/UTC' > /etc/timezone && \
