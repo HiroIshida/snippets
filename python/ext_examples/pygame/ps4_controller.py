@@ -8,13 +8,14 @@ assert count == 1
 controller = pygame.joystick.Joystick(0)
 controller.init()
 
-while True:
+end_flag = False
+while (not end_flag):
     for e in pygame.event.get():
         if e.type == pygame.JOYAXISMOTION:
             vector = np.array([controller.get_axis(0), controller.get_axis(1)])
             print(vector)
 
-    #if e.type == pygame.JOYBUTTONDOWN:
-    val = controller.get_button(4)
-    if val == 1:
-        break
+        if e.type == pygame.JOYBUTTONDOWN:
+
+            if controller.get_button(4) == 1:
+                end_flag = True
