@@ -1,0 +1,181 @@
+applications@pr1040:~ $ date && ethtool -S ecat0
+2022年 10月  5日 水曜日 06:22:20 JST
+NIC statistics:
+     rx_packets: 479265449
+     tx_packets: 479887276
+     rx_bytes: 409370342178
+     tx_bytes: 409958290192
+     rx_broadcast: 479265449
+     tx_broadcast: 479887255
+     rx_multicast: 0
+     tx_multicast: 21
+     rx_errors: 775411
+     tx_errors: 0
+     tx_dropped: 0
+     multicast: 0
+     collisions: 0
+     rx_length_errors: 0
+     rx_over_errors: 0
+     rx_crc_errors: 387780
+     rx_frame_errors: 387631
+     rx_no_buffer_count: 0
+     rx_missed_errors: 0
+     tx_aborted_errors: 0
+     tx_carrier_errors: 0
+     tx_fifo_errors: 0
+     tx_heartbeat_errors: 0
+     tx_window_errors: 0
+     tx_abort_late_coll: 0
+     tx_deferred_ok: 0
+     tx_single_coll_ok: 0
+     tx_multi_coll_ok: 0
+     tx_timeout_count: 0
+     tx_restart_queue: 0
+     rx_long_length_errors: 0
+     rx_short_length_errors: 0
+     rx_align_errors: 387631
+     tx_tcp_seg_good: 0
+     tx_tcp_seg_failed: 0
+     rx_flow_control_xon: 0
+     rx_flow_control_xoff: 0
+     tx_flow_control_xon: 0
+     tx_flow_control_xoff: 0
+     rx_csum_offload_good: 0
+     rx_csum_offload_errors: 0
+     rx_header_split: 0
+     alloc_rx_buff_failed: 0
+     tx_smbus: 0
+     rx_smbus: 0
+     dropped_smbus: 0
+     rx_dma_failed: 0
+     tx_dma_failed: 0
+     rx_hwtstamp_cleared: 0
+     uncorr_ecc_errors: 0
+     corr_ecc_errors: 0
+     tx_hwtstamp_timeouts: 0
+
+applications@pr1040:~ $ date && ethtool -S ecat0
+2022年 10月  5日 水曜日 06:35:55 JST
+NIC statistics:
+     rx_packets: 479271518
+     tx_packets: 480004214
+     rx_bytes: 409370754460
+     tx_bytes: 410041737062
+     rx_broadcast: 479271518
+     tx_broadcast: 480004193
+     rx_multicast: 0
+     tx_multicast: 21
+     rx_errors: 826198
+     tx_errors: 0
+     tx_dropped: 0
+     multicast: 0
+     collisions: 0
+     rx_length_errors: 0
+     rx_over_errors: 0
+     rx_crc_errors: 413179
+     rx_frame_errors: 413019
+     rx_no_buffer_count: 0
+     rx_missed_errors: 0
+     tx_aborted_errors: 0
+     tx_carrier_errors: 0
+     tx_fifo_errors: 0
+     tx_heartbeat_errors: 0
+     tx_window_errors: 0
+     tx_abort_late_coll: 0
+     tx_deferred_ok: 0
+     tx_single_coll_ok: 0
+     tx_multi_coll_ok: 0
+     tx_timeout_count: 0
+     tx_restart_queue: 0
+     rx_long_length_errors: 0
+     rx_short_length_errors: 0
+     rx_align_errors: 413019
+     tx_tcp_seg_good: 0
+     tx_tcp_seg_failed: 0
+     rx_flow_control_xon: 0
+     rx_flow_control_xoff: 0
+     tx_flow_control_xon: 0
+     tx_flow_control_xoff: 0
+     rx_csum_offload_good: 0
+     rx_csum_offload_errors: 0
+     rx_header_split: 0
+     alloc_rx_buff_failed: 0
+     tx_smbus: 0
+     rx_smbus: 0
+     dropped_smbus: 0
+     rx_dma_failed: 0
+     tx_dma_failed: 0
+     rx_hwtstamp_cleared: 0
+     uncorr_ecc_errors: 0
+     corr_ecc_errors: 0
+     tx_hwtstamp_timeouts: 0
+
+
+/var/log/upstart/robot.logをみるとlow_level_txandrx: failed 10 times: Giving up
+low_level_txandrx: failed 10 times: Giving up
+low_level_txandrx: failed 10 times: Giving up
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Product code of slave 7
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Revision of slave 7
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Serial of slave 7
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Product code of slave 8
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Revision of slave 8
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Serial of slave 8
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Product code of slave 9
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Revision of slave 9
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Serial of slave 9
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Product code of slave 10
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Revision of slave 10
+
+low_level_txandrx: failed 10 times: Giving up
+low_level_txandrx: failed 10 times: Giving up
+low_level_txandrx: failed 10 times: Giving up
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Product code of slave 7
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Revision of slave 7
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Serial of slave 7
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Product code of slave 8
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Revision of slave 8
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Serial of slave 8
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Product code of slave 9
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Revision of slave 9
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Serial of slave 9
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Product code of slave 10
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Revision of slave 10
+
+"error reading product code of slave"でぐぐるとhttps://github.com/jsk-ros-pkg/jsk_robot/issues/1406#issuecomment-966454216
+applications@pr1040:~ $ sudo grep -A10 -B10 MCB /var/log/upstart/robot.log
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Product code of slave 36
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Revision of slave 36
+low_level_txandrx: failed 10 times: Giving up
+EC_AL::scan_slaves() Error reading Serial of slave 36
+low_level_txandrx: failed 10 times: Giving up
+Something went wrong while resetting slaves
+EtherCAT_AL:: Can't init network
+[FATAL] [1664919688.267306853] [/realtime_loop:ros.ethercat_hardware]: Note: 0xBADDBADD indicates that the value was not read correctly from device.
+[FATAL] [1664919688.267346090] [/realtime_loop:ros.ethercat_hardware]: Perhaps you should power-cycle the MCBs
+[FATAL] [1664919688.267362343] [/realtime_loop:ros.ethercat_hardware]: Unable to configure slave #0
+[realtime_loop-2] process has died [pid 16185, exit code 1, cmd pr2-grant /opt/ros/indigo/lib/pr2_ethercat/pr2_ethercat -i ecat0 -x robot_description /diagnostics:=/diagnostics /diagnostics_agg:=/diagnostics_agg __name:=realtime_loop __log:=/var/log/ros/2e0f2d44-442d-11ed-aec9-d05099c29feb/realtime_loop-2.log].
+log file: /var/log/ros/2e0f2d44-442d-11ed-aec9-d05099c29feb/realtime_loop-2*.log
