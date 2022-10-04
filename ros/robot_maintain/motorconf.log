@@ -1,0 +1,158 @@
+root@pr1040:/opt/ros/indigo/share/ethercat_hardware# rosrun ethercat_hardware motorconf -i ecat0 > /tmp/motorconf 
+readMailbox_ : ERRORchecksum error reading mailbox data
+length = 38
+[FATAL] [1664925641.782833696] [${node}:ros.ethercat_hardware]: Unable to load configuration information
+waitForReadMailboxReady : ERROR error read mbx not full after 100 ms
+readMailbox_ : ERRORwaiting for read mailbox
+[FATAL] [1664925641.934655230] [${node}:ros.ethercat_hardware]: Unable to load configuration information
+readMailbox_ : ERRORchecksum error reading mailbox data
+length = 38
+[FATAL] [1664925641.991967414] [${node}:ros.ethercat_hardware]: Unable to load configuration information
+waitForReadMailboxReady : ERROR error read mbx not full after 100 ms
+readMailbox_ : ERRORwaiting for read mailbox
+[FATAL] [1664925642.103279844] [${node}:ros.ethercat_hardware]: Unable to load configuration information
+readMailbox_ : ERRORchecksum error reading mailbox data
+length = 38
+[FATAL] [1664925642.130855362] [${node}:ros.ethercat_hardware]: Unable to load configuration information
+waitForReadMailboxReady : ERROR error read mbx not full after 100 ms
+readMailbox_ : ERRORwaiting for read mailbox
+[FATAL] [1664925642.231914446] [${node}:ros.ethercat_hardware]: Unable to load configuration information
+readMailbox_ : ERRORchecksum error reading mailbox data
+length = 38
+[FATAL] [1664925642.247833093] [${node}:ros.ethercat_hardware]: Unable to load configuration information
+waitForReadMailboxReady : ERROR error read mbx not full after 100 ms
+readMailbox_ : ERRORwaiting for read mailbox
+[FATAL] [1664925642.347875756] [${node}:ros.ethercat_hardware]: Unable to load configuration information
+readMailbox_ : ERRORchecksum error reading mailbox data
+length = 38
+[FATAL] [1664925642.362979563] [${node}:ros.ethercat_hardware]: Unable to load configuration information
+waitForReadMailboxReady : ERROR error read mbx not full after 100 ms
+readMailbox_ : ERRORwaiting for read mailbox
+[FATAL] [1664925642.464089233] [${node}:ros.ethercat_hardware]: Unable to load configuration information
+readMailbox_ : ERRORchecksum error reading mailbox data
+length = 38
+[FATAL] [1664925642.480250004] [${node}:ros.ethercat_hardware]: Unable to load configuration information
+waitForReadMailboxReady : ERROR error read mbx not full after 100 ms
+readMailbox_ : ERRORwaiting for read mailbox
+[FATAL] [1664925642.591014408] [${node}:ros.ethercat_hardware]: Unable to load configuration information
+readMailbox_ : ERRORchecksum error reading mailbox data
+length = 38
+[FATAL] [1664925642.607875364] [${node}:ros.ethercat_hardware]: Unable to load configuration information
+waitForReadMailboxReady : ERROR error read mbx not full after 100 ms
+readMailbox_ : ERRORwaiting for read mailbox
+[FATAL] [1664925642.719173421] [${node}:ros.ethercat_hardware]: Unable to load configuration information
+root@pr1040:/opt/ros/indigo/share/ethercat_hardware# rosrun ethercat_hardware motorconf -i ecat0 > /tmp/motorconf ^C
+root@pr1040:/opt/ros/indigo/share/ethercat_hardware# cat /tmp/motorconf 
+[DEBUG] [1664925641.651005074] [${node}:ros.ethercat_hardware]: Device #00: WG014 (0x67d616)
+[DEBUG] [1664925641.651099516] [${node}:ros.ethercat_hardware]: Device #01: WG014 (0x67d616)
+[DEBUG] [1664925641.651118586] [${node}:ros.ethercat_hardware]: Device #02: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 3164
+[DEBUG] [1664925641.652148393] [${node}:ros.ethercat_hardware]:             Serial #: 03164
+[DEBUG] [1664925641.656187708] [${node}:ros.ethercat_hardware]:             Name: br_caster_r_wheel_motor
+[ WARN] [1664925641.660172177] [${node}:ros.ethercat_hardware]: br_caster_r_wheel_motor EEPROM does not contain motor heating model parameters
+[DEBUG] [1664925641.661164155] [${node}:ros.ethercat_hardware]: No calibration offset was stored on device br_caster_r_wheel_motor
+[DEBUG] [1664925641.661187648] [${node}:ros.ethercat_hardware]: Device #03: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 3665
+[DEBUG] [1664925641.662151154] [${node}:ros.ethercat_hardware]:             Serial #: 03665
+[DEBUG] [1664925641.666143312] [${node}:ros.ethercat_hardware]:             Name: br_caster_l_wheel_motor
+[ WARN] [1664925641.670142791] [${node}:ros.ethercat_hardware]: br_caster_l_wheel_motor EEPROM does not contain motor heating model parameters
+[DEBUG] [1664925641.671137341] [${node}:ros.ethercat_hardware]: No calibration offset was stored on device br_caster_l_wheel_motor
+[DEBUG] [1664925641.671153416] [${node}:ros.ethercat_hardware]: Device #04: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 2889
+[DEBUG] [1664925641.672129813] [${node}:ros.ethercat_hardware]:             Serial #: 02889
+[DEBUG] [1664925641.676164379] [${node}:ros.ethercat_hardware]:             Name: br_caster_rotation_motor
+[ WARN] [1664925641.680648729] [${node}:ros.ethercat_hardware]: br_caster_rotation_motor EEPROM does not contain motor heating model parameters
+[DEBUG] [1664925641.681658764] [${node}:ros.ethercat_hardware]: Read calibration from device br_caster_rotation_motor: -165.137818
+[DEBUG] [1664925641.681699218] [${node}:ros.ethercat_hardware]: Device #05: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 2898
+[DEBUG] [1664925641.682615044] [${node}:ros.ethercat_hardware]:             Serial #: 02898
+[DEBUG] [1664925641.686631607] [${node}:ros.ethercat_hardware]:             Name: fl_caster_r_wheel_motor
+[ WARN] [1664925641.690631075] [${node}:ros.ethercat_hardware]: fl_caster_r_wheel_motor EEPROM does not contain motor heating model parameters
+[DEBUG] [1664925641.691621207] [${node}:ros.ethercat_hardware]: No calibration offset was stored on device fl_caster_r_wheel_motor
+[DEBUG] [1664925641.691643246] [${node}:ros.ethercat_hardware]: Device #06: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 3052
+[DEBUG] [1664925641.692613662] [${node}:ros.ethercat_hardware]:             Serial #: 03052
+[DEBUG] [1664925641.696626650] [${node}:ros.ethercat_hardware]:             Name: fl_caster_l_wheel_motor
+[ WARN] [1664925641.700624194] [${node}:ros.ethercat_hardware]: fl_caster_l_wheel_motor EEPROM does not contain motor heating model parameters
+[DEBUG] [1664925641.701615042] [${node}:ros.ethercat_hardware]: No calibration offset was stored on device fl_caster_l_wheel_motor
+[DEBUG] [1664925641.701633421] [${node}:ros.ethercat_hardware]: Device #07: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 2733
+[DEBUG] [1664925641.782846735] [${node}:ros.ethercat_hardware]: Device #08: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 2842
+[DEBUG] [1664925641.783797424] [${node}:ros.ethercat_hardware]:             Serial #: 02842
+[DEBUG] [1664925641.787801923] [${node}:ros.ethercat_hardware]:             Name: bl_caster_r_wheel_motor
+[ WARN] [1664925641.791806247] [${node}:ros.ethercat_hardware]: bl_caster_r_wheel_motor EEPROM does not contain motor heating model parameters
+[DEBUG] [1664925641.792788458] [${node}:ros.ethercat_hardware]: No calibration offset was stored on device bl_caster_r_wheel_motor
+[DEBUG] [1664925641.792801781] [${node}:ros.ethercat_hardware]: Device #09: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 3432
+[DEBUG] [1664925641.793785784] [${node}:ros.ethercat_hardware]:             Serial #: 03432
+[DEBUG] [1664925641.797792363] [${node}:ros.ethercat_hardware]:             Name: bl_caster_l_wheel_motor
+[ WARN] [1664925641.801797942] [${node}:ros.ethercat_hardware]: bl_caster_l_wheel_motor EEPROM does not contain motor heating model parameters
+[DEBUG] [1664925641.802792397] [${node}:ros.ethercat_hardware]: No calibration offset was stored on device bl_caster_l_wheel_motor
+[DEBUG] [1664925641.802803982] [${node}:ros.ethercat_hardware]: Device #10: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 2818
+[DEBUG] [1664925641.803788778] [${node}:ros.ethercat_hardware]:             Serial #: 02818
+[DEBUG] [1664925641.808063368] [${node}:ros.ethercat_hardware]:             Name: bl_caster_rotation_motor
+[ WARN] [1664925641.812314781] [${node}:ros.ethercat_hardware]: bl_caster_rotation_motor EEPROM does not contain motor heating model parameters
+[DEBUG] [1664925641.813304903] [${node}:ros.ethercat_hardware]: Read calibration from device bl_caster_rotation_motor: 81.560981
+[DEBUG] [1664925641.813336290] [${node}:ros.ethercat_hardware]: Device #11: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 2995
+[DEBUG] [1664925641.814298006] [${node}:ros.ethercat_hardware]:             Serial #: 02995
+[DEBUG] [1664925641.818303041] [${node}:ros.ethercat_hardware]:             Name: fr_caster_r_wheel_motor
+[ WARN] [1664925641.822539891] [${node}:ros.ethercat_hardware]: fr_caster_r_wheel_motor EEPROM does not contain motor heating model parameters
+[DEBUG] [1664925641.823535169] [${node}:ros.ethercat_hardware]: No calibration offset was stored on device fr_caster_r_wheel_motor
+[DEBUG] [1664925641.823556332] [${node}:ros.ethercat_hardware]: Device #12: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 3888
+[DEBUG] [1664925641.824526461] [${node}:ros.ethercat_hardware]:             Serial #: 03888
+[DEBUG] [1664925641.828532295] [${node}:ros.ethercat_hardware]:             Name: fr_caster_l_wheel_motor
+[ WARN] [1664925641.832528037] [${node}:ros.ethercat_hardware]: fr_caster_l_wheel_motor EEPROM does not contain motor heating model parameters
+[DEBUG] [1664925641.833514865] [${node}:ros.ethercat_hardware]: No calibration offset was stored on device fr_caster_l_wheel_motor
+[DEBUG] [1664925641.833525160] [${node}:ros.ethercat_hardware]: Device #13: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 2765
+[DEBUG] [1664925641.934682078] [${node}:ros.ethercat_hardware]: Device #14: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 2994
+[DEBUG] [1664925641.935730913] [${node}:ros.ethercat_hardware]:             Serial #: 02994
+[DEBUG] [1664925641.940233809] [${node}:ros.ethercat_hardware]:             Name: torso_lift_motor
+[ WARN] [1664925641.944218480] [${node}:ros.ethercat_hardware]: torso_lift_motor EEPROM does not contain motor heating model parameters
+[DEBUG] [1664925641.945215231] [${node}:ros.ethercat_hardware]: Read calibration from device torso_lift_motor: 5372.165326
+[DEBUG] [1664925641.945226787] [${node}:ros.ethercat_hardware]: Device #15: WG014 (0x67d616)
+[DEBUG] [1664925641.945233431] [${node}:ros.ethercat_hardware]: Device #16: WG014 (0x67d616)
+[DEBUG] [1664925641.945242399] [${node}:ros.ethercat_hardware]: Device #17: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 3019
+[DEBUG] [1664925641.946217042] [${node}:ros.ethercat_hardware]:             Serial #: 03019
+[DEBUG] [1664925641.950204847] [${node}:ros.ethercat_hardware]:             Name: l_shoulder_pan_motor
+[ WARN] [1664925641.954245688] [${node}:ros.ethercat_hardware]: l_shoulder_pan_motor EEPROM does not contain motor heating model parameters
+[DEBUG] [1664925641.955227816] [${node}:ros.ethercat_hardware]: Read calibration from device l_shoulder_pan_motor: 2.549926
+[DEBUG] [1664925641.955259067] [${node}:ros.ethercat_hardware]: Device #18: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 3170
+[DEBUG] [1664925641.956227527] [${node}:ros.ethercat_hardware]:             Serial #: 03170
+[DEBUG] [1664925641.960221858] [${node}:ros.ethercat_hardware]:             Name: l_shoulder_lift_motor
+[ WARN] [1664925641.964720246] [${node}:ros.ethercat_hardware]: l_shoulder_lift_motor EEPROM does not contain motor heating model parameters
+[DEBUG] [1664925641.965716662] [${node}:ros.ethercat_hardware]: Read calibration from device l_shoulder_lift_motor: -70.355967
+[DEBUG] [1664925641.965734452] [${node}:ros.ethercat_hardware]: Device #19: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 3308
+[DEBUG] [1664925641.991990924] [${node}:ros.ethercat_hardware]: Device #20: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 3688
+[DEBUG] [1664925641.992950708] [${node}:ros.ethercat_hardware]:             Serial #: 03688
+[DEBUG] [1664925641.996944899] [${node}:ros.ethercat_hardware]:             Name: l_elbow_flex_motor
+[ WARN] [1664925642.001488879] [${node}:ros.ethercat_hardware]: l_elbow_flex_motor EEPROM does not contain motor heating model parameters
+[DEBUG] [1664925642.002450110] [${node}:ros.ethercat_hardware]: Read calibration from device l_elbow_flex_motor: -16.461946
+[DEBUG] [1664925642.002496091] [${node}:ros.ethercat_hardware]: Device #21: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 3678
+[DEBUG] [1664925642.103295061] [${node}:ros.ethercat_hardware]: Device #22: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 3031
+[DEBUG] [1664925642.104354618] [${node}:ros.ethercat_hardware]:             Serial #: 03031
+[DEBUG] [1664925642.108356301] [${node}:ros.ethercat_hardware]:             Name: l_wrist_l_motor
+[ WARN] [1664925642.112356235] [${node}:ros.ethercat_hardware]: l_wrist_l_motor EEPROM does not contain motor heating model parameters
+[DEBUG] [1664925642.113349969] [${node}:ros.ethercat_hardware]: Read calibration from device l_wrist_l_motor: -721.397074
+[DEBUG] [1664925642.113359853] [${node}:ros.ethercat_hardware]: Device #23: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 3126
+[DEBUG] [1664925642.130872357] [${node}:ros.ethercat_hardware]: Device #24: WG06 (0x67d60e) Firmware Revision 1.02, PCB Revision E.01, Serial #: 1181
+[DEBUG] [1664925642.231952149] [${node}:ros.ethercat_hardware]: Device #25: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 3816
+[DEBUG] [1664925642.247925919] [${node}:ros.ethercat_hardware]: Device #26: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 3692
+[DEBUG] [1664925642.347891076] [${node}:ros.ethercat_hardware]: Device #27: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 3604
+[DEBUG] [1664925642.363020702] [${node}:ros.ethercat_hardware]: Device #28: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 3518
+[DEBUG] [1664925642.464112360] [${node}:ros.ethercat_hardware]: Device #29: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 2563
+[DEBUG] [1664925642.480272334] [${node}:ros.ethercat_hardware]: Device #30: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 2441
+[DEBUG] [1664925642.481134966] [${node}:ros.ethercat_hardware]:             Serial #: 02441
+[DEBUG] [1664925642.485139847] [${node}:ros.ethercat_hardware]:             Name: r_forearm_roll_motor
+[ WARN] [1664925642.489155510] [${node}:ros.ethercat_hardware]: r_forearm_roll_motor EEPROM does not contain motor heating model parameters
+[DEBUG] [1664925642.490152182] [${node}:ros.ethercat_hardware]: Read calibration from device r_forearm_roll_motor: -191.108317
+[DEBUG] [1664925642.490162246] [${node}:ros.ethercat_hardware]: Device #31: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 2862
+[DEBUG] [1664925642.591053484] [${node}:ros.ethercat_hardware]: Device #32: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 3310
+[DEBUG] [1664925642.607907060] [${node}:ros.ethercat_hardware]: Device #33: WG06 (0x67d60e) Firmware Revision 1.02, PCB Revision E.01, Serial #: 1182
+[DEBUG] [1664925642.608804854] [${node}:ros.ethercat_hardware]:             Serial #: 01182
+[DEBUG] [1664925642.613083341] [${node}:ros.ethercat_hardware]:             Name: r_gripper_motor
+[ WARN] [1664925642.617319496] [${node}:ros.ethercat_hardware]: r_gripper_motor EEPROM does not contain motor heating model parameters
+[DEBUG] [1664925642.618307993] [${node}:ros.ethercat_hardware]: Read calibration from device r_gripper_motor: -1349.759104
+[DEBUG] [1664925642.618332853] [${node}:ros.ethercat_hardware]: Device #34: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 3830
+[DEBUG] [1664925642.719203738] [${node}:ros.ethercat_hardware]: Device #35: WG021 (0x67d61d) Firmware Revision 1.12, PCB Revision B.00, Serial #: 1066
+[DEBUG] [1664925642.720248767] [${node}:ros.ethercat_hardware]:             Serial #: 01066
+[DEBUG] [1664925642.724254251] [${node}:ros.ethercat_hardware]:             Name: led_projector
+[ WARN] [1664925642.728257691] [${node}:ros.ethercat_hardware]: led_projector EEPROM does not contain motor heating model parameters
+[ WARN] [1664925642.728291773] [${node}:ros.ethercat_hardware]: WARNING: Device #35 : motor current limit (30.000000) greater than board current limit (28.001899)
+[DEBUG] [1664925642.728309919] [${node}:ros.ethercat_hardware]: Device #36: WG05 (0x67d60d) Firmware Revision 1.22, PCB Revision F.03, Serial #: 2974
+[DEBUG] [1664925642.729234582] [${node}:ros.ethercat_hardware]:             Serial #: 02974
+[DEBUG] [1664925642.733246904] [${node}:ros.ethercat_hardware]:             Name: laser_tilt_mount_motor
+[ WARN] [1664925642.737246623] [${node}:ros.ethercat_hardware]: laser_tilt_mount_motor EEPROM does not contain motor heating model parameters
+[DEBUG] [1664925642.738250176] [${node}:ros.ethercat_hardware]: Read calibration from device laser_tilt_mount_motor: 0.884672
