@@ -23,7 +23,7 @@ def fun_energy(points: np.ndarray, n_power=2):
 
     modified_dist_matrix = copy.deepcopy(dist_matrix)
     for i in range(n_point):
-        modified_dist_matrix[i, i] = np.inf
+        modified_dist_matrix[i, i] = 1e5
     energy = 0.5 * np.sum(1.0 / (modified_dist_matrix ** n_power))  # 0.5 becaue double count
 
     part_grad_list = []
@@ -35,6 +35,8 @@ def fun_energy(points: np.ndarray, n_power=2):
         part_grad_list.append(part_grad)
     grad = np.hstack(part_grad_list)
     return energy, grad
+
+
 
 
 def scipinize(fun: Callable) -> Tuple[Callable, Callable]:
@@ -70,7 +72,16 @@ def gradient_test(func, x0, decimal=4):
 n_dim = 2
 n_point = 30
 points = np.random.rand(n_point, n_dim)
-f, jac = scipinize(lambda x: fun_energy(x.reshape(-1, n_dim), n_power=1))
+a = 2.5
+
+def obj_fun(points: np.ndarray):
+    f1, grad1 = fun_energy(points, n_power=1)
+    f2, grad2 = fun_energy(points, n_power=-2)
+    #return a * f1 + b * f2, a * grad1 + b * grad2
+    return f1 + a * f2, grad1 + a * grad2
+
+
+f, jac = scipinize(lambda x: obj_fun(x.reshape(-1, n_dim)))
 x_init = points.flatten()
 
 bounds = Bounds(lb = np.zeros(n_dim * n_point), ub = np.ones(n_dim * n_point))
