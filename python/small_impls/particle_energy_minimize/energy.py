@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.optimize import OptimizeResult, minimize, Bounds
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import copy
 import time
 from typing import Callable, Tuple
@@ -37,8 +38,6 @@ def fun_energy(points: np.ndarray, n_power=2):
     return energy, grad
 
 
-
-
 def scipinize(fun: Callable) -> Tuple[Callable, Callable]:
     closure_member = {"jac_cache": None}
 
@@ -69,10 +68,10 @@ def gradient_test(func, x0, decimal=4):
     print(grad)
     np.testing.assert_almost_equal(grad, grad_numerical, decimal=decimal)
 
-n_dim = 2
-n_point = 30
+n_dim = 3
+n_point = 27
 points = np.random.rand(n_point, n_dim)
-a = 2.5
+a = 1.5
 
 def obj_fun(points: np.ndarray):
     f1, grad1 = fun_energy(points, n_power=1)
@@ -102,5 +101,11 @@ res = minimize(
 points_sol = res.x.reshape(-1, n_dim)
 print(res)
 
-plt.scatter(points_sol[:, 0], points_sol[:, 1])
-plt.show()
+if n_dim == 2:
+    plt.scatter(points_sol[:, 0], points_sol[:, 1])
+    plt.show()
+else:
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(points_sol[:, 0], points_sol[:, 1], points_sol[:, 2])
+    plt.show()
