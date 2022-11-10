@@ -9,6 +9,7 @@ with grpc.insecure_channel('localhost:5051') as channel:
     stub = datagen_pb2_grpc.DataGenServiceStub(channel)
     data = pickle.dumps(np.random.randn(100))
     req = datagen_pb2.DataGenRequest(data=data)
-    response = stub.DataGen(req)
+    response = stub.DataGenStream(req)
 
-print('Reply: ', response.data)
+    for resp in response:
+        print(resp)

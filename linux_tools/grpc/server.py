@@ -13,6 +13,14 @@ class Server(datagen_pb2_grpc.DataGenServiceServicer):
         response = datagen_pb2.DataGenResponse(data = req_data)
         return response
 
+    def DataGenStream(self, request, context):
+        req_data: bytes = request.data
+        for _ in range(10):
+            time.sleep(1)
+            response = datagen_pb2.DataGenResponse(data = req_data)
+            yield response
+
+
 server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 datagen_pb2_grpc.add_DataGenServiceServicer_to_server(Server(), server)
 server.add_insecure_port('[::]:5051')
