@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package datagen;
+
+message DataGenRequest {
+    bytes data = 1;
+}
+
+message DataGenResponse {
+    bytes data = 1;
+}
+
+service DataGenService{
+    rpc DataGen (DataGenRequest) returns (DataGenResponse) {}
+    rpc DataGenStream (DataGenRequest) returns (stream DataGenResponse) {}
+}
