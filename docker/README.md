@@ -1,3 +1,19 @@
+# Copy ssh-key from ~/.ssh using symbolic link
+```Dockerfile
+# copy ssh
+COPY --chown=h-ishida .ssh /home/h-ishida/.ssh
+```
+
+when building
+```sh
+if [ ! -d .ssh ]
+then
+    echo ".ssh directory not found."
+    ln -sf $HOME/.ssh .
+fi
+tar -chz . |docker build -t hifuku -
+```
+
 # Use the same IP address while maintaining ssh-ability 
 https://stackoverflow.com/questions/62417777/start-docker-container-with-host-network-while-maintaining-the-ability-to-ssh-in
 RUN sed -i 's/\(^Port\)/#\1/' /etc/ssh/sshd_config && echo Port 2233 >> /etc/ssh/sshd_config
