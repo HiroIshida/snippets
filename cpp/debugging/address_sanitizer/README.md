@@ -19,3 +19,33 @@ ERROR: ld.so: object 'libasan.so' from LD_PRELOAD cannot be preloaded (cannot op
 export LD_PRELOAD=/lib/x86_64-linux-gnu/libasan.so.5
 ```
 を行う.
+
+### エラーがでたらその場で終了してもらう方法
+```bash
+export ASAN_OPTIONS='abort_on_error=1'/
+```
+
+### pythonだとcleanな環境でもinterpreterが終了するタイミングでmemory leakおきてる. これはとりあえず無視して..
+h-ishida@0cfa39147976:~$ python3
+Python 3.10.6 (main, Nov 14 2022, 16:10:14) [GCC 11.3.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+>>> quit
+Use quit() or Ctrl-D (i.e. EOF) to exit
+>>> quit()
+
+=================================================================
+==137==ERROR: LeakSanitizer: detected memory leaks
+
+Direct leak of 77080 byte(s) in 70 object(s) allocated from:
+    #0 0x7ffb507d0808 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cc:144
+    #1 0x55a5d07a34b2 in PyObject_Malloc (/usr/bin/python3.10+0x11d4b2)
+
+Direct leak of 4323 byte(s) in 7 object(s) allocated from:
+    #0 0x7ffb507d0808 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cc:144
+    #1 0x55a5d07a4d4c  (/usr/bin/python3.10+0x11ed4c)
+
+Indirect leak of 4719 byte(s) in 5 object(s) allocated from:
+    #0 0x7ffb507d0808 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cc:144
+    #1 0x55a5d07a4d4c  (/usr/bin/python3.10+0x11ed4c)
+
+SUMMARY: AddressSanitizer: 86122 byte(s) leaked in 82 allocation(s).
