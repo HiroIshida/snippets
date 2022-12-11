@@ -12,11 +12,10 @@
 (defforeign pyobject_callmethod
             *pythonlib*
             "_PyObject_CallMethod"
-            (:string :string) ;; module name
+            (:integer :string) ;; module name
             :integer ;; module object pointer
             )
 
 (setq *os* (pyimport-importmodule "os"))
-(setq ret (pyobject_callmethod "os" "exit"))
+(setq ret (pyobject_callmethod *os* "exit"))
 (print ret)
- 
