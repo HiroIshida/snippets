@@ -94,11 +94,77 @@ if (!context->setGoalConstraints(req.goal_constraints, req.path_constraints, &er
 }
 ```
 
-ただしcontextはここで定義されている.
-ompl_interface/include/moveit/ompl_interface/model_based_planning_context.h
+contextはここで定義されている. ompl_interface/include/moveit/ompl_interface/model_based_planning_context.h
 ```
 `context->setGoalConstraints`では`goal_constraints_.push_back(kset);`が呼ばれている.
-ただし
+```
+ここでgoal_constraints_はこのかたで, 
 ```
 std::vector<kinematic_constraints::KinematicConstraintSetPtr> goal_constraints_;
+```
+KinematicConstraintはrobot kinematicsを考慮したpose, positionの制約条件.
+
+goalはexplicitに表されるのではなく, samplerとして陰的に表現されている.
+```cpp
+class ConstrainedGoalSampler : public ompl::base::GoalLazySamples
+```
+
+この関数の中で
+```cpp
+ompl::base::GoalPtr ompl_interface::ModelBasedPlanningContext::constructGoal()
+```
+次のコードにより, constraint samplerをgoalsに追加していき
+```cpp
+ob::GoalPtr goal = ob::GoalPtr(new ConstrainedGoalSampler(this, goal_constraint, constraint_sampler));
+  goals.push_back(goal);
+```
+, それを次の関数内で`simple_setup_`にsetする.
+```
+bool ompl_interface::ModelBasedPlanningContext::setGoalConstraints(...){
+    ...
+    ompl_simple_setup_->setGoal(goal);
+    ...
+}
+```
+
+## constraintからのsamplingはどうなってる?
+
+### 一様にサンプリングするとめちゃくちゃ時間かかる気がするけど, どうやってサンプリングしてる?
+KinematicConstraint 自体にはsamplingの関数はないみたい.
+`constrained_sampler.h`にはこんな関数が用意されている.
+```
+  void sampleUniform(ompl::base::State* state) override;
+
+  /** @brief Sample a state (uniformly) within a certain distance of another state*/
+  void sampleUniformNear(ompl::base::State* state, const ompl::base::State* near, const double distance) override;
+
+  /** @brief Sample a state using the specified Gaussian*/
+  void sampleGaussian(ompl::base::State* state, const ompl::base::State* mean, const double stdDev) override;
+private:
+  bool sampleC(ompl::base::State* state);
+```
+制約ありでconfigurationをsamplingするためには, IKsamplerみたいなものがあって, そこからikをといているらしい.
+```
+moveit/moveit_core/constraint_samplers場所
+bool IKConstraintSampler::sample(moveit::core::RobotState& state, const moveit::core::RobotState& reference_state,
+                                 unsigned int max_attempts)
+```
+
+### mainのplanningスレッドと並列にsamplingスレッドがあるみたい
+https://groups.google.com/g/moveit-users/c/LWrf5E1sQZA?pli=1
+では以下のようなやりとりがあり, まず少なくともgoalをsamplingし, 並列でgoalsamplingを回すとった感じらしい.
+```
+I would like to start solving my planning problem in OMPL from the moment when at least one goal state is found.
+Until then, I want my solver (RRT*) to let the priority to the ConstrainedGoalSampler class from MoveIt in order to get a valid goal state.
+I know the ConstrainedGoalSampler is called in ompl through a thread created by the GoalLazySamples class. However, I can't figure out the frequency of this call and how I could keep this thread running until a valid state is found.
+Thank in advance for your help!
+
+Sonny
+```
+
+```
+The way goals are set up in MoveIt is such that I think what you want already happens.
+Given a goal, a planner is started in one thread and the goal sampling is in another thread. The planner waits until at least one goal sample is available and starts computation. It then adds goal samples to the tree, as the other thread finds them. The goal sampling thread continuously generates samples until a maximum number of attempts or  a maximum number of goal samples.
+
+Ioan
 ```
