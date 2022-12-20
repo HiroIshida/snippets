@@ -68,21 +68,37 @@ def torch_eval(x: torch.Tensor):
     x.requires_grad_(True)
     y = layers(x)
     y.backward()
-    return x.detach().numpy(), x.grad.detach().numpy()
+    return y.detach().numpy().item(), x.grad.detach().numpy()
 
-f, grad = convert(layers)
 
-batch = np.random.randn(40)
-ts = time.time()
-for _ in range(100):
-    fval = f(batch)
-    grad(batch)
-perf = (time.time() - ts ) / 100.0
-print("jax perf: {}".format(perf))
+def test_consistency():
+    batch = np.random.randn(40)
+    f_torch, g_torch = torch_eval(torch.from_numpy(batch).float())
 
-ts = time.time()
-ten = torch.zeros(1, 40).float()
-for _ in range(100):
-    torch_eval(ten)
-perf = (time.time() - ts ) / 100.0
-print("torch perf: {}".format(perf))
+    func_jax, grad_jax = convert(layers)
+    f_jax, g_jax = func_jax(batch), grad_jax(batch)
+
+    np.testing.assert_almost_equal(g_torch, g_jax)
+
+
+def test_performace():
+    batch = np.random.randn(40)
+    n = 100
+    ts = time.time()
+    for _ in range(n):
+        f_torch, g_torch = torch_eval(torch.from_numpy(batch).float())
+    torch_score = (time.time() - ts) / n
+
+    func_jax, grad_jax = convert(layers)
+    ts = time.time()
+    for _ in range(n):
+        f_jax, g_jax = func_jax(batch), grad_jax(batch)
+    jax_score = (time.time() - ts) / n
+
+    speedup_x = torch_score / jax_score
+    print("{}x speedup".format(speedup_x))
+    assert speedup_x > 5
+
+
+test_consistency()
+test_performace()
