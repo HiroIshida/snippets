@@ -34,7 +34,7 @@
     <rosparam>
       max_curvature: 0.005
       estimate_normal: true
-      min_size: 1200
+      min_size: 100
     </rosparam>
   </node>
 
@@ -59,29 +59,28 @@
       use_indices: false
       keep_organized: false
     </rosparam>
-    <param name="h_limit_max" value="8" />
-    <param name="h_limit_min" value="-128" />
+    <param name="h_limit_max" value="9" />
+    <param name="h_limit_min" value="-42" />
     <param name="s_limit_max" value="255" />
-    <param name="s_limit_min" value="45" />
+    <param name="s_limit_min" value="0" />
     <param name="i_limit_max" value="255" />
     <param name="i_limit_min" value="0" />
   </node>
 
-  <arg name="manager" default="tmp" />
-  <node name="$(arg manager)" pkg="nodelet" type="nodelet" args="manager"
+  <node name="clustering" pkg="nodelet" type="nodelet" args="manager"
           output="screen" />
   <node pkg="nodelet" type="nodelet" name="euclidean_clustering"
-        args="load jsk_pcl/EuclideanClustering $(arg manager)" output="screen">
+        args="standalone jsk_pcl/EuclideanClustering" output="screen">
         <remap from="~input" to="hsi_filter/output" />
     <rosparam>
       tolerance: 0.02
-      min_size: 200
+      min_size: 10
     </rosparam>
   </node>
 
   <node pkg="nodelet" type="nodelet"
         name="cluster_decomposer"
-        args="load jsk_pcl/ClusterPointIndicesDecomposerZAxis $(arg manager)"
+        args="standalone jsk_pcl/ClusterPointIndicesDecomposerZAxis"
         output="screen" clear_params="true">
     <remap from="~input" to="hsi_filter/output" />
     <remap from="~target" to="euclidean_clustering/output" />
@@ -90,7 +89,7 @@
     <rosparam>
         align_boxes: True
         align_boxes_with_plane: False
-        target_frame_id: base_link
+        target_frame_id: base_footprint
     </rosparam>
   </node>
 
