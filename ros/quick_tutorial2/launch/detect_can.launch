@@ -59,11 +59,11 @@
       use_indices: false
       keep_organized: false
     </rosparam>
-    <param name="h_limit_max" value="9" />
-    <param name="h_limit_min" value="-42" />
-    <param name="s_limit_max" value="255" />
+    <param name="h_limit_max" value="1" />
+    <param name="h_limit_min" value="127" />
+    <param name="s_limit_max" value="85" />
     <param name="s_limit_min" value="0" />
-    <param name="i_limit_max" value="255" />
+    <param name="i_limit_max" value="141" />
     <param name="i_limit_min" value="0" />
   </node>
 
