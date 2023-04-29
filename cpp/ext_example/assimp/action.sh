@@ -1,0 +1,3 @@
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+make -j12

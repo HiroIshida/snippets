@@ -1,0 +1,14 @@
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
+
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif(NOT CMAKE_BUILD_TYPE)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS_INIT} -Wall -fPIC")
+
+set(BUILD_SHARED_LIBS OFF)
+add_subdirectory("assimp")
+
+add_executable(main convert_collada_to_obj.cpp)
+target_link_libraries(main assimp)
