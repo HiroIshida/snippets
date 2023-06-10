@@ -83,25 +83,44 @@ class Box2d:
         return bool(np.any(vals < 0.0))
 
 
-def sample_box(table_extent: np.ndarray, box_extent: np.ndarray) -> Box2d:
+def sample_box(table_extent: np.ndarray, box_extent: np.ndarray, obstacles: List[Box2d]) -> Box2d:
     table = Box2d(table_extent, PlanerCoords.standard())
 
     while True:
         box_pos_cand = -0.5 * table_extent + table_extent * np.random.rand(2)
         angle_cand = np.random.rand() * np.pi
-        box = Box2d(box_extent, PlanerCoords(box_pos_cand, angle_cand))
-        is_inside = np.all(table.sd(box.get_verts()) < 0.0)
-        if is_inside:
-            return box
+        box_cand = Box2d(box_extent, PlanerCoords(box_pos_cand, angle_cand))
+
+        def is_valid(box_cand):
+            is_inside = np.all(table.sd(box_cand.get_verts()) < 0.0)
+            if is_inside:
+                for obs in obstacles:
+                    if box_cand.is_colliding(obs):
+                        return False
+                return True
+            return False
+
+        if is_valid(box_cand):
+            return box_cand
 
 
-table_extent = np.array([1.0, 0.5])
+# np.random.seed(1)
+
+table_extent = np.array([0.8, 0.5])
 table = Box2d(table_extent, PlanerCoords.standard())
-box2d = sample_box(table_extent, np.array([0.5, 0.3]))
+box2d = sample_box(table_extent, np.array([0.2, 0.2]), [])
+
+obstacles = [box2d]
+for _ in range(4):
+    obs = sample_box(table_extent, np.array([0.1, 0.1]), obstacles)
+    obstacles.append(obs)
 
 fig, ax = plt.subplots()
 table.visualize((fig, ax), "red")
 box2d.visualize((fig, ax), "blue")
+for obs in obstacles[1:]:
+    obs.visualize((fig, ax), "green")
+
 ax.set_xlim([-1.0, 1.0])
 ax.set_ylim([-1.0, 1.0])
 plt.show()
