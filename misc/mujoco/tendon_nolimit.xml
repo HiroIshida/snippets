@@ -1,0 +1,46 @@
+<mujoco model="tensegrity">
+  <option timestep="0.002" collision="predefined" gravity="0 0 0.0"/>
+
+  <default>
+    <site size="0.005" rgba="1 1 1 1"/>
+    <default class="tendon_actuator">
+      <general ctrllimited="true" ctrlrange="0 1.0" dyntype="filter" dynprm="0.02"/> 
+    </default>
+
+    <default class="tendon_spatial">
+      <tendon damping="5" stiffness="50" frictionloss="0.5" limited=true range="-1.0 1.0"/>
+      <!--tendon damping="5" stiffness="50" frictionloss="0.5"/-->
+    </default>
+
+  </default>
+
+  <worldbody>
+    <body name="wall" pos="0 0 1.0">
+      <geom name="wall" type="box" size="1.0 1.0 0.03" mass="10" rgba="0 0 1 0.2" pos="0 0 0"/>
+      <site name="wall" pos="0 0 0"/>
+    </body>
+
+    <body name="ground" pos="0 0 0.0">
+      <geom name="ground" type="box" size="1.0 1.0 0.03" mass="10" rgba="0 1 0 0.2" pos="0 0 0"/>
+      <site name="ground" pos="0 0 0"/>
+    </body>
+
+    <body name="weight" pos="0 0 0.5">
+      <geom name="weight" type="box" size="0.1 0.1 0.1" mass="0.1" rgba="1 0 0 1" pos="0 0 0"/>
+      <joint name="weight" type="free"/>
+      <site name="weight" pos="0 0 0"/>
+    </body>
+  </worldbody>
+
+  <tendon>
+    <spatial name="tendon_upper" class="tendon_spatial">
+      <site site="wall"/>
+      <site site="weight"/>
+    </spatial>
+  </tendon>
+
+  <actuator>
+    <position name="act_upper" tendon="tendon_upper" kp="20" class="tendon_actuator"/>
+  </actuator>
+
+</mujoco>
