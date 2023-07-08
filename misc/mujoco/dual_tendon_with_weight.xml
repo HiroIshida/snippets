@@ -8,8 +8,7 @@
     </default>
 
     <default class="tendon_spatial">
-      <tendon damping="5" stiffness="50" frictionloss="0.5" limited=true range="-1.0 1.0"/>
-      <!--tendon damping="5" stiffness="50" frictionloss="0.5"/-->
+      <tendon damping="5" stiffness="0" frictionloss="0.5" limited=true range="0.0 0.1"/>
     </default>
 
   </default>
