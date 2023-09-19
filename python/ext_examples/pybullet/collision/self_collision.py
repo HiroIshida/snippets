@@ -159,7 +159,6 @@ link_name_id_table, joint_name_id_table = construct_tables()
 joint_id_name_table = {v: k for k, v in joint_name_id_table.items()}
 link_id_name_table = {v: k for k, v in link_name_id_table.items()}
 
-
 arm_links = ["shoulder_pan_link",
              "shoulder_lift_link",
              "upperarm_roll_link",
