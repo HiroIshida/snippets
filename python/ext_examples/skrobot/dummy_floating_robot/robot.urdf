@@ -1,0 +1,137 @@
+<?xml version="1.0"?>
+<robot name="prismatic_yaw_robot">
+
+  <!-- Properties for Materials -->
+  <material name="blue">
+    <color rgba="0 0 1 1.0"/>
+  </material>
+  
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+  </link>
+  
+  <joint name="x_prismatic" type="prismatic">
+    <parent link="base_link"/>
+    <child link="x_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-1.0" upper="1.0" effort="10.0" velocity="0.5"/>
+  </joint>
+  
+  <link name="x_link">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+  </link>
+  
+  <joint name="y_prismatic" type="prismatic">
+    <parent link="x_link"/>
+    <child link="y_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.0" upper="1.0" effort="10.0" velocity="0.5"/>
+  </joint>
+  
+  <link name="y_link">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+  </link>
+
+  <joint name="z_prismatic" type="prismatic">
+    <parent link="y_link"/>
+    <child link="z_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.0" upper="1.0" effort="10.0" velocity="0.5"/>
+  </joint>
+  
+  <link name="z_link">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+  </link>
+
+  <joint name="yaw_rotation" type="continuous">
+    <parent link="z_link"/>
+    <child link="yaw_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="10.0" velocity="0.5"/>
+  </joint>
+
+  <link name="yaw_link">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+  </link>
+
+  <joint name="roll_rotation" type="continuous">
+    <parent link="yaw_link"/>
+    <child link="roll_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="1.0 0 0"/>
+    <limit effort="10.0" velocity="0.5"/>
+  </joint>
+
+  <link name="roll_link">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+  </link>
+
+  <joint name="yaw_rotation2" type="continuous">
+    <parent link="roll_link"/>
+    <child link="yaw_link2"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="10.0" velocity="0.5"/>
+  </joint>
+
+  <link name="yaw_link2">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+  </link>
+
+  <joint name="pitch_rotation" type="continuous">
+    <parent link="yaw_link2"/>
+    <child link="gripper_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0.0 1.0 0"/>
+    <limit effort="10.0" velocity="0.5"/>
+  </joint>
+
+  <link name="gripper_link">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+  </link>
+
+</robot>
