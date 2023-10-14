@@ -1,3 +1,4 @@
+import time
 import argparse
 import copy
 import numpy as np
@@ -64,6 +65,35 @@ class Cartpole:
         ax.add_patch(cart)
         pole = plt.Line2D((x, x + l * np.sin(theta)), (0, - l * np.cos(theta)), color="black")
         ax.add_line(pole)
+
+
+class CartpoleVisualizer:
+
+    def __init__(self, model_param: ModelParameter = ModelParameter()):
+        plt.ion()
+        fig, ax = plt.subplots()
+        self.fig = fig
+        self.ax = ax
+        self.initialized = False
+        self.model_param = model_param
+        cart_circle = plt.Circle((0, 0), 0.2, color="black")
+        self.cart = ax.add_patch(cart_circle)
+        pole_line = plt.Line2D((0, 0), (0, - model_param.l), color="black")
+        self.pole = ax.add_line(pole_line)
+        ax.set_xlim(-3, 3)
+        ax.set_ylim(-2, 2)
+        ax.set_aspect('equal')
+
+    def render(self, state):
+        x, x_dot, theta, theta_dot = state
+        m, M, l, g = self.model_param.m, self.model_param.M, self.model_param.l, self.model_param.g
+
+        x = 0.0
+        self.cart.set_center = (x, 0)
+        self.pole.set_data((x, x + l * np.sin(theta)), (0, - l * np.cos(theta)))
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
+
 
 
 # Chung, Chung Choo, and John Hauser. "Nonlinear control of a swinging pendulum." automatica 31.6 (1995): 851-862.
@@ -167,6 +197,8 @@ class PartiallyAnalyticPolicy(ActorCriticPolicy):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", type=str, default="train", help="train or test")
+    parser.add_argument("--render", action="store_true", help="render")
+
     args = parser.parse_args()
 
     model_name = "ppo_acrobot"
@@ -186,14 +218,29 @@ if __name__ == "__main__":
         model.learn(total_timesteps=2000000, callback=callback_list)
         model.save(model_name)
     else:
-        env = CartpoleEnv(randomize_model_param=True)
+        # model_param = ModelParameter.create_random()
+        model_param = ModelParameter()
+        env = CartpoleEnv(randomize_model_param=False, model_param=model_param)
+        if args.render:
+            vis = CartpoleVisualizer(model_param)
+            vis.render(env.system.state)
         model = PPO.load("./models/ppo_acrobot_1966080_steps.zip")
                                    
         obs, _ = env.reset()
+        state_list = []
         for i in range(10000):
             print(i)
-            action, _states = model.predict(obs, deterministic=True)
+            action, _ = model.predict(obs, deterministic=True)
             obs, reward, done, _, info = env.step(action)
+            state_list.append(obs)
+            if args.render:
+                vis.render(obs)
             if done:
-                print("done")
+                print("success")
                 break
+        state_arr = np.array(state_list)
+        theta_phase_arr = state_arr[:, 2:]
+        plt.plot(theta_phase_arr[:, 0], theta_phase_arr[:, 1])
+        plt.show()
+
+
