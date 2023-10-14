@@ -165,7 +165,7 @@ class CartpoleEnv(Env):
             # print("success: ", self.num_uplight)
         reward = +1.0 if is_uplight else 0.0
         
-        is_terminated = self.episode_count > 1000 and is_uplight
+        is_terminated = self.episode_count > 300 and is_uplight
         return obs, reward, is_terminated, False, {}
 
 
