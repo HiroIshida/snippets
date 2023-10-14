@@ -1,3 +1,4 @@
+import argparse
 import copy
 import numpy as np
 import torch as th
@@ -9,7 +10,8 @@ from gymnasium.spaces import Box
 
 from stable_baselines3 import PPO
 from stable_baselines3.ppo.policies import ActorCriticPolicy
-
+from stable_baselines3.common.callbacks import BaseCallback, CheckpointCallback, CallbackList
+from sb3_contrib import TRPO
 
 @dataclass
 class ModelParameter:
@@ -17,6 +19,15 @@ class ModelParameter:
     M: float = 1.0
     l: float = 1.0
     g: float = 9.8
+
+    @classmethod
+    def create_random(cls) -> "ModelParameter":
+        return cls(
+            m=1.0 + np.random.randn() * 0.1,
+            M=1.0 + np.random.randn() * 0.1,
+            l=1.0 + np.random.randn() * 0.1,
+            g=9.8,
+        )
 
 
 class Cartpole:
@@ -43,11 +54,10 @@ class Cartpole:
 
     def is_uplight(self) -> bool:
         x, x_dot, theta, theta_dot = self.state
-        # return abs(np.cos(theta) - (-1)) < 0.04 and abs(theta_dot) < 0.1
-        return abs(np.cos(theta) - (-1)) < 0.02 and abs(theta_dot) < 0.03
+        return abs(np.cos(theta) - (-1)) < 0.04 and abs(theta_dot) < 0.1
+        # return abs(np.cos(theta) - (-1)) < 0.01 and abs(theta_dot) < 0.01
 
     def render(self, ax):
-        print(self.state)
         x, x_dot, theta, theta_dot = self.state
         m, M, l, g = self.model_param.m, self.model_param.M, self.model_param.l, self.model_param.g
         cart = plt.Circle((x, 0), 0.2, color="black")
@@ -80,17 +90,22 @@ class CartpoleEnv(Env):
     system: Cartpole
     observation_space: Box
     action_space: Box
-    # observation_space: spaces.Space[ObsType]
+    randomize_model_param: bool
+    num_uplight: int
+    episode_count: int
 
-    def __init__(self, model_param: ModelParameter = ModelParameter()):
+    def __init__(self, model_param: ModelParameter = ModelParameter(), randomize_model_param: bool = True):
         self.system = Cartpole(np.array([0.0, 0.0, 0.0, 0.0]), model_param)
         obs_high = np.array([np.inf, np.inf, np.inf, np.inf]) 
         obs_low = -1 * obs_high
         self.observation_space = Box(obs_low, obs_high, dtype=np.float32)
 
-        act_high = np.array([40.0])
+        act_high = np.array([50.0])
         act_low = -1 * act_high
         self.action_space = Box(act_low, act_high, dtype=np.float32)
+        self.num_uplight = 0
+        self.randomize_model_param = randomize_model_param
+        self.episode_count = 0
         self.reset()
 
     def reset(
@@ -99,19 +114,39 @@ class CartpoleEnv(Env):
         seed: Optional[int] = None,
         options: Optional[Dict[str, Any]] = None,
     ) -> Tuple[np.ndarray, Dict[str, Any]]:  # type: ignore
+        self.episode_count = 0
         self.system.state = np.random.randn(4) * np.array([0.1, 0.1, 0.1, 0.1])
+        if self.randomize_model_param:
+            self.system.model_param = ModelParameter.create_random()
+            print("reset with model_param: ", self.system.model_param)
+        else:
+            self.system.model_param = ModelParameter()
         return self.system.state, {}
 
     def step(
         self, action: np.ndarray,
     ) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
+        self.episode_count += 1
         self.system.step(action[0])
         obs = self.system.state
-        is_termianted = self.system.is_uplight()
-        if is_termianted:
-            print("uplight")
-        reward = 1.0 if is_termianted else 0.0
-        return obs, reward, is_termianted, False, {}
+        is_uplight = self.system.is_uplight()
+        if is_uplight:
+            self.num_uplight += 1
+            # print("success: ", self.num_uplight)
+        reward = +1.0 if is_uplight else 0.0
+        
+        is_terminated = self.episode_count > 1000 and is_uplight
+        return obs, reward, is_terminated, False, {}
+
+
+class MyCallback(BaseCallback):
+    def _on_rollout_start(self) -> None:
+        vecenv: DummyVecEnv = self.training_env
+        env: CartpoleEnv = vecenv.envs[0]
+        env.num_uplight = 0
+
+    def _on_step(self) -> bool:
+        return True
 
 
 class PartiallyAnalyticPolicy(ActorCriticPolicy):
@@ -130,6 +165,35 @@ class PartiallyAnalyticPolicy(ActorCriticPolicy):
 
 
 if __name__ == "__main__":
-    env = CartpoleEnv()
-    model = PPO(PartiallyAnalyticPolicy, env, verbose=1)
-    model.learn(total_timesteps=20000)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mode", type=str, default="train", help="train or test")
+    args = parser.parse_args()
+
+    model_name = "ppo_acrobot"
+    if args.mode == "train":
+        env = CartpoleEnv(randomize_model_param=True)
+        # model = PPO(PartiallyAnalyticPolicy, env, verbose=1, n_steps=2048 * 2, tensorboard_log="./logs/")
+
+        model = PPO(PartiallyAnalyticPolicy, env, verbose=1, n_steps=2048 * 2, 
+                    policy_kwargs = dict(
+                        activation_fn=th.nn.Tanh,
+                        net_arch=dict(pi=[20, 20], vf=[20, 20]), ## changed from [256, 128]
+                        log_std_init=-0.5,
+                        ))
+        callback = MyCallback()
+        check_callback = CheckpointCallback(save_freq=2048 * 2 * 10, save_path="./models/", name_prefix=model_name)
+        callback_list = CallbackList([callback, check_callback])
+        model.learn(total_timesteps=2000000, callback=callback_list)
+        model.save(model_name)
+    else:
+        env = CartpoleEnv(randomize_model_param=True)
+        model = PPO.load("./models/ppo_acrobot_1966080_steps.zip")
+                                   
+        obs, _ = env.reset()
+        for i in range(10000):
+            print(i)
+            action, _states = model.predict(obs, deterministic=True)
+            obs, reward, done, _, info = env.step(action)
+            if done:
+                print("done")
+                break
