@@ -1,9 +1,12 @@
+import argparse
+import tqdm
 import copy
 import numpy as np
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
-from typing import List
+from typing import List, Callable, Optional, Tuple
 from control import lqr
+
 
 @dataclass
 class ModelParameter:
@@ -144,39 +147,85 @@ class EnergyShapingController:
         return f    
 
 
-if __name__ == "__main__":
-    model_actual = ModelParameter()
-    model_est = copy.deepcopy(model_actual)
-    # model_est.m = 1.1
-    # model_est.M = 0.8
-    system = Cartpole(np.array([0.0, 0.0, 0.1, 0.0]))
-    controller = EnergyShapingController(model_est, 0.2)
-    lqr_controller = LQRController(model_est)
-    f_history = []
+class Controller:
+    nonlinear_controller: EnergyShapingController
+    linear_controller: LQRController
+    is_switchable: Callable[[np.ndarray], bool]
+    nonlinear_mode: bool
 
-    for _ in range(2000):
-        f = controller(system.state)
-        f_history.append(f)
-        system.step(f)
-        if system.is_uplight():
-            print("uplight")
-            break
+    def __init__(self, model_param: ModelParameter, is_switchable: Optional[Callable[[np.ndarray], bool]] = None):
+        if is_switchable is None:
+            def tmp(state: np.ndarray) -> bool:
+                x, x_dot, theta, theta_dot = state
+                return abs(np.cos(theta) - (-1)) < 0.3 and abs(theta_dot) < 0.3
+            is_switchable = tmp
+        self.model_param = model_param
+        self.nonlinear_controller = EnergyShapingController(model_param)
+        self.linear_controller = LQRController(model_param)
+        self.is_switchable = is_switchable
+        self.nonlinear_mode = True
 
-    for _ in range(100):
-        f = lqr_controller(system.state)[0]
-        f_history.append(f)
-        system.step(f)
+    def __call__(self, state: np.ndarray) -> float:
+        if self.is_switchable(state):
+            self.nonlinear_mode = False
+        if self.nonlinear_mode:
+            return self.nonlinear_controller(state)
+        else:
+            return self.linear_controller(state)[0]
+
+
+def rollout(model_actual: ModelParameter, t_acceptable: int = 300) -> Tuple[bool, Cartpole, int]:
+    system = Cartpole(np.array([0.0, 0.0, 0.1, 0.0]), model_actual)
+    controller = Controller(ModelParameter())
+
+    for t in tqdm.tqdm(range(t_acceptable)):
+        u = controller(system.state)
+        system.step(u)
+        x, _, _, _ = system.state
+        if abs(x) > 10.0:
+            return (False, system, t)
         if system.is_static():
-            print("static")
-            break
-    print(len(system.history))
+            return (True, system, t)
+    return (False, system, t_acceptable)
 
-    vis = CartpoleVisualizer(model_actual)
-    for state in system.history:
-        vis.render(state)
-    import time; time.sleep(1000)
-    # history = np.array(system.history)
-    # plt.plot(history[:, 2], history[:, 3])
-    # plt.plot(history[-1, 2], history[-1, 3], "o", markersize=10)
-    # print(history[-1, :])
-    # plt.show()
+
+if __name__ == "__main__":
+    # parse and select mode
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mode", type=str, default="robust")
+    args = parser.parse_args()
+
+    if args.mode == "demo":
+        model_est = ModelParameter()
+        model_actual = copy.deepcopy(model_est)
+        model_actual.m = 0.7
+
+        success, system, T = rollout(model_actual)
+        print(f"success: {success} with T: {T}")
+
+        vis = CartpoleVisualizer(model_actual)
+        for state in system.history:
+            vis.render(state)
+        import time; time.sleep(1000)
+    elif args.mode == "robust":
+        N_grid = 20
+        model_est = ModelParameter()
+        pts = []
+        bools = []
+        for m in tqdm.tqdm(np.linspace(0.1, 3.0, N_grid)):
+            for M in np.linspace(0.1, 3.0, N_grid):
+                print(f"m: {m}, M: {M}")
+                model_actual = copy.deepcopy(model_est)
+                model_actual.m = m
+                model_actual.M = M
+                success, system, T = rollout(model_actual)
+                print(f"success: {success} with T: {T}")
+                pts.append((m, M))
+                bools.append(success)
+        pts = np.array(pts)
+        bools = np.array(bools)
+        plt.scatter(pts[bools, 0], pts[bools, 1], color="blue")
+        plt.scatter(pts[~bools, 0], pts[~bools, 1], color="red")
+        plt.show()
+    else:
+        assert False
