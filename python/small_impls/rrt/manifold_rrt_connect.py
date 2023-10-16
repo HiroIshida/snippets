@@ -1,3 +1,5 @@
+import argparse
+import matplotlib.pyplot as plt
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
@@ -91,9 +93,9 @@ class ManifoldRRT(ABC):
         min_idx = np.argmin([np.linalg.norm(q - n.q) for n in self.nodes])
         return self.nodes[min_idx]
 
-    def step(self) -> None:
+    def step(self) -> ExtensionResult:
         q_rand = self.sample()
-        self.extend(q_rand)
+        return self.extend(q_rand)
 
     def extend(self, q_rand: np.ndarray, node_nearest: Optional[Node] = None) -> ExtensionResult:
 
@@ -121,6 +123,7 @@ class ManifoldRRT(ABC):
         if np.any(q_new < self.b_min):
             return ExtensionResult.TRAPPED
         if np.any(q_new > self.b_max):
+
             return ExtensionResult.TRAPPED
 
         # check if motion step constraint is satisfied
@@ -157,23 +160,37 @@ class ManifoldRRT(ABC):
                 return self.nodes[-1]
 
     def visualize(self, fax):
-        assert self.dof in [3]
-        if fax is None:
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection="3d")
-        else:
-            fig, ax = fax
-        Q = np.array([n.q for n in self.nodes])
+        if self.dof == 2:
+            if fax is None:
+                fig, ax = plt.subplots()
+            else:
+                fig, ax = fax
+            Q = np.array([n.q for n in self.nodes])
 
-        ax.scatter(Q[:, 0], Q[:, 1], Q[:, 2], s=2)
-        for n in self.nodes:
-            if n.node_parent is None:
-                continue
-            q = n.q
-            q_parent = n.node_parent.q
-            ax.plot(
-                [q_parent[0], q[0]], [q_parent[1], q[1]], [q_parent[2], q[2]], c="red", linewidth=1
-            )
+            ax.scatter(Q[:, 0], Q[:, 1], s=2)
+            for n in self.nodes:
+                if n.node_parent is None:
+                    continue
+                q = n.q
+                q_parent = n.node_parent.q
+                ax.plot([q_parent[0], q[0]], [q_parent[1], q[1]], c="red", linewidth=1)
+        if self.dof == 3:
+            if fax is None:
+                fig = plt.figure()
+                ax = fig.add_subplot(111, projection="3d")
+            else:
+                fig, ax = fax
+            Q = np.array([n.q for n in self.nodes])
+
+            ax.scatter(Q[:, 0], Q[:, 1], Q[:, 2], s=2)
+            for n in self.nodes:
+                if n.node_parent is None:
+                    continue
+                q = n.q
+                q_parent = n.node_parent.q
+                ax.plot(
+                    [q_parent[0], q[0]], [q_parent[1], q[1]], [q_parent[2], q[2]], c="red", linewidth=1
+                )
 
 
 class ManifoldRRTConnect:
@@ -285,37 +302,76 @@ class ManifoldRRTConnect:
 
 
 if __name__ == "__main__":
-    import matplotlib.pyplot as plt
+    # argparse to select mode
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mode", type=str, default="manifold")
+    args = parser.parse_args()
 
-    def project(q: np.ndarray) -> Optional[np.ndarray]:
-        return q / np.linalg.norm(q)
+    if args.mode == "manifold":
+        def project(q: np.ndarray) -> Optional[np.ndarray]:
+            return q / np.linalg.norm(q)
 
-    def is_valid(q: np.ndarray) -> bool:
-        if abs(q[0]) > 0.2:
-            return True
-        if abs(q[1]) < 0.2:
-            return True
-        return False
+        def is_valid(q: np.ndarray) -> bool:
+            if abs(q[0]) > 0.2:
+                return True
+            if abs(q[1]) < 0.2:
+                return True
+            return False
 
-    start = np.array([-1, 0, 0])
-    goal = np.array([+1, 0, 0])
-    b_min = -np.ones(3) * 1.5
-    b_max = +np.ones(3) * 1.5
-    motion_step_box = np.ones(3) * 0.2
-    conf = ManifoldRRTConfig(1000)
-    bitree = ManifoldRRTConnect(
-        start, goal, b_min, b_max, motion_step_box, project, is_valid, config=conf
-    )
-    import time
+        start = np.array([-1, 0, 0])
+        goal = np.array([+1, 0, 0])
+        b_min = -np.ones(3) * 1.5
+        b_max = +np.ones(3) * 1.5
+        motion_step_box = np.ones(3) * 0.2
+        conf = ManifoldRRTConfig(1000)
+        bitree = ManifoldRRTConnect(
+            start, goal, b_min, b_max, motion_step_box, project, is_valid, config=conf
+        )
+        import time
 
-    ts = time.time()
-    res = bitree.solve()
-    print(time.time() - ts)
+        ts = time.time()
+        res = bitree.solve()
+        print(time.time() - ts)
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection="3d")
-    bitree.rrt_start.visualize((fig, ax))
-    bitree.rrt_goal.visualize((fig, ax))
-    Q = bitree.get_solution()
-    ax.plot(Q[:, 0], Q[:, 1], Q[:, 2], c="k", linewidth=3)
-    plt.show()
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection="3d")
+        bitree.rrt_start.visualize((fig, ax))
+        bitree.rrt_goal.visualize((fig, ax))
+        Q = bitree.get_solution()
+        ax.plot(Q[:, 0], Q[:, 1], Q[:, 2], c="k", linewidth=3)
+        plt.show()
+    elif args.mode == "normal":
+
+        def project(q: np.ndarray) -> Optional[np.ndarray]:
+            return q
+
+        def is_valid(q: np.ndarray) -> bool:
+            # check if outside of circle with radius 0.3 and center (0.5, 0.5)
+            return np.linalg.norm(q - np.array([0.5, 0.5])) > 0.3
+
+        start = np.ones(2) * 0.1
+        goal = np.ones(2) * 0.9
+        b_min = np.zeros(2)
+        b_max = np.ones(2)
+        motion_step_box = np.ones(2) * 0.1
+        conf = ManifoldRRTConfig(1000)
+        rrt = ManifoldRRT(start, goal, b_min, b_max, motion_step_box, project, is_valid, config=conf)
+
+        def is_close_to_goal(q: np.ndarray) -> bool:
+            # return np.linalg.norm(q - goal) < 0.02
+            # check using motion_step_box
+            diff = q - goal
+            return np.all(np.abs(diff) < motion_step_box)
+
+
+        for _ in range(1000):
+            ext_res = rrt.step()
+            print(ext_res)
+            # check if the latest node reaches goal
+            if is_close_to_goal(rrt.nodes[-1].q):
+                print("solved")
+                break
+        rrt.visualize(None)
+        plt.show()
+    else:
+        assert False
