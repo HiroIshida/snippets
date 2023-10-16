@@ -39,14 +39,37 @@ class Cartpole:
         x, x_dot, theta, theta_dot = self.state
         return abs(np.cos(theta) - (-1)) < 0.3 and abs(theta_dot) < 0.5
 
-    def render(self, ax):
-        print(self.state)
+    def is_static(self) -> bool:
         x, x_dot, theta, theta_dot = self.state
+        return abs(np.cos(theta) - (-1)) < 0.03 and abs(theta_dot) < 0.01
+
+
+
+class CartpoleVisualizer:
+
+    def __init__(self, model_param: ModelParameter = ModelParameter()):
+        plt.ion()
+        fig, ax = plt.subplots()
+        self.fig = fig
+        self.ax = ax
+        self.initialized = False
+        self.model_param = model_param
+        cart_circle = plt.Circle((0, 0), 0.2, color="black")
+        self.cart_circle = cart_circle
+        self.cart = ax.add_patch(cart_circle)
+        pole_line = plt.Line2D((0, 0), (0, - model_param.l), color="black")
+        self.pole = ax.add_line(pole_line)
+        ax.set_xlim(-8, 8)
+        ax.set_ylim(-2, 2)
+        ax.set_aspect('equal')
+
+    def render(self, state):
+        x, x_dot, theta, theta_dot = state
         m, M, l, g = self.model_param.m, self.model_param.M, self.model_param.l, self.model_param.g
-        cart = plt.Circle((x, 0), 0.2, color="black")
-        ax.add_patch(cart)
-        pole = plt.Line2D((x, x + l * np.sin(theta)), (0, - l * np.cos(theta)), color="black")
-        ax.add_line(pole)
+        self.cart_circle.center = (x, 0)
+        self.pole.set_data((x, x + l * np.sin(theta)), (0, - l * np.cos(theta)))
+        self.fig.canvas.draw()
+        self.fig.canvas.flush_events()
 
 
 @dataclass
@@ -64,9 +87,6 @@ class LQRController:
             return theta_acc
 
         eps = 1e-6
-        # linealize the system at the upright position
-        # at the upright position, theta = pi, theta_dot = 0 and we done care about x and x_dot but 
-        # so differentiate the theta_acc dynamics
         A = np.zeros((2, 2))
         A[0, 0] = 0
         A[0, 1] = 1.0
@@ -82,7 +102,6 @@ class LQRController:
         Q = np.eye(2)
         R = np.eye(1) * 0.1
         K, _, _ = lqr(self.A, self.B, Q, R)
-        # target theta is pi * 2 * n * pi
         target_cand = [-3 * np.pi, -np.pi, np.pi, 3 * np.pi]
         target = min(target_cand, key=lambda x: abs(x - theta))
         u = -K @ np.array([theta - target, theta_dot])
@@ -126,14 +145,20 @@ if __name__ == "__main__":
             print("uplight")
             break
 
-    for _ in range(2000):
+    for _ in range(100):
         f = lqr_controller(system.state)[0]
-        print(f)
         f_history.append(f)
         system.step(f)
+        if system.is_static():
+            print("static")
+            break
 
-    history = np.array(system.history)
-    plt.plot(history[:, 2], history[:, 3])
-    plt.plot(history[-1, 2], history[-1, 3], "o", markersize=10)
-    print(history[-1, :])
-    plt.show()
+    vis = CartpoleVisualizer(model_actual)
+    for state in system.history:
+        vis.render(state)
+
+    # history = np.array(system.history)
+    # plt.plot(history[:, 2], history[:, 3])
+    # plt.plot(history[-1, 2], history[-1, 3], "o", markersize=10)
+    # print(history[-1, :])
+    # plt.show()
