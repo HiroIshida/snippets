@@ -5,6 +5,14 @@ from typing import Callable, List, Optional, Tuple
 
 import numpy as np
 
+def clamp(v, width):
+    if np.all(v == 0):
+        return np.zeros_like(v)
+    with np.errstate(divide='ignore', invalid='ignore'):  # Handle division by zero
+        scale_factors = np.abs(width / v)
+    min_scale = np.nanmin(scale_factors)
+    return v * min_scale
+
 
 class ExtensionResult(Enum):
     REACHED = 0
@@ -102,7 +110,7 @@ class ManifoldRRT(ABC):
             return ExtensionResult.REACHED
 
         shrink_motion_box = self.motion_step_box * self.config.motion_step_shring_rate
-        diff_clamped = np.maximum(np.minimum(diff_ambient, shrink_motion_box), -shrink_motion_box)
+        diff_clamped = clamp(diff_ambient, shrink_motion_box)
 
         # check if projection successful
         q_new = self.f_project(node_nearest.q + diff_clamped)
