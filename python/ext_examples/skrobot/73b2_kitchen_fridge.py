@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from skrobot.model.primitives import Box
+from skrobot.model.primitives import Box, Link
 from skrobot.coordinates import CascadedCoords
 from typing import List, Optional, Tuple, ClassVar
 from skrobot.viewers import TrimeshSceneViewer
@@ -25,10 +25,16 @@ class FridgeParameter:
     d_bump = 0.06
 
 
+@dataclass
+class Region:
+    box: Box
+    obstacles: List[Link]
+
+
 class FridgeModel(CascadedCoords):
     param: FridgeParameter
     links: List[Box]
-    regions: List[Box]
+    regions: List[Region]
     color: ClassVar[Tuple[int, ...]] = (240, 240, 225, 255)
 
     def __init__(self, param: Optional[FridgeParameter] = None):
@@ -61,14 +67,14 @@ class FridgeModel(CascadedCoords):
             links.append(panel)
 
         # define regions
-        regions = []
+        regions: List[Region] = []
         tmp = np.array([0.0] + list(param.panel_hights) + [param.container_h])
         lowers, uppers = tmp[:-1], tmp[1:]
         region_color = (255, 0, 0, 100)
         for lower, upper in zip(lowers, uppers):
-            region = Box([param.panel_d, param.container_w, upper - lower], pos=(param.container_d - 0.5 * param.panel_d, 0.0, lower + 0.5 * (upper - lower)), face_colors=region_color)
-            upper_container_co.assoc(region, relative_coords="world")
-            regions.append(region)
+            box = Box([param.panel_d, param.container_w, upper - lower], pos=(param.container_d - 0.5 * param.panel_d, 0.0, lower + 0.5 * (upper - lower)), face_colors=region_color)
+            upper_container_co.assoc(box, relative_coords="world")
+            regions.append(Region(box, []))
 
         # define joint
         joint = CascadedCoords(pos=(param.joint_x, -0.5 * param.W + param.joint_y, 0.0))
@@ -100,13 +106,17 @@ class FridgeModel(CascadedCoords):
         self.links = links
         self.regions = regions
 
+    def add(self, v: TrimeshSceneViewer) -> None:
+        for link in self.links:
+            v.add(link)
+        for region in self.regions:
+            v.add(region.box)
+            for obstacle in region.obstacles:
+                v.add(obstacle)
 
 model = FridgeModel()
 
 v = TrimeshSceneViewer()
-for link in model.links:
-    v.add(link)
-for region in model.regions:
-    v.add(region)
+model.add(v)
 v.show()
 import time; time.sleep(1000)
