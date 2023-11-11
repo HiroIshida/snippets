@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from skrobot.model.primitives import Box, Link
+from skrobot.model.primitives import Box, Link, Cylinder
 from skrobot.coordinates import CascadedCoords
 from typing import List, Optional, Tuple, ClassVar
 from skrobot.viewers import TrimeshSceneViewer
@@ -106,15 +106,44 @@ class FridgeModel(CascadedCoords):
         self.links = links
         self.regions = regions
 
-    def add(self, v: TrimeshSceneViewer) -> None:
+    def add(self, v: TrimeshSceneViewer, visualize_region: bool = False) -> None:
         for link in self.links:
             v.add(link)
         for region in self.regions:
-            v.add(region.box)
+            if visualize_region:
+                v.add(region.box)
             for obstacle in region.obstacles:
                 v.add(obstacle)
 
+
+def randomize_region(region: Region, n_obstacles: int = 5):
+    D, W, H = region.box._extents
+    print(D, W, H)
+    obstacle_h_max = H - 0.05
+    obstacle_h_min = 0.1
+
+    # determine pos-r pairs
+    pairs = []
+    while len(pairs) < n_obstacles:
+        r = np.random.rand() * 0.03 + 0.02
+        D_effective = D - 2 * r
+        W_effective = W - 2 * r
+        pos_2d = np.random.rand(2) * np.array([D_effective, W_effective]) - np.array([D_effective, W_effective]) * 0.5
+        if not any([np.linalg.norm(pos_2d - pos_2d2) < (r + r2) for pos_2d2, r2 in pairs]):
+            pairs.append((pos_2d, r))
+
+    for pos_2d, r in pairs:
+        h = np.random.rand() * (obstacle_h_max - obstacle_h_min) + obstacle_h_min
+        pos = np.array([*pos_2d, -0.5 * H + 0.5 * h])
+        obstacle = Cylinder(r, h, pos=pos, face_colors=(197, 245, 187, 255))
+        region.box.assoc(obstacle, relative_coords="local")
+        region.obstacles.append(obstacle)
+
+
 model = FridgeModel()
+randomize_region(model.regions[1])
+randomize_region(model.regions[2])
+randomize_region(model.regions[3])
 
 v = TrimeshSceneViewer()
 model.add(v)
