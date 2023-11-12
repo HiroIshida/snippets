@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from skrobot.model.primitives import Box, Link, Cylinder
+from skrobot.model.primitives import Box, Link, Cylinder, PointCloudLink, Axis
 from skrobot.coordinates import CascadedCoords
 from typing import List, Optional, Tuple, ClassVar
 from skrobot.viewers import TrimeshSceneViewer
@@ -13,14 +13,14 @@ class FridgeParameter:
     upper_H: float = 0.65
     container_w: float = 0.48
     container_h: float = 0.62
-    container_d: float = 0.45
+    container_d: float = 0.49
     panel_d: float = 0.29
     panel_t: float = 0.01
-    panel_hights: Tuple[float, ...] = (0.14, 0.285, 0.48)
+    panel_hights: Tuple[float, ...] = (0.12, 0.26, 0.46)
     door_D = 0.05
     lower_H = 0.81
     joint_x = -0.035
-    joint_y = -0.015
+    joint_y = +0.015
     t_bump = 0.02
     d_bump = 0.06
 
@@ -35,7 +35,7 @@ class FridgeModel(CascadedCoords):
     param: FridgeParameter
     links: List[Box]
     regions: List[Region]
-    color: ClassVar[Tuple[int, ...]] = (240, 240, 225, 255)
+    color: ClassVar[Tuple[int, ...]] = (240, 240, 225, 150)
 
     def __init__(self, param: Optional[FridgeParameter] = None):
 
@@ -87,7 +87,7 @@ class FridgeModel(CascadedCoords):
         joint.assoc(door, relative_coords="world")
         door.assoc(bump_left, relative_coords="world")
         door.assoc(bump_right, relative_coords="world")
-        joint.rotate(1.3, "z")
+        joint.rotate(2.7, "z")
 
         links.append(door)
         links.append(bump_left)
@@ -141,11 +141,20 @@ def randomize_region(region: Region, n_obstacles: int = 5):
 
 
 model = FridgeModel()
-randomize_region(model.regions[1])
-randomize_region(model.regions[2])
-randomize_region(model.regions[3])
+# randomize_region(model.regions[1])
+# randomize_region(model.regions[2])
+# randomize_region(model.regions[3])
+model.translate([1.13, 0.0, 0.0])
+model.rotate(0.13, "z")
+model.translate([0, -0.04, 0.0])
+model.rotate(0.02, "z")
+
+
+data = np.load("point_cloud.npy")
+cloud = PointCloudLink(data)
 
 v = TrimeshSceneViewer()
 model.add(v)
+v.add(cloud)
 v.show()
 import time; time.sleep(1000)
