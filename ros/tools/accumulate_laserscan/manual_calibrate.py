@@ -15,6 +15,13 @@ warnings.filterwarnings("ignore", message="violate")
 
 with open("./pointcloud_20231124-025627.pkl", "rb") as f:
     pcloud, jstate = pickle.load(f)
+# with open("./pointcloud_20231124-040957.pkl", "rb") as f:
+#     pcloud, jstate = pickle.load(f)
+# with open("./pointcloud_20231124-041317.pkl", "rb") as f:
+#     pcloud, jstate = pickle.load(f)
+# with open("./pointcloud_20231124-043457.pkl", "rb") as f:
+#     pcloud, jstate = pickle.load(f)
+
 
 pr2 = PR2(use_tight_joint_limit=False)
 
@@ -27,13 +34,23 @@ pcloud_near = pcloud[sdf_union(pcloud) < 0.1]
 assert len(pcloud_near) > 0
 
 print(pr2.larm.joint_names)
-pr2.l_shoulder_pan_joint.joint_angle(+0.03, relative=True)
+# cand1
+# pr2.l_shoulder_pan_joint.joint_angle(+0.00, relative=True)
+# pr2.l_shoulder_lift_joint.joint_angle(-0.04, relative=True)
+# pr2.l_upper_arm_roll_joint.joint_angle(-0.0, relative=True)
+# pr2.l_elbow_flex_joint.joint_angle(-0.10, relative=True)
+# pr2.l_forearm_roll_joint.joint_angle(0.0, relative=True)
+# pr2.l_wrist_flex_joint.joint_angle(0.1, relative=True)
+# pr2.l_wrist_roll_joint.joint_angle(0.0, relative=True)
+
+# cand2
+pr2.l_shoulder_pan_joint.joint_angle(+0.00, relative=True)
 pr2.l_shoulder_lift_joint.joint_angle(-0.04, relative=True)
-pr2.l_upper_arm_roll_joint.joint_angle(-0.04, relative=True)
-pr2.l_elbow_flex_joint.joint_angle(-0.13, relative=True)
+pr2.l_upper_arm_roll_joint.joint_angle(-0.0, relative=True)
+pr2.l_elbow_flex_joint.joint_angle(-0.10, relative=True)
 pr2.l_forearm_roll_joint.joint_angle(0.0, relative=True)
-pr2.l_wrist_flex_joint.joint_angle(0.1, relative=True)
-pr2.l_wrist_roll_joint.joint_angle(0.0, relative=True)
+pr2.l_wrist_flex_joint.joint_angle(0.00, relative=True)
+pr2.l_wrist_roll_joint.joint_angle(-0.0, relative=True)
 
 plink = PointCloudLink(pcloud_near)
 v = TrimeshSceneViewer()
