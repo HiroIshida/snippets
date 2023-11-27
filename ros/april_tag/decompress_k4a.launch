@@ -1,0 +1,9 @@
+<launch>
+  <node name="decompresser"
+       pkg="image_transport" type="republish"
+       args="compressed raw"
+       output="screen" respawn="true">
+    <remap from="in" to="/k4a/rgb/image_rect_color"/>
+    <remap from="out" to="/remote/k4a/rgb/image_rect_color"/>
+  </node>
+</launch>

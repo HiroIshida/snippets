@@ -1,0 +1,14 @@
+<launch>
+
+   <node
+        pkg="apriltag_ros"
+        type="apriltag_ros_continuous_node"
+        name="apriltag_pose_detector"
+        >
+   <remap from="image_rect" to="/kinect_head/rgb/image_rect_color" />
+   <remap from="camera_info" to="/kinect_head/rgb/camera_info" />
+
+        <rosparam command="load" file="$(find frmax_ros)/config/setting.yaml" />
+        <rosparam command="load" file="$(find frmax_ros)/config/tags.yaml" />
+    </node>
+</launch>
