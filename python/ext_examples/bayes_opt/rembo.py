@@ -1,7 +1,22 @@
+import matplotlib.pyplot as plt
 import numpy as np
 from typing import Dict
 import numpy as np
 from bayes_opt import BayesianOptimization, UtilityFunction
+
+
+assert False, "please use botorch version"
+assert False, "please use botorch version"
+assert False, "please use botorch version"
+assert False, "please use botorch version"
+assert False, "please use botorch version"
+assert False, "please use botorch version"
+assert False, "please use botorch version"
+assert False, "please use botorch version"
+assert False, "please use botorch version"
+assert False, "please use botorch version"
+assert False, "please use botorch version"
+
 
 def f_bench(x_dict):
 
@@ -15,7 +30,7 @@ def f_bench(x_dict):
     return -0.5 * (t1 + t2 + t3)
 
 
-D = 50
+D = 100
 d = 3
 pbounds = {"x{}".format(i): (-5, 5) for i in range(D)}
 x_optimal = -np.ones(D) * 2.903534
@@ -48,7 +63,8 @@ else:
 
 utility = UtilityFunction()
 
-for i in range(300):
+y_list = []
+for i in range(150):
     if i > 0:
         pass
 
@@ -65,8 +81,12 @@ for i in range(300):
             optimizer.register(params=z, target=y)
         else:
             optimizer.register(params=x, target=y)
+        y_list.append(y)
         gap = f_optimal - y
         print("{}=> y: {}, gap: {}".format(i, y, gap))
-    except AttributeError:
+    except AttributeError as e:
+        print(e)
         print("error. skipped")
         pass
+plt.plot(y_list)
+plt.show()
