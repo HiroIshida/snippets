@@ -32,6 +32,27 @@ class Bound:
         return np.minimum(np.maximum(x, self.bmin), self.bmax)
 
 
+def gen_branin_high_dimensional(dim: int, random: bool = False):
+
+    def branin_function(x, y):
+        a = 1
+        b = 5.1 / (4 * np.pi**2)
+        c = 5 / np.pi
+        r = 6
+        s = 10
+        t = 1 / (8 * np.pi)
+        return a * (y - b * x**2 + c * x - r)**2 + s * (1 - t) * np.cos(x) + s
+
+    if random:
+        i, j = np.random.choice(dim, 2, replace=False)
+    else:
+        i, j = 0, 1
+
+    def inner(x: np.ndarray):
+        assert len(x) == dim
+        return -branin_function(x[i], x[j])
+    return inner
+
 
 class BayesOpt:
     X: List[np.ndarray] 
@@ -77,7 +98,7 @@ class BayesOpt:
         )
         self.opt_param_history.append(candidate)
         self.opt_value_history.append(float(acq_value.item()))
-        x_normalized = candidate.numpy()
+        x_normalized = candidate.numpy().flatten()
         x = self.bound.de_normalize(x_normalized)
         return x
 
@@ -111,6 +132,7 @@ class RandomEmbeddingBayesOpt:
         return x_projected
 
     def _find_corresponding_z(self, x: np.ndarray) -> np.ndarray:
+        assert False, "found that this doesnt work as projection to boundary us not injective"
         for z in self._z_list:
             x_hash = self.z_to_x(z)
             max_diff = np.max(np.abs(x_hash - x))
@@ -131,33 +153,31 @@ class RandomEmbeddingBayesOpt:
         return self.z_to_x(z)
 
     def tell(self, x: np.ndarray, y: float) -> None:
-        z = self._find_corresponding_z(x)
+        # z = self._find_corresponding_z(x)
+        z = self._z_list[-1]
         if self.bo_inner is None:
             self.bo_inner = BayesOpt([z], [y], self._z_bound.bmin, self._z_bound.bmax)
         else:
             self.bo_inner.tell(z, y)
 
 
-def f_bench(x):
-    t1 = np.sum(x ** 4)
-    t2 = - 16 * np.sum(x ** 2)
-    t3 = 5 * np.sum(x)
-    return -0.5 * (t1 + t2 + t3)
-
-
-n_dim = 10
+n_dim = 100
+f_bench = gen_branin_high_dimensional(n_dim, random=False)
+bmin = -15 * np.ones(n_dim)
+bmax = 15 * np.ones(n_dim)
 train_X = [np.ones(n_dim) * 5]
 train_Y = [f_bench(x) for x in train_X]
-# bo = BayesOpt(train_X, train_Y, -5 * np.ones(n_dim), 5 * np.ones(n_dim))
-bo = RandomEmbeddingBayesOpt(-5 * np.ones(n_dim), 5 * np.ones(n_dim))
-# bo = RandomEmbeddingBayesOpt(np.zeros(n_dim), np.ones(n_dim))
-for _ in range(5):
-    x = bo.ask_init()
-    y = f_bench(x)
-    bo.tell(x, y)
+bo = BayesOpt(train_X, train_Y, bmin, bmax)
+# bo = RandomEmbeddingBayesOpt(bmin, bmax)
+# for _ in range(5):
+#     x = bo.ask_init()
+#     y = f_bench(x)
+#     bo.tell(x, y)
 
+y_max = -np.inf
 for _ in tqdm.tqdm(range(300)):
     x = bo.ask()
     y = f_bench(x)
     bo.tell(x, y)
-    print(y)
+    y_max = max(y_max, y)
+    print(y_max)
