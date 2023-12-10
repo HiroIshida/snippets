@@ -1,3 +1,4 @@
+import time
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -10,7 +11,9 @@ lscale = 1.0
 noise = 0.1
 kernel = RBF(1.0)
 gp = GaussianProcessRegressor(kernel=kernel, alpha=noise, optimizer=None)
+ts = time.time()
 gp.fit(X, Y)
+print("Time to fit: %.3f" % (time.time() - ts))
 
 x_test =np.atleast_2d(np.linspace(0, 10, 100)).T
 y_test, sigma = gp.predict(x_test, return_std=True)
