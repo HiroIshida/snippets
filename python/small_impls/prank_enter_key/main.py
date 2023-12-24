@@ -67,19 +67,15 @@ try:
             if key_event.keystate == key_event.key_down:
                 current_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 message = f"{current_date}: key pressed"
-                audio = AudioSegment.from_file("heck.m4a", format="m4a")
+
+                audio = AudioSegment.from_file("./kawaii.mp3", format="mp3")
                 raw_audio_data = audio.raw_data
                 sample_rate = audio.frame_rate
                 play_obj = sa.play_buffer(raw_audio_data, num_channels=audio.channels, bytes_per_sample=audio.sample_width, sample_rate=sample_rate)
                 play_obj.wait_done()
+                dong_addr = os.environ.get("DONG_EMAIL_ADDR")
+                send_email("dong xu so cute!!", message, dong_addr)
 
-                audio = AudioSegment.from_file("mail.m4a", format="m4a")
-                raw_audio_data = audio.raw_data
-                sample_rate = audio.frame_rate
-                play_obj = sa.play_buffer(raw_audio_data, num_channels=audio.channels, bytes_per_sample=audio.sample_width, sample_rate=sample_rate)
-                play_obj.wait_done()
 
-                addr = "h-ishida@jsk.imi.i.u-tokyo.ac.jp"
-                send_email("Hello", message, addr)
 except KeyboardInterrupt:
     print("Stopping keyboard monitoring")
