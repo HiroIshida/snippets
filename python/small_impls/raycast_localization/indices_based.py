@@ -1,0 +1,197 @@
+import numba
+import tqdm
+import copy
+import time
+import numpy as np
+from dataclasses import dataclass
+from typing import Any, Optional, TypeVar, Generic, List, Tuple, Dict, Type, Callable, Sequence
+from skrobot.model.link import Link
+from skrobot.coordinates import Coordinates
+from skrobot.viewers import TrimeshSceneViewer
+from skrobot.model.primitives import LineString, Box
+
+
+@dataclass
+class RayCastAction:
+    start: np.ndarray
+    direction: np.ndarray
+    cast_dist: float
+
+    @property
+    def line(self) -> LineString:
+        start = self.start
+        end = self.start + self.direction * self.cast_dist
+        line = LineString(np.array([start, end]))
+        return line
+
+
+@dataclass
+class Observation:
+    fly_dist: float
+    proximity: float
+
+
+def ray_marching(pts_starts, direction_arr_unit, f_sdf) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    pts_starts = copy.deepcopy(pts_starts)
+    ray_tips = pts_starts
+    n_point = len(pts_starts)
+
+    frying_dists = np.zeros(n_point)
+    proximity = np.ones(n_point) * np.inf
+
+    for _ in range(20):
+        dists = f_sdf(ray_tips)
+        proximity = np.minimum(proximity, dists)
+        ray_tips += direction_arr_unit * dists[:, None]
+        frying_dists += dists
+    return ray_tips, proximity, frying_dists
+
+
+def observe(sdf: Callable[[np.ndarray], np.ndarray],
+            ray: RayCastAction) -> Observation:
+    pts_start = np.expand_dims(ray.start, axis=0)
+    direction_arr_unit = np.expand_dims(ray.direction / np.linalg.norm(ray.direction), axis=0)
+    pts_tips, proximity, fly_dist = ray_marching(pts_start, direction_arr_unit, sdf)
+    return Observation(fly_dist=fly_dist[0], proximity=proximity[0])
+
+
+class Blob:
+    table: np.ndarray  # (hypo_idx, action_idx) -> Observation
+    hypo_list: List[Coordinates]
+    action_list: List[RayCastAction]
+
+    def __init__(self, link: Link, hypo_list: List[Coordinates], action_list: List[RayCastAction], margin: float):
+        link = copy.deepcopy(link)
+        table = []
+        for h in hypo_list:
+            link.newcoords(h)
+            pts_start = np.array([a.start for a in action_list])
+            direction_arr_unit = np.array([a.direction / np.linalg.norm(a.direction) for a in action_list])
+            pts_tips, proximity, fly_dist = ray_marching(pts_start, direction_arr_unit, link.sdf)
+            sub_table = []
+            for i, a in enumerate(action_list):
+                obs = Observation(fly_dist=fly_dist[i], proximity=proximity[i])
+                sub_table.append(obs)
+            table.append(sub_table)
+        self.table = np.array(table)
+        self.hypo_list = hypo_list
+        self.action_list = action_list
+
+
+class CacheUtilizedPruner:
+    # This class becomes quite dirty in the process of optimization, but it is blazingly fast
+    blob: Blob
+    margin: float
+    # indexed by (i_hypo, j_action). The cached data is stored as numpy array
+    # np.ndarray of Observation object
+
+    def __init__(self, blob: Blob, margin: float):
+        self.blob = blob
+        self.margin = margin
+
+    def prune(self, obs: Observation, action_idx: int, hypo_indices: np.ndarray) -> np.ndarray:
+        action_cast_dist = self.blob.action_list[action_idx].cast_dist
+        is_hit_miss = obs.fly_dist > action_cast_dist
+
+        if is_hit_miss:
+            return hypo_indices
+
+        pruned_indices = []
+        table = self.blob.table
+        for h in hypo_indices:
+            est_obs = table[h, action_idx]
+            is_est_hit = est_obs.fly_dist < action_cast_dist
+            if is_est_hit:
+                diff = np.abs(est_obs.fly_dist - obs.fly_dist)
+                if diff <= self.margin:
+                    pruned_indices.append(h)
+            else:
+                obvious_hit_miss = est_obs.proximity > self.margin
+                if not obvious_hit_miss:
+                    pruned_indices.append(h)
+
+        return np.array(pruned_indices)
+
+
+class GreedyPolicy:
+    blob: Blob
+    pruner: CacheUtilizedPruner
+
+    def __init__(self,
+                 blob: Blob,
+                 pruner: CacheUtilizedPruner):
+        self.blob = blob
+        self.pruner = pruner
+
+    def __call__(self, hypo_indices: np.ndarray) -> int:
+        i_best = None
+        score_best = -np.inf
+        for i in tqdm.tqdm(range(len(self.blob.action_list))):
+            score_list = []
+            for j in hypo_indices:
+                obs_hypo = self.blob.table[j, i]
+                hypo_indices_new = self.pruner.prune(obs_hypo, i, hypo_indices)
+                score = len(hypo_indices) - len(hypo_indices_new)
+                score_list.append(score)
+            score_expectation = np.mean(score_list)
+            if score_expectation > score_best:
+                score_best = score_expectation
+                i_best = i
+        assert i_best is not None
+        return i_best
+
+
+def instantiate_box(co: Coordinates) -> Box:
+    box = Box([0.05, 0.1, 0.05], face_colors=[255, 0, 0, 100])
+    box.newcoords(co)
+    return box
+
+
+if __name__ == "__main__":
+    np.random.seed(0)
+    co_true = Coordinates(pos = [0.02, 0.02, 0.0], rot=[0.5, 0.0, 0.0])
+    box_true = Box([0.05, 0.1, 0.05], face_colors=[0, 255, 0, 255], with_sdf=True)
+    box_true.newcoords(co_true)
+
+    n_action = 20
+    action_set = []
+    for y in np.linspace(-0.08, 0.08, n_action):
+        action = RayCastAction(start=np.array([-0.5, y, 0.0]), direction=np.array([1.0, 0.0, 0.0]), cast_dist=1.0)
+        action_set.append(action)
+
+    n_hypo = 500
+    H = []
+    for _ in range(n_hypo):
+        box = Box([0.05, 0.1, 0.05], face_colors=[255, 0, 0, 100])
+        hypo_b_min = np.array([-0.05, -0.05, -0.5])
+        hypo_b_max = np.array([0.05, 0.05, 0.5])
+        pos2d = np.random.uniform(hypo_b_min[:2], hypo_b_max[:2])
+        pos3d = np.hstack([pos2d, 0.0])
+        yaw = np.random.uniform(hypo_b_min[2], hypo_b_max[2])
+        co = Coordinates(pos=pos3d, rot=[yaw, 0, 0])
+        H.append(co)
+
+    blob = Blob(box_true, H, action_set, margin=0.01)
+    pruner = CacheUtilizedPruner(blob, margin=0.01)
+    policy = GreedyPolicy(blob, pruner)
+
+    actions = []
+    h_indices = np.arange(len(H))
+    for _ in range(3):
+        a_idx = policy(h_indices)
+        actions.append(blob.action_list[a_idx])
+        o = observe(box_true.sdf, blob.action_list[a_idx])
+        h_indices = pruner.prune(o, a_idx, h_indices)
+        if len(h_indices) == 0:
+            break
+        print(len(h_indices))
+
+    box_list = [instantiate_box(H[h]) for h in h_indices]
+    v = TrimeshSceneViewer()
+    v.add(box_true)
+    for action in actions:
+        v.add(action.line)
+    for box in box_list:
+        v.add(box)
+    v.show()
+    time.sleep(1000)
