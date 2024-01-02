@@ -1,3 +1,4 @@
+import multiprocessing as mp
 import numba
 import tqdm
 import copy
@@ -104,31 +105,58 @@ class CacheUtilizedPruner:
 
 
 class GreedyPolicy:
-    blob: Blob
     pruner: CacheUtilizedPruner
+    pool: Optional[mp.Pool]
 
     def __init__(self,
-                 blob: Blob,
-                 pruner: CacheUtilizedPruner):
-        self.blob = blob
+                 pruner: CacheUtilizedPruner,
+                 n_process: int = 4,
+                 ):
         self.pruner = pruner
+        if n_process > 1:
+            self.pool = mp.Pool(mp.cpu_count(), initializer=self._initialize_worker_process, initargs=(pruner,))
+        else:
+            self.pool = None
+
+    @staticmethod
+    def _initialize_worker_process(pruner: CacheUtilizedPruner):
+        global _G_pruner
+        _G_pruner = pruner
+
+    @staticmethod
+    def _compute_score(i_action: int, hypo_indices: np.ndarray) -> float:
+        global _G_pruner
+        score_list = []
+        for j_hypo in hypo_indices:
+            obs_hypo = _G_pruner.blob.table[i_action, j_hypo]
+            hypo_indices_new = _G_pruner.prune(obs_hypo, i_action, hypo_indices)
+            score = len(hypo_indices) - len(hypo_indices_new)
+            score_list.append(score)
+        score_expectation = np.mean(score_list)
+        return float(score_expectation)
 
     def __call__(self, hypo_indices: np.ndarray) -> int:
-        i_best = None
-        score_best = -np.inf
-        for i in tqdm.tqdm(range(len(self.blob.action_list))):
-            score_list = []
-            for j in hypo_indices:
-                obs_hypo = self.blob.table[i, j]
-                hypo_indices_new = self.pruner.prune(obs_hypo, i, hypo_indices)
-                score = len(hypo_indices) - len(hypo_indices_new)
-                score_list.append(score)
-            score_expectation = np.mean(score_list)
-            if score_expectation > score_best:
-                score_best = score_expectation
-                i_best = i
-        assert i_best is not None
-        return i_best
+        # pool map 
+        if self.pool is not None:
+            score_list = self.pool.starmap(self._compute_score, [(i, hypo_indices) for i in range(len(self.pruner.blob.action_list))])
+            i_best = np.argmax(score_list)
+            return i_best
+        else:
+            i_best = None
+            score_best = -np.inf
+            for i in tqdm.tqdm(range(len(self.pruner.blob.action_list))):
+                score_list = []
+                for j in hypo_indices:
+                    obs_hypo = self.pruner.blob.table[i, j]
+                    hypo_indices_new = self.pruner.prune(obs_hypo, i, hypo_indices)
+                    score = len(hypo_indices) - len(hypo_indices_new)
+                    score_list.append(score)
+                score_expectation = np.mean(score_list)
+                if score_expectation > score_best:
+                    score_best = score_expectation
+                    i_best = i
+            assert i_best is not None
+            return i_best
 
 
 def instantiate_box(co: Coordinates) -> Box:
@@ -163,12 +191,17 @@ if __name__ == "__main__":
 
     blob = Blob(box_true, H, action_set, margin=0.01)
     pruner = CacheUtilizedPruner(blob, margin=0.01)
-    policy = GreedyPolicy(blob, pruner)
+    policy = GreedyPolicy(pruner, n_process=8)
 
     actions = []
     h_indices = np.arange(len(H))
     for _ in range(3):
+        from pyinstrument import Profiler
+        profiler = Profiler()
+        profiler.start()
         a_idx = policy(h_indices)
+        profiler.stop()
+        print(profiler.output_text(unicode=True, color=True, show_all=True))
         actions.append(blob.action_list[a_idx])
         o = observe(box_true.sdf, blob.action_list[a_idx])
         h_indices = pruner.prune(o, a_idx, h_indices)
