@@ -55,23 +55,36 @@ class Blob:
     hypo_list: List[Coordinates]
     action_list: List[RayCastAction]
 
-    def __init__(self, link: Link, hypo_list: List[Coordinates], action_list: List[RayCastAction], margin: float):
+    def __init__(self, link: Link, hypo_list: List[Coordinates], action_list: List[RayCastAction], margin: float, n_process: int = 4):
         link = copy.deepcopy(link)
         table = []
-        for h in hypo_list:
-            link.newcoords(h)
-            pts_start = np.array([a.start for a in action_list])
-            direction_arr_unit = np.array([a.direction / np.linalg.norm(a.direction) for a in action_list])
-            pts_tips, proximity, fly_dist = ray_marching(pts_start, direction_arr_unit, link.sdf)
-            sub_table = []
-            for i, a in enumerate(action_list):
-                obs = np.array([fly_dist[i], proximity[i]])
-                sub_table.append(obs)
-            table.append(sub_table)
-
+        pool = mp.Pool(n_process, initializer=self._initialize_worker_process, initargs=(action_list, link))
+        obses = pool.map(self._compute_observations, hypo_list)
+        table = np.array(obses)
         self.table = np.array(table).transpose(1, 0, 2)
         self.hypo_list = hypo_list
         self.action_list = action_list
+
+    @staticmethod
+    def _initialize_worker_process(action_list: List[RayCastAction], link: Link):
+        global _G_points_start
+        global _G_direction_arr_unit
+        global _G_link
+        pts_start = np.array([a.start for a in action_list])
+        direction_arr_unit = np.array([a.direction / np.linalg.norm(a.direction) for a in action_list])
+        _G_points_start = pts_start
+        _G_direction_arr_unit = direction_arr_unit
+        _G_link = link
+
+    @staticmethod
+    def _compute_observations(hypo: Coordinates) -> np.array:
+        global _G_points_start
+        global _G_direction_arr_unit
+        global _G_link
+        _G_link.newcoords(hypo)
+        pts_tips, proximity, fly_dist = ray_marching(_G_points_start, _G_direction_arr_unit, _G_link.sdf)
+        obs = np.array([fly_dist, proximity]).transpose(1, 0)
+        return obs
 
 
 class CacheUtilizedPruner:
@@ -189,19 +202,15 @@ if __name__ == "__main__":
         co = Coordinates(pos=pos3d, rot=[yaw, 0, 0])
         H.append(co)
 
-    blob = Blob(box_true, H, action_set, margin=0.01)
+    from pyinstrument import Profiler
+    blob = Blob(box_true, H, action_set, margin=0.01, n_process=4)
     pruner = CacheUtilizedPruner(blob, margin=0.01)
     policy = GreedyPolicy(pruner, n_process=8)
 
     actions = []
     h_indices = np.arange(len(H))
     for _ in range(3):
-        from pyinstrument import Profiler
-        profiler = Profiler()
-        profiler.start()
         a_idx = policy(h_indices)
-        profiler.stop()
-        print(profiler.output_text(unicode=True, color=True, show_all=True))
         actions.append(blob.action_list[a_idx])
         o = observe(box_true.sdf, blob.action_list[a_idx])
         h_indices = pruner.prune(o, a_idx, h_indices)
