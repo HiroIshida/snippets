@@ -42,7 +42,7 @@ def ray_marching(pts_starts, direction_arr_unit, f_sdf) -> Tuple[np.ndarray, np.
     for _ in range(20):
         dists = f_sdf(ray_tips)
         proximity = np.minimum(proximity, dists)
-        ray_tips += dists * direction_arr_unit
+        ray_tips += direction_arr_unit * dists[:, None]
         frying_dists += dists
     return ray_tips, proximity, frying_dists
 
@@ -53,6 +53,18 @@ def observe(sdf: Callable[[np.ndarray], np.ndarray],
     direction_arr_unit = np.expand_dims(ray.direction / np.linalg.norm(ray.direction), axis=0)
     pts_tips, proximity, fly_dist = ray_marching(pts_start, direction_arr_unit, sdf)
     return Observation(fly_dist=fly_dist[0], proximity=proximity[0], action=ray)
+
+
+def batch_observe(sdf: Callable[[np.ndarray], np.ndarray],
+                  rays: List[RayCastAction]) -> List[Observation]:
+    pts_starts = np.array([ray.start for ray in rays])
+    direction_arr_unit = np.array([ray.direction / np.liknalg.norm(ray.direction) for ray in rays])
+    pts_tips, proximity, fly_dist = ray_marching(pts_starts, direction_arr_unit, sdf)
+    obs_list = []
+    for i in range(len(rays)):
+        obs = Observation(fly_dist=fly_dist[i], proximity=proximity[i], action=rays[i])
+        obs_list.append(obs)
+    return obs_list
 
 
 _cache_table = {}
@@ -108,11 +120,39 @@ class GreedyPolicy:
         self.pruner = pruner
         self.action_set = action_set
 
+    def precompute(self, hypotheses: List[Coordinates]) -> None:
+        naive = False
+        if naive:
+            for h in hypotheses:
+                for a in self.action_set:
+                    key = (id(h), id(a))
+                    if key in _cache_table:
+                        continue
+                    else:
+                        self.pruner.link.newcoords(h)
+                        obs = observe(self.pruner.link.sdf, a)
+                        _cache_table[key] = obs
+        else:
+            for h in hypotheses:
+                self.pruner.link.newcoords(h)
+                pts_start = np.array([a.start for a in self.action_set])
+                direction_arr_unit = np.array([a.direction / np.linalg.norm(a.direction) for a in self.action_set])
+                pts_tips, proximity, fly_dist = ray_marching(pts_start, direction_arr_unit, self.pruner.link.sdf)
+                for i, a in enumerate(self.action_set):
+                    obs = Observation(fly_dist=fly_dist[i], proximity=proximity[i], action=a)
+                    key = (id(h), id(a))
+                    _cache_table[key] = obs
+
     def evaluate_action(self, hypotheses: List[Coordinates], action: RayCastAction) -> float:
         n_pruned_list = []
         for h in tqdm.tqdm(hypotheses):
-            self.pruner.link.newcoords(h)
-            obs = observe(self.pruner.link.sdf, action)
+            key = (id(h), id(action))
+            if key in _cache_table:
+                obs = _cache_table[key]
+            else:
+                self.pruner.link.newcoords(h)
+                obs = observe(self.pruner.link.sdf, action)
+                _cache_table[key] = obs
             remained = self.pruner.prune(hypotheses, obs)
             n_pruned = len(hypotheses) - len(remained)
             n_pruned_list.append(n_pruned)
@@ -147,7 +187,7 @@ if __name__ == "__main__":
         action = RayCastAction(start=np.array([-0.5, y, 0.0]), direction=np.array([1.0, 0.0, 0.0]), cast_dist=1.0)
         action_set.append(action)
 
-    n_hypo = 1000
+    n_hypo = 500
     H = []
     for _ in range(n_hypo):
         box = Box([0.05, 0.1, 0.05], face_colors=[255, 0, 0, 100])
@@ -160,8 +200,10 @@ if __name__ == "__main__":
         H.append(co)
 
     policy = GreedyPolicy(pruner, action_set)
+    policy.precompute(H)
+
     actions = []
-    for _ in range(8):
+    for _ in range(3):
         a = policy(H)
         actions.append(a)
         o = observe(box_true.sdf, a)
