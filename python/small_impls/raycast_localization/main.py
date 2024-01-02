@@ -1,3 +1,4 @@
+import tqdm
 import copy
 import time
 import numpy as np
@@ -54,6 +55,9 @@ def observe(sdf: Callable[[np.ndarray], np.ndarray],
     return Observation(fly_dist=fly_dist[0], proximity=proximity[0], action=ray)
 
 
+_cache_table = {}
+
+
 class HypothesisPruner:
     link: Link
     margin: float
@@ -73,8 +77,14 @@ class HypothesisPruner:
         if is_hit_miss:  # the information is not enough to prune
             return False
         else:
-            self.link.newcoords(hypo)
-            est_obs = observe(self.link.sdf, obs.action)
+            key = (id(hypo), id(obs.action))
+            if key in _cache_table:
+                est_obs = _cache_table[key]
+            else:
+                self.link.newcoords(hypo)
+                est_obs = observe(self.link.sdf, obs.action)
+                _cache_table[key] = est_obs
+
             is_est_hit = est_obs.fly_dist < obs.action.cast_dist
             if is_est_hit:
                 diff = np.abs(est_obs.fly_dist - obs.fly_dist)
@@ -90,17 +100,52 @@ class HypothesisPruner:
         return [hypo for hypo in hypotheses if not self.is_unlikely(hypo, obs)]
 
 
+class GreedyPolicy:
+    pruner: HypothesisPruner
+    action_set: List[RayCastAction]
+
+    def __init__(self, pruner: HypothesisPruner, action_set: List[RayCastAction]):
+        self.pruner = pruner
+        self.action_set = action_set
+
+    def evaluate_action(self, hypotheses: List[Coordinates], action: RayCastAction) -> float:
+        n_pruned_list = []
+        for h in tqdm.tqdm(hypotheses):
+            self.pruner.link.newcoords(h)
+            obs = observe(self.pruner.link.sdf, action)
+            remained = self.pruner.prune(hypotheses, obs)
+            n_pruned = len(hypotheses) - len(remained)
+            n_pruned_list.append(n_pruned)
+        return float(np.mean(n_pruned_list))
+
+    def __call__(self, hypotheses: List[Coordinates]) -> RayCastAction: 
+        scores = [self.evaluate_action(hypotheses, action) for action in tqdm.tqdm(self.action_set)]
+        idx = np.argmax(scores)
+        action = self.action_set.pop(idx)
+        return action
+
+
 def instantiate_box(co: Coordinates) -> Box:
     box = Box([0.05, 0.1, 0.05], face_colors=[255, 0, 0, 100])
     box.newcoords(co)
     return box
 
 
+# as action set and hypothesis set are fixed. We can compute table
+
+
 if __name__ == "__main__":
-    co_true = Coordinates(pos = [0.02, 0.02, 0.0], rot=[0.2, 0.0, 0.0])
+    np.random.seed(0)
+    co_true = Coordinates(pos = [0.02, 0.02, 0.0], rot=[0.5, 0.0, 0.0])
     box_true = Box([0.05, 0.1, 0.05], face_colors=[0, 255, 0, 255], with_sdf=True)
     box_true.newcoords(co_true)
     pruner = HypothesisPruner(copy.deepcopy(box_true), margin=0.01)
+
+    n_action = 20
+    action_set = []
+    for y in np.linspace(-0.08, 0.08, n_action):
+        action = RayCastAction(start=np.array([-0.5, y, 0.0]), direction=np.array([1.0, 0.0, 0.0]), cast_dist=1.0)
+        action_set.append(action)
 
     n_hypo = 1000
     H = []
@@ -114,21 +159,17 @@ if __name__ == "__main__":
         co = Coordinates(pos=pos3d, rot=[yaw, 0, 0])
         H.append(co)
 
+    policy = GreedyPolicy(pruner, action_set)
     actions = []
-    action = RayCastAction(start=np.array([-0.5, 0.0, 0.0]), direction=np.array([1.0, 0.0, 0.0]), cast_dist=1.0)
-    actions.append(action)
-    obs = observe(box_true.sdf, action)
-    H = pruner.prune(H, obs)
-
-    action = RayCastAction(start=np.array([-0.5, 0.04, 0.0]), direction=np.array([1.0, 0.0, 0.0]), cast_dist=1.0)
-    actions.append(action)
-    obs = observe(box_true.sdf, action)
-    H = pruner.prune(H, obs)
-
-    action = RayCastAction(start=np.array([-0.5, -0.03, 0.0]), direction=np.array([1.0, 0.0, 0.0]), cast_dist=1.0)
-    actions.append(action)
-    obs = observe(box_true.sdf, action)
-    H = pruner.prune(H, obs)
+    for _ in range(8):
+        a = policy(H)
+        actions.append(a)
+        o = observe(box_true.sdf, a)
+        print(o)
+        H = pruner.prune(H, o)
+        if len(H) == 0:
+            break
+        print(len(H))
 
     box_list = [instantiate_box(hypo) for hypo in H]
     v = TrimeshSceneViewer()
