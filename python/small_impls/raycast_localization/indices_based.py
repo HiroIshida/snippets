@@ -25,12 +25,6 @@ class RayCastAction:
         return line
 
 
-@dataclass
-class Observation:
-    fly_dist: float
-    proximity: float
-
-
 def ray_marching(pts_starts, direction_arr_unit, f_sdf) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     pts_starts = copy.deepcopy(pts_starts)
     ray_tips = pts_starts
@@ -48,11 +42,11 @@ def ray_marching(pts_starts, direction_arr_unit, f_sdf) -> Tuple[np.ndarray, np.
 
 
 def observe(sdf: Callable[[np.ndarray], np.ndarray],
-            ray: RayCastAction) -> Observation:
+            ray: RayCastAction) -> np.array:
     pts_start = np.expand_dims(ray.start, axis=0)
     direction_arr_unit = np.expand_dims(ray.direction / np.linalg.norm(ray.direction), axis=0)
     pts_tips, proximity, fly_dist = ray_marching(pts_start, direction_arr_unit, sdf)
-    return Observation(fly_dist=fly_dist[0], proximity=proximity[0])
+    return np.array([fly_dist[0], proximity[0]])
 
 
 class Blob:
@@ -70,10 +64,11 @@ class Blob:
             pts_tips, proximity, fly_dist = ray_marching(pts_start, direction_arr_unit, link.sdf)
             sub_table = []
             for i, a in enumerate(action_list):
-                obs = Observation(fly_dist=fly_dist[i], proximity=proximity[i])
+                obs = np.array([fly_dist[i], proximity[i]])
                 sub_table.append(obs)
             table.append(sub_table)
-        self.table = np.array(table)
+
+        self.table = np.array(table).transpose(1, 0, 2)
         self.hypo_list = hypo_list
         self.action_list = action_list
 
@@ -89,28 +84,23 @@ class CacheUtilizedPruner:
         self.blob = blob
         self.margin = margin
 
-    def prune(self, obs: Observation, action_idx: int, hypo_indices: np.ndarray) -> np.ndarray:
+    def prune(self, obs: np.array, action_idx: int, hypo_indices: np.ndarray) -> np.ndarray:
         action_cast_dist = self.blob.action_list[action_idx].cast_dist
-        is_hit_miss = obs.fly_dist > action_cast_dist
+        is_hit_miss = obs[0] > action_cast_dist
 
         if is_hit_miss:
             return hypo_indices
 
-        pruned_indices = []
-        table = self.blob.table
-        for h in hypo_indices:
-            est_obs = table[h, action_idx]
-            is_est_hit = est_obs.fly_dist < action_cast_dist
-            if is_est_hit:
-                diff = np.abs(est_obs.fly_dist - obs.fly_dist)
-                if diff <= self.margin:
-                    pruned_indices.append(h)
-            else:
-                obvious_hit_miss = est_obs.proximity > self.margin
-                if not obvious_hit_miss:
-                    pruned_indices.append(h)
+        bools_survive = np.zeros(len(hypo_indices), dtype=bool)
 
-        return np.array(pruned_indices)
+        est_obs_arr = self.blob.table[action_idx, hypo_indices]
+        is_est_hit_arr = est_obs_arr[:, 0] < action_cast_dist
+        diff_arr = np.abs(est_obs_arr[:, 0] - obs[0])
+        bools_survive[is_est_hit_arr & (diff_arr <= self.margin)] = True
+
+        obvious_hit_miss_arr = est_obs_arr[:, 1] > self.margin
+        bools_survive[~is_est_hit_arr & ~obvious_hit_miss_arr] = True
+        return hypo_indices[bools_survive]
 
 
 class GreedyPolicy:
@@ -129,7 +119,7 @@ class GreedyPolicy:
         for i in tqdm.tqdm(range(len(self.blob.action_list))):
             score_list = []
             for j in hypo_indices:
-                obs_hypo = self.blob.table[j, i]
+                obs_hypo = self.blob.table[i, j]
                 hypo_indices_new = self.pruner.prune(obs_hypo, i, hypo_indices)
                 score = len(hypo_indices) - len(hypo_indices_new)
                 score_list.append(score)
@@ -153,13 +143,13 @@ if __name__ == "__main__":
     box_true = Box([0.05, 0.1, 0.05], face_colors=[0, 255, 0, 255], with_sdf=True)
     box_true.newcoords(co_true)
 
-    n_action = 20
+    n_action = 100
     action_set = []
     for y in np.linspace(-0.08, 0.08, n_action):
         action = RayCastAction(start=np.array([-0.5, y, 0.0]), direction=np.array([1.0, 0.0, 0.0]), cast_dist=1.0)
         action_set.append(action)
 
-    n_hypo = 500
+    n_hypo = 1000
     H = []
     for _ in range(n_hypo):
         box = Box([0.05, 0.1, 0.05], face_colors=[255, 0, 0, 100])
