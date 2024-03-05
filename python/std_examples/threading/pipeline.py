@@ -1,93 +1,89 @@
+from collections.abc import Callable
 import threading
 from queue import Queue
+from typing import Union, Optional, Callable, List
 import numpy as np
 import time
 
-t_sleep = 0.2
+class PipelineStage(threading.Thread):
+    in_queue: Queue
+    out_queue: Queue
 
-def f1():
-    time.sleep(t_sleep)
-    return "my "
+    def __init__(self,
+                 func,
+                 in_stage: Optional["PipelineStage"]):
 
-def f2(x: str):
-    time.sleep(t_sleep)
-    return x + "name "
+        super().__init__()
+        self.func = func
+        if in_stage is None:
+            in_queue = Queue()
+        else:
+            in_queue = in_stage.out_queue
+        self.in_queue = in_queue
+        self.out_queue = Queue()
 
-def f3(x: str):
-    time.sleep(t_sleep)
-    return x + "is "
+    def run(self):
+        while True:
+            x = self.in_queue.get()
+            if x is None:
+                self.out_queue.put(None)
+                break
+            self.out_queue.put(self.func(x))
 
-def f4(x: str):
-    time.sleep(t_sleep)
-    return x + "Ishida"
+class Pipeline:
+    stages: List[PipelineStage]
 
-f0_result_queue = Queue()
-f1_result_queue = Queue()
-f2_result_queue = Queue()
-f3_result_queue = Queue()
-f4_result_queue = Queue()
+    def __init__(self, func_seq: List[Callable]):
+        self.stages = []
+        for func in func_seq:
+            prestage = self.stages[-1] if self.stages else None
+            stage = PipelineStage(func, prestage)
+            self.stages.append(stage)
 
-def f1_thread():
-    while True:
-        x = f0_result_queue.get()
-        if x is None:
-            f1_result_queue.put(None)
-            break
-        f1_result_queue.put(f1())
+    def start(self):
+        for stage in self.stages:
+            stage.start()
 
-def f2_thread():
-    while True:
-        x = f1_result_queue.get()
-        if x is None:
-            f2_result_queue.put(None)
-            break
-        f2_result_queue.put(f2(x))
+    def join(self):
+        for stage in self.stages:
+            stage.join()
 
+    def put(self, x):
+        self.stages[0].in_queue.put(x)
 
-def f3_thread():
-    while True:
-        x = f2_result_queue.get()
-        if x is None:
-            f3_result_queue.put(None)
-            break
-        f3_result_queue.put(f3(x))
-
-
-def f4_thread():
-    while True:
-        x = f3_result_queue.get()
-        if x is None:
-            f4_result_queue.put(None)
-            break
-        f4_result_queue.put(f4(x))
+    def results(self):
+        while True:
+            val = self.stages[-1].out_queue.get()
+            if val is None:
+                break
+            yield val
 
 
-# naively
-ts = time.time()
-for _ in range(5):
-    f4(f3(f2(f1())))
-print(f"Time: {time.time() - ts}")
+if __name__ == "__main__":
+    t_sleep = 0.5
 
+    def f1(x: str):
+        time.sleep(t_sleep)
+        return "my "
 
-# pipeline
-t1 = threading.Thread(target=f1_thread)
-t2 = threading.Thread(target=f2_thread)
-t3 = threading.Thread(target=f3_thread)
-t4 = threading.Thread(target=f4_thread)
-t1.start()
-t2.start()
-t3.start()
-t4.start()
+    def f2(x: str):
+        time.sleep(t_sleep)
+        return x + "name "
 
-ts = time.time()
-for _ in range(5):
-    f0_result_queue.put(1)
-f0_result_queue.put(None)
+    def f3(x: str):
+        time.sleep(t_sleep)
+        return x + "is "
 
-t1.join()
-t2.join()
-t3.join()
-t4.join()
-while not f4_result_queue.empty():
-    print(f"Result: {f4_result_queue.get()}")
-print(f"Time: {time.time() - ts}")
+    def f4(x: str):
+        time.sleep(t_sleep)
+        return x + "Ishida"
+
+    pipeline = Pipeline([f1, f2, f3, f4])
+    pipeline.start()
+    for _ in range(3):
+        pipeline.put("")
+    pipeline.put(None)
+    for val in pipeline.results():
+        print(val)
+    pipeline.join()
+    print("fin")
