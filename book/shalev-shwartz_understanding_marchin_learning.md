@@ -1,3 +1,4 @@
+# 2: A Gentle Start
 ## 定義
 
 分類器の汎化誤差:
@@ -11,9 +12,10 @@ ERM(経験リスク最小化): $h_S$は経験誤差が最小となる仮説で�
 $$ h_S = \arg\min_{h\in H} L_{S}(h) $$
 
 ## 仮説集合が有限で実現可能仮定をおいた場合.
-実現可能仮定(realizable assumption)とは, $H$のなかにERM=0となる仮説が存在するという仮定.
+実現可能仮定(realizable assumption)とは, $\exists h \in H, \mathbb{P}_S [L_{D, f}(h) = 0] = 1$.
 
-RAが成り立つなら, いかなるサンプル集合に対しても$h_S$は$0$の経験誤差を持つ.
+RAが成り立つなら, いかなるサンプル集合に対しても$h_S$は$0$の経験誤差を持つ. すなわち, 
+$$ \mathbb{P}_S [L_{S}(h_S) = 0] = 1 $$
 ERMにしたがって得られた仮説による汎化誤差が$\epsilon$よりも大きくなる確率($S\sim D$のとき)を
 $ \mathbb{P}_{S\sim D^m}[L_{D, f}(h_S) > \epsilon] $ を上から抑えたい.
 ただし$D_m$の表記がわかりにくいので, 適宜$\mathbb{P}_{S\sim D^m}$とか$\mathbb{P}_{S}$と書き換えます.
