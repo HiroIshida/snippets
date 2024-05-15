@@ -1,0 +1,2 @@
+- Selecting some attractor point and then finding a region that is guaranteed to attractable by just a simple greedy search 
+- The library consists of a set of path and radius. (I misunderstood that it computes the hashtable.)
