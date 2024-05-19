@@ -7,6 +7,12 @@
     - complementarity constraints を考慮した非線形最適化問題をMathematical Program with Complementarity Constraints (MPCC)と呼ぶ.
     - MPCCはSNOPTで解ける.
 
+- mode invariant optimization with kinematic constraints + centroidal dynamics [Dai+, Humanoids 2014] ($73 citations)
+    - https://ieeexplore.ieee.org/abstract/document/7041375
+    - 上のPosaの手法をkineamtic constraintsを考慮して拡張したもの.
+    - dynamicsはcentroidal dynamicsを考慮している.
+    - centroidal angular momentumは[Orin+, Auton. Robots 2013]式(19)を参照している.
+
 - contact invariant optimization [Mordatch+, ACM ToG 2012] (564 citations)
     - https://dl.acm.org/doi/abs/10.1145/2185520.2185539
 
@@ -22,6 +28,8 @@
 ## 最近のもの
 - contact-implicit model predictive control [Le Cleac'h+, T-RO 2024] (52 citations)
     - https://ieeexplore.ieee.org/abstract/document/10384795
+    - githubにソースコード公開されている. juliaだけど. https://github.com/dojo-sim/ContactImplicitMPC.jl
+    - いろんな事前計算とコンタクトを扱うことに特化した数理最適化手法を開発してるっぽい.
 
 - Winkler+のinitializationを学習 [Melon+, ICRA 2020] (34 citations)
     - https://ieeexplore.ieee.org/abstract/document/9196562
@@ -33,6 +41,7 @@
 
 # citation
 - Posa, Michael, Cecilia Cantu, and Russ Tedrake. "A direct method for trajectory optimization of rigid bodies through contact." The International Journal of Robotics Research 33.1 (2014): 69-81.
+- Dai, Hongkai, Andrés Valenzuela, and Russ Tedrake. "Whole-body motion planning with centroidal dynamics and full kinematics." 2014 IEEE-RAS International Conference on Humanoid Robots. IEEE, 2014.
 - Mordatch, Igor, Emanuel Todorov, and Zoran Popović. "Discovery of complex behaviors through contact-invariant optimization." ACM Transactions on Graphics (ToG) 31.4 (2012): 1-8.
 - Winkler, Alexander W., et al. "Gait and trajectory optimization for legged systems through phase-based end-effector parameterization." IEEE Robotics and Automation Letters 3.3 (2018): 1560-1567.
 - Aceituno-Cabezas, Bernardo, et al. "Simultaneous contact, gait, and motion planning for robust multilegged locomotion via mixed-integer convex optimization." IEEE Robotics and Automation Letters 3.3 (2017): 2531-2538.
@@ -40,3 +49,5 @@
 - Melon, Oliwier, et al. "Reliable trajectories for dynamic quadrupeds using analytical costs and learned initializations." 2020 IEEE International Conference on Robotics and Automation (ICRA). IEEE, 2020.
 - Kumagai, Iori, et al. "Multi-contact locomotion planning with bilateral contact forces considering kinematics and statics during contact transition." IEEE Robotics and Automation Letters 6.4 (2021): 6654-6661.
 - Kojima, Kunio, et al. "Rotational sliding motion generation for humanoid robot by force distribution in each contact face." IEEE Robotics and Automation Letters 2.4 (2017): 2088-2095.
+- Orin, David E., Ambarish Goswami, and Sung-Hee Lee. "Centroidal dynamics of a humanoid robot." Autonomous robots 35 (2013): 161-176.
+
