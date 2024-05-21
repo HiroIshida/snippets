@@ -39,6 +39,9 @@
 - EFを多角形で表現し, その頂点において力の釣り合いを考慮する. These contact surfaces can generate unilateral contact forces...at their vertices [Kumagai+, RA-L 2021]
 - 実際には力は足裏に分布してる. rotational motionを考える場合には, 各点における速度(というか進行方向)が異なり, これの積分値が摩擦力となる. なので, 足裏に多数のcontact pointsをとる. [Kojima+, RA-L 2017]
 
+# centroidal dynamics
+- 室岡さん[Murooka+, RA-L 2022] はfixed Inertia matrixを使っている. 
+
 # citation
 - Posa, Michael, Cecilia Cantu, and Russ Tedrake. "A direct method for trajectory optimization of rigid bodies through contact." The International Journal of Robotics Research 33.1 (2014): 69-81.
 - Dai, Hongkai, Andrés Valenzuela, and Russ Tedrake. "Whole-body motion planning with centroidal dynamics and full kinematics." 2014 IEEE-RAS International Conference on Humanoid Robots. IEEE, 2014.
@@ -50,4 +53,4 @@
 - Kumagai, Iori, et al. "Multi-contact locomotion planning with bilateral contact forces considering kinematics and statics during contact transition." IEEE Robotics and Automation Letters 6.4 (2021): 6654-6661.
 - Kojima, Kunio, et al. "Rotational sliding motion generation for humanoid robot by force distribution in each contact face." IEEE Robotics and Automation Letters 2.4 (2017): 2088-2095.
 - Orin, David E., Ambarish Goswami, and Sung-Hee Lee. "Centroidal dynamics of a humanoid robot." Autonomous robots 35 (2013): 161-176.
-
+- Murooka, Masaki, Mitsuharu Morisawa, and Fumio Kanehiro. "Centroidal trajectory generation and stabilization based on preview control for humanoid multi-contact motion." IEEE Robotics and Automation Letters 7.3 (2022): 8225-8232.

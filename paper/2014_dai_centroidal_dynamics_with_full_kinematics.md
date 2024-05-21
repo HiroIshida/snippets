@@ -1,0 +1,3 @@
+- centroidal dynamicsを拘束条件としていれる. 最適化変数には力が入っている.
+- h = A(q) \dot{q} というangular momentum に関する拘束条件を入れる.
+- この微分値を計算するには, dA/dqが必要そうに見えるが, 実はAの時間微分でok. なぜなら, dA/dt = dA/dq \dot{q} だから.
