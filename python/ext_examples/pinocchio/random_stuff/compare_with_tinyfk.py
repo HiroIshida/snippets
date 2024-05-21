@@ -60,7 +60,7 @@ pin_joint_table = {name: i for i, name in enumerate(model.model.names)}
 del pin_joint_table["universe"]
 
 # setup tinyfk solver
-kin_solver = tinyfk.RobotModel(urdf_model_path)
+kin_solver = tinyfk.KinematicModel(urdf_model_path)
 
 attach_joint_name = "r_wrist_flex_joint"
 attach_frame_name = "r_wrist_flex_link"
@@ -95,11 +95,18 @@ for link_name in ["new_link", "r_wrist_flex_link"]:
     sk_av = np.array(list(angles.values()))
     joint_ids = kin_solver.get_joint_ids(joint_names)
     elink_ids = kin_solver.get_link_ids([link_name])
-    P_tinyfk, _ = kin_solver.solve_forward_kinematics(np.expand_dims(sk_av, axis=0), elink_ids, joint_ids)
+    import time
+    ts = time.time()
+    for _ in range(100):
+        P_tinyfk, _ = kin_solver.solve_fk(np.expand_dims(sk_av, axis=0), elink_ids, joint_ids)
+    print(f"tinyfk: {time.time() - ts}")
 
     # check if tinyfk fk and pinocchio fk are equal
     pin_av = np.array([angles[name] for name, idx in pin_joint_table.items()])
-    model.forwardKinematics(pin_av)
+    ts = time.time()
+    for _ in range(100):
+        model.forwardKinematics(pin_av)
+    print(f"pinocchio: {time.time() - ts}")
     P0 = model.framePlacement(pin_av, pin_frame_table[link_name])
     np.testing.assert_almost_equal(P_tinyfk[0], P0.translation, decimal=5)
      
