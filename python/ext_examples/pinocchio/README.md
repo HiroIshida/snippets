@@ -4,6 +4,18 @@
 3. need to specify `pin.ReferenceFrame.LOCAL_WORLD_ALIGNED` to get a jacobian in natural (?) sense
 4. need to call `model.computeJointJacobians(av)` before calling `model.getFrameJacobian`.
 
+## add frame to the robot
+Frameクラスの引数はこんな感じ. parentとpreviousFrameどちらを使えばよいのか.
+```
+FrameTpl(const std::string & name,
+         const JointIndex parent,
+         const FrameIndex previousFrame,
+         const SE3 & frame_placement,
+         const FrameType type,
+         const Inertia & inertia = Inertia::Zero())
+```
+addFrameの実装を読んで判断していく. 
+
 ## tips
 add new link. parent frameも指定するようになっているが, parent jointを指定すれば一意に定まるはずなのでなんで必要なのかわからない. 今回はとりあえず0にしてる.
 frame とそのparent jointの座標は一致していることに注意.

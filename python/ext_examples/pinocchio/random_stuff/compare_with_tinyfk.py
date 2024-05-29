@@ -106,8 +106,8 @@ for link_name in ["new_link", "r_wrist_flex_link"]:
     ts = time.time()
     for _ in range(100):
         model.forwardKinematics(pin_av)
+        P0 = model.framePlacement(pin_av, pin_frame_table[link_name])
     print(f"pinocchio: {time.time() - ts}")
-    P0 = model.framePlacement(pin_av, pin_frame_table[link_name])
     np.testing.assert_almost_equal(P_tinyfk[0], P0.translation, decimal=5)
      
     # check if numerical and analytical jacobian equal
