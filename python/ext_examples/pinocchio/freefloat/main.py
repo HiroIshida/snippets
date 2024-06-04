@@ -5,30 +5,33 @@ data = model.createData()
 frame_id = model.getFrameId("link1")
 
 def dq_dt(q: np.ndarray, omega: np.ndarray):
-    qw, qx, qy, qz = q
+    # on quaternion order is [x, y, z, w]
+    # https://github.com/stack-of-tasks/pinocchio/issues/1122!
+    qx, qy, qz, qw = q
     wx, wy, wz = omega
-    dqdt = 0.5 * np.array([
-        -qx * wx - qy * wy - qz * wz,
-         qw * wx + qy * wz - qz * wy,
-         qw * wy - qx * wz + qz * wx,
-         qw * wz + qx * wy - qy * wx
+    mat = np.array([
+        [ qw, -qz,  qy],
+        [ qz,  qw, -qx],
+        [-qy,  qx,  qw],
+        [-qx, -qy, -qz]
     ])
+    dqdt = 0.5 * mat @ np.array([wx, wy, wz])
     return dqdt
 
 dt = 0.01
 v = np.array([0.0, 0.0, 0.0, 0.3, 0.2, 0.1])
 
-
 # quaternion propagation using Pinocchio
 quat_list = []
-q = np.array([0, 0, 0, 1, 0, 0, 0])
+q = np.array([0, 0, 0, 1.0, 0, 0, 0.0])
 for i in range(3000):
     q = pin.integrate(model, q, v * dt)
+    print(q)
     quat_list.append(q[3:])
 
 # quaternion propagation using numerical integration using analytical formula
 quat_list2 = []
-quat = np.array([1., 0, 0, 0])
+quat = np.array([1.0, 0, 0, 0.0])
 for i in range(3000):
     dquat = dq_dt(quat, v[3:]) * dt
     quat = quat + dquat
