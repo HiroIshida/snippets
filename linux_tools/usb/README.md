@@ -1,4 +1,21 @@
 ## usb関連のdebug
+
+### usb memory が認識されなくなった (filesystemが壊れている.)
+lsblkでusbがblock deviceとして認識されているか確認. 抜き差しすると以下が変化した.
+```
+...
+sdc           8:32   1  58.2G  0 disk 
+└─sdc1        8:33   1  58.2G  0 part 
+```
+
+```
+sudo fsck dev/sdc
+```
+をして, 古いpartision sdc1を削除して, 新しいpartisionを作成する. 基本的にはdefaultでenterを押していけばよい (e.g. primary). そしてフォーマットする.
+```
+sudo mkfs.vfat /dev/sdc1
+```
+
 ### lsusb
 見えているusbデバイスを一覧表示
 ```
