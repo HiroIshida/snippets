@@ -1,3 +1,14 @@
+# コンテナ内でGUIを使う 
+host
+```
+xhost +local:root
+docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -it ubuntu:20.04
+```
+container (minimum)
+```
+apt update && apt install -y x11-apps
+```
+
 # Copy ssh-key from ~/.ssh using symbolic link
 ```Dockerfile
 # copy ssh
