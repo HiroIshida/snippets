@@ -115,7 +115,7 @@ if __name__ == "__main__":
     episode_list = []
     for _ in range(30):
         episode_list.append(DummyEpisode.create(80))
-    dataset = convert_to_lerobot_dataset(episode_list, 1)
+    dataset = convert_to_lerobot_dataset(episode_list, 10)
     delta_timestamps = {
         "observation.images": [-0.1, 0.0],
         "observation.state": [-0.1, 0.0],
