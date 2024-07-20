@@ -1,3 +1,4 @@
+import pickle
 import torch
 import numpy as np
 import tqdm
@@ -40,6 +41,10 @@ if __name__ == "__main__":
         dummy_episode_list.append(dummy_episode)
 
     dataset = convert_to_lerobot_dataset(dummy_episode_list, 10)
+    # cache stats file
+    with open("stats.pkl", "wb") as f:
+        pickle.dump(dataset.stats, f)
+
     delta_timestamps = {
         "observation.images": [-0.1, 0.0],
         "observation.state": [-0.1, 0.0],
@@ -88,3 +93,4 @@ if __name__ == "__main__":
             if step >= training_steps:
                 done = True
                 break
+    policy.save_pretrained(pp)
