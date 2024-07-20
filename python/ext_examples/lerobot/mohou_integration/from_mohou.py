@@ -83,6 +83,7 @@ if __name__ == "__main__":
 
             if step % log_freq == 0:
                 print(f"step: {step} loss: {loss.item():.3f}")
+                torch.save(policy.state_dict(), "model.pth")
             step += 1
             if step >= training_steps:
                 done = True
