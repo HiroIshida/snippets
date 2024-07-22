@@ -176,7 +176,7 @@ class BulletManager(object):
 
     def simulate_feedback(self, policy: DiffusionPolicy, n_pixel=112) -> List[RGBImage]:
         rgb_list = []
-        for i in range(200):
+        for i in range(400):
             rgb, depth = self.take_photo(n_pixel)
             rgb_list.append(rgb)
 
@@ -245,7 +245,7 @@ if __name__ == "__main__":
                 stats[key][key_sub] = value_sub.to("cuda")
         policy = DiffusionPolicy(dataset_stats=stats)
         policy = policy.to("cuda")
-        policy.load_state_dict(torch.load("./model.pth"))
+        policyload_state_dict(torch.load("./model.pth"))
 
         rgb_list = bm.simulate_feedback(policy, n_pixel)
 

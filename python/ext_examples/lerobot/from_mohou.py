@@ -28,16 +28,22 @@ from lerobot.common.policies.diffusion.configuration_diffusion import DiffusionC
 from lerobot.common.policies.diffusion.modeling_diffusion import DiffusionPolicy
 
 if __name__ == "__main__":
-    pp = get_project_path("kuka_reaching")
+    pp = get_project_path("rlbench_demo_CloseDrawer")
 
     bundle = EpisodeBundle.load(pp)
     dummy_episode_list = []
     for episode in tqdm.tqdm(bundle):
         images = episode.get_sequence_by_type(RGBImage)
         images_np = np.array([e.numpy() for e in images])
-        vecs = episode.get_sequence_by_type(AngleVector)
-        vecs_np = np.array([e.numpy() for e in vecs])
-        dummy_episode = DummyEpisode(images_np[1:], vecs_np[1:], vecs_np[:-1])
+        vecs_av = episode.get_sequence_by_type(AngleVector)
+        vecs_av_np = np.array([e.numpy() for e in vecs_av])
+        if GripperState in episode.type_shape_table:
+            vecs_g = episode.get_sequence_by_type(GripperState)
+            vecs_g_np = np.array([e.numpy() for e in vecs_g])
+            vecs_np = np.concatenate([vecs_av_np, vecs_g_np], axis=1)
+        else:
+            vecs_np = vecs_av_np
+        dummy_episode = DummyEpisode(images_np[1:], vecs_np[:-1], vecs_np[1:])
         dummy_episode_list.append(dummy_episode)
 
     dataset = convert_to_lerobot_dataset(dummy_episode_list, 10)
@@ -53,11 +59,13 @@ if __name__ == "__main__":
     dataset.delta_timestamps = delta_timestamps
     print(f"finsh creating lerobot_dataset")
 
-    training_steps = 5000
+    training_steps = 10000
     device = torch.device("cuda")
     log_freq = 250
 
     cfg = DiffusionConfig()
+    # cfg.input_shapes["observation.state"] = [8]
+    # cfg.output_shapes["action"] = [8]
     policy = DiffusionPolicy(cfg, dataset_stats=dataset.stats)
     policy.train()
     policy.to(device)
