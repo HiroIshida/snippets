@@ -28,6 +28,7 @@ from mohou.types import (
     RGBImage,
 )
 from lerobot.common.policies.diffusion.modeling_diffusion import DiffusionPolicy
+from lerobot.common.policies.act.modeling_act import ACTPolicy, ACTConfig
 
 
 class BulletManager(object):
@@ -243,9 +244,24 @@ if __name__ == "__main__":
         for key, value in stats.items():
             for key_sub, value_sub in value.items():
                 stats[key][key_sub] = value_sub.to("cuda")
-        policy = DiffusionPolicy(dataset_stats=stats)
+        # policy = DiffusionPolicy(dataset_stats=stats)
+        cfg = ACTConfig()
+        cfg.n_action_steps = 20
+        cfg.chunk_size = 20
+        cfg.input_shapes = {
+            "observation.images": [3, 112, 112],
+            "observation.state": [7],
+        }
+        cfg.output_shapes = {
+            "action": [7],
+        }
+        cfg.input_normalization_modes = {
+          "observation.images": "mean_std",
+          "observation.state": "mean_std",
+        }
+        policy = ACTPolicy(cfg, dataset_stats=stats)
         policy = policy.to("cuda")
-        policyload_state_dict(torch.load("./model.pth"))
+        policy.load_state_dict(torch.load("./model.pth"))
 
         rgb_list = bm.simulate_feedback(policy, n_pixel)
 
@@ -262,7 +278,6 @@ if __name__ == "__main__":
 
                 pbdata_path = pybullet_data.getDataPath()
                 urdf_path = os.path.join(pbdata_path, "kuka_iiwa", "model.urdf")
-                bm = BulletManager(False, urdf_path, "lbr_iiwa_link_7")
 
                 for i in tqdm.tqdm(range(n_data_gen), disable=disable_tqdm):
                     bm.set_joint_angles([0.2 for _ in range(7)])

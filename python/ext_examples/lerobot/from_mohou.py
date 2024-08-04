@@ -26,9 +26,10 @@ from lerobot.common.datasets.utils import (
 from lerobot.common.datasets.lerobot_dataset import LeRobotDataset
 from lerobot.common.policies.diffusion.configuration_diffusion import DiffusionConfig
 from lerobot.common.policies.diffusion.modeling_diffusion import DiffusionPolicy
+from lerobot.common.policies.act.modeling_act import ACTConfig, ACTPolicy
 
 if __name__ == "__main__":
-    pp = get_project_path("rlbench_demo_CloseDrawer")
+    pp = get_project_path("kuka_reaching")
 
     bundle = EpisodeBundle.load(pp)
     dummy_episode_list = []
@@ -51,24 +52,55 @@ if __name__ == "__main__":
     with open("stats.pkl", "wb") as f:
         pickle.dump(dataset.stats, f)
 
-    delta_timestamps = {
-        "observation.images": [-0.1, 0.0],
-        "observation.state": [-0.1, 0.0],
-        "action": [-0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4],
-    }
-    dataset.delta_timestamps = delta_timestamps
-    print(f"finsh creating lerobot_dataset")
+    train_difusion = False
+    
+    if train_difusion:
+        delta_timestamps = {
+            "observation.images": [-0.1, 0.0],
+            "observation.state": [-0.1, 0.0],
+            "action": [-0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4],
+        }
+        dataset.delta_timestamps = delta_timestamps
+
+        cfg = DiffusionConfig()
+        cfg.input_shapes = {
+            "observation.images": [3, 224, 224],
+            "observation.state": [7],
+        }
+        cfg.output_shapes = {
+            "action": [7],
+        }
+        cfg.crop_shape = [200, 200]
+
+        policy = DiffusionPolicy(cfg, dataset_stats=dataset.stats)
+    else:
+        delta_timestamps = {
+            "action": [0.1 * i for i in range(20)],
+        }
+        dataset.delta_timestamps = delta_timestamps
+
+        cfg = ACTConfig()
+        cfg.n_action_steps = 20
+        cfg.chunk_size = 20
+        cfg.input_shapes = {
+            "observation.images": [3, 112, 112],
+            "observation.state": [7],
+        }
+        cfg.output_shapes = {
+            "action": [7],
+        }
+        cfg.input_normalization_modes = {
+          "observation.images": "mean_std",
+          "observation.state": "mean_std",
+        }
+        policy = ACTPolicy(cfg, dataset.stats)
+
+    policy.train()
+    device = torch.device("cuda")
+    policy.to(device)
 
     training_steps = 10000
-    device = torch.device("cuda")
     log_freq = 250
-
-    cfg = DiffusionConfig()
-    # cfg.input_shapes["observation.state"] = [8]
-    # cfg.output_shapes["action"] = [8]
-    policy = DiffusionPolicy(cfg, dataset_stats=dataset.stats)
-    policy.train()
-    policy.to(device)
 
     optimizer = torch.optim.Adam(policy.parameters(), lr=1e-4)
 
