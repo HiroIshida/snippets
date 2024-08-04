@@ -128,6 +128,11 @@ if __name__ == "__main__":
     log_freq = 250
 
     cfg = DiffusionConfig()
+    cfg.input_shapes["observation.images"] = (3, 96, 96)
+    cfg.input_shapes["observation.state"] = (2,)
+    cfg.output_shapes["action"] = (2,)
+    cfg.crop_shape = (80, 80)
+
     policy = DiffusionPolicy(cfg, dataset_stats=dataset.stats)
     policy.train()
     policy.to(device)
