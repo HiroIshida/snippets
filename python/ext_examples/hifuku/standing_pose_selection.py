@@ -12,16 +12,17 @@ import warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 task_list = []
-x_pos_offset = np.linspace(-0.1, 0.1, 5)
+x_pos_offset = np.linspace(-0.15, 0.15, 5)
 y_pos_offset = np.linspace(-0.5, 0.5, 10)
 xy_pairs = [(x, y) for x in x_pos_offset for y in y_pos_offset]
-# xy_pairs = [(0., 0.0)]
 
 for x_pos, y_pos in tqdm.tqdm(xy_pairs, desc="task generation"):
     table_pos = np.array([0.7 + x_pos, 0.0 + y_pos])
     bbox_param_list = [np.array([0.5 + x_pos, +0.3 + y_pos, 0.0, 0.2, 0.1, 0.25])]
     target_xyz_yaw = np.array([0.7 + x_pos, 0.4 + y_pos, 0.85, -0.3])
     task = TidyupTableTask.from_semantic_params(table_pos, bbox_param_list, target_xyz_yaw)
+    if task.is_out_of_distribution():
+        continue
     task_list.append(task)
 
 jit_compile = False  # please set True in the actual demo
