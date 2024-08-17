@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
+set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS_INIT} -march=native")
+find_package(Eigen3 REQUIRED)
+ADD_DEFINITIONS(-DEIGEN_NO_DEBUG)
+include_directories(${EIGEN3_INCLUDE_DIR})
+add_executable(main main.cpp)
+target_include_directories(main PUBLIC ${EIGEN3_INCLUDE_DIR})
