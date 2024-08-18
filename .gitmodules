@@ -1,0 +1,6 @@
+[submodule "cpp/ext_example/eve/quaternion/eve"]
+	path = cpp/ext_example/eve/quaternion/eve
+	url = https://github.com/jfalcou/eve.git
+[submodule "cpp/ext_example/vcl/version2"]
+	path = cpp/ext_example/vcl/version2
+	url = git@github.com:HiroIshida/version2.git
