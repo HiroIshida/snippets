@@ -18,6 +18,11 @@ struct QuatAndTrans {
 };
 
 template<typename Scalar>
+struct Homogeneous {
+    Eigen::Matrix<Scalar, 4, 4> H;
+};
+
+template<typename Scalar>
 using Transform = Eigen::Transform<Scalar, 3, Eigen::Affine>;
 
 template<typename Scalar>
@@ -50,6 +55,14 @@ QuatAndTrans<Scalar> transformToQuatAndTrans(const Transform<Scalar>& transform)
     result.q = Eigen::Quaternion<Scalar>(transform.linear());
     result.t = transform.translation();
     return result;
+}
+
+template<typename Scalar>
+Homogeneous<Scalar> transformToHomogeneous(const Transform<Scalar>& transform) {
+    Eigen::Matrix< Scalar, 4, 4 > mat = Eigen::Matrix< Scalar, 4, 4 >::Identity();
+    mat.block(0, 0, 3, 3) = transform.linear();
+    mat.block(0, 3, 3, 1) = transform.translation();
+    return {mat};
 }
 
 urdf::Pose transformToUrdfPose(const Transform<double>& transform) {
@@ -121,6 +134,18 @@ void runBenchmark() {
         std::cout << "bench QuatAndTrans: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
         std::cout << quatatrans1.t.transpose() << std::endl; // to avoid compiler optimization
     }
+
+    {
+        auto hom1 = transformToHomogeneous(tf1_original);
+        auto hom2 = transformToHomogeneous(tf2);
+        auto start = std::chrono::high_resolution_clock::now();
+        for(int i = 0; i < N; ++i) {
+            hom1.H = hom1.H * hom2.H;
+        }
+        auto end = std::chrono::high_resolution_clock::now();
+        std::cout << "bench Homogeneous: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+        std::cout << hom1.H(0, 3) << " " << hom1.H(1, 3) << " " << hom1.H(2, 3) << std::endl; // to avoid compiler optimization
+    }
 }
 
 void runBenchmark_urdf_pose() {
@@ -141,7 +166,7 @@ void runBenchmark_urdf_pose() {
 }
 
 int main() {
-    runBenchmark<float>();
+    // runBenchmark<float>();
     runBenchmark<double>();
     runBenchmark_urdf_pose();
     return 0;
