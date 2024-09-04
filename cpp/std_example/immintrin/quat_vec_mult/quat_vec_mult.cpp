@@ -84,7 +84,8 @@ void quat_mult_vec(
 
 
 int main(){
-  size_t N = 10000000;
+  size_t N = 40;
+  size_t M = 100000000;
   size_t aligned_N = N + (n_batch - N % n_batch);
 
   double* qx = static_cast<double*>(aligned_alloc(bytes_alligned, aligned_N * sizeof(double)));
@@ -105,9 +106,16 @@ int main(){
     x[i] = v[0]; y[i] = v[1]; z[i] = v[2];
   }
 
+
+  int number;
+  std::cout << "Enter a number: ";
+  std::cin >> number;  // Read a number from the user
+  std::cout << "start" << std::endl;
   auto start = std::chrono::high_resolution_clock::now();
-  for(size_t head = 0; head < N; head += n_batch){
-    quat_mult_vec(qx + head, qy + head, qz + head, qw + head, x + head, y + head, z + head, output_x + head, output_y + head, output_z + head);
+  for(size_t i = 0; i < M; ++i){
+    for(size_t head = 0; head < N; head += n_batch){
+      quat_mult_vec(qx + head, qy + head, qz + head, qw + head, x + head, y + head, z + head, output_x + head, output_y + head, output_z + head);
+    }
   }
   auto end = std::chrono::high_resolution_clock::now();
   std::cout << "Time: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " us" << std::endl;
