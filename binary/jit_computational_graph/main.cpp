@@ -86,30 +86,89 @@ struct Operation : std::enable_shared_from_this<Operation> {
     return leafs;
   }
 
-  void compile() {
-    std::vector<std::string> instr;
+  class StackMachineInstruction{
+    enum class Kind { PUSH, ADD, SUB, MUL };
+    Kind kind;
+    std::string value;
+  };
+
+  void compile(std::vector<Operation::Ptr>& inputs){
+    std::vector<Operation::Ptr> instructions;
     std::stack<Operation::Ptr> stack;
     stack.push(shared_from_this());
     while(!stack.empty()){
       auto op = stack.top();
       stack.pop();
-      if(op->kind == OpKind::VALUE){
-        instr.push_back("push " + op->name);
-      } else {
-        if (op->kind == OpKind::ADD){
-          instr.push_back("add");
-        } else if (op->kind == OpKind::SUB){
-          instr.push_back("sub");
-        } else if (op->kind == OpKind::MUL){
-          instr.push_back("mul");
-        }
+      if(op->kind != OpKind::VALUE){
+        instructions.push_back(op);
         stack.push(op->lhs);
         stack.push(op->rhs);
       }
     }
-    for(auto it = instr.rbegin(); it != instr.rend(); ++it){
-      std::cout << *it << std::endl;
+
+    std::vector<Operation::Ptr> xmm_registers(16, nullptr);
+    for(size_t i = 0; i < inputs.size(); ++i){
+      xmm_registers[i] = inputs[i];
     }
+
+    auto smallest_available_register = [&xmm_registers]() -> int{
+      for(size_t i = 0; i < xmm_registers.size(); ++i){
+        if(xmm_registers[i] == nullptr){
+          return i;
+        }
+      }
+      return -1;
+    };
+
+    auto xmm_index_of_op = [&xmm_registers](Operation::Ptr op) -> int{
+      for(size_t i = 0; i < xmm_registers.size(); ++i){
+        if(xmm_registers[i] == op){
+          return i;
+        }
+      }
+      throw std::runtime_error("error");
+    };
+
+    auto visualize_registers = [&xmm_registers](){
+      // single line. if not set, print nil
+      for(size_t i = 0; i < xmm_registers.size(); ++i){
+        if(xmm_registers[i] == nullptr){
+          std::cout << "xmm" << i << ": nil, ";
+        } else {
+          std::cout << "xmm" << i << ": " << xmm_registers[i]->name << ", ";
+        }
+      }
+      std::cout << std::endl;
+    };
+
+    // reverse order
+    // actually, if stack-machine is used, no need to check if the register is used by other
+    for(auto it = instructions.rbegin(); it != instructions.rend(); ++it){
+      auto instr = *it;
+      if(instr->kind == OpKind::VALUE){
+        continue;
+      }
+      auto lhs_index = xmm_index_of_op(instr->lhs);
+      auto rhs_index = xmm_index_of_op(instr->rhs);
+
+      bool is_required_by_other = false;
+      auto result_index = lhs_index;
+      if(instr->kind == OpKind::ADD){
+        std::cout << "vaddss xmm" << result_index << ", xmm" << lhs_index << ", xmm" << rhs_index << std::endl;
+      } else if(instr->kind == OpKind::SUB){
+        std::cout << "vsubss xmm" << result_index << ", xmm" << lhs_index << ", xmm" << rhs_index << std::endl;
+      } else if(instr->kind == OpKind::MUL){
+        std::cout << "vmulss xmm" << result_index << ", xmm" << lhs_index << ", xmm" << rhs_index << std::endl;
+      }
+      xmm_registers[result_index] = instr;
+      xmm_registers[rhs_index] = nullptr;
+      // visualize_registers();
+    }
+    size_t idx_ret_op = xmm_index_of_op(shared_from_this());
+    if(idx_ret_op != 0){
+      std::cout << "movss xmm0, xmm" << idx_ret_op << std::endl;
+    }
+    std::cout << "ret" << std::endl;
   }
 };
 
@@ -123,6 +182,10 @@ int main(){
   auto c = Operation::make_value("c");
   auto d = Operation::make_value("d");
   auto e = Operation::make_value("e");
-  auto f = (a + b) * (c - d) + e;
-  f->compile();
+  auto f = Operation::make_value("f");
+  auto g = Operation::make_value("g");
+  auto h = (a + b) * (c - d) + (e * f + g);
+  // auto g = (a + b) - (c + d) + f;
+  auto inputs = std::vector<Operation::Ptr>{a, b, c, d, e, f, g};
+  h->compile(inputs);
 }
