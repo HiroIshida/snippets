@@ -1,5 +1,14 @@
 ### TUI mode
-layout next
+layout next  #  show the next line
+layout asm  # show assembly code
+
+### commands
+https://www.youtube.com/watch?v=bWH-nL7v5F4
+next (n)
+break (b)
+run (r)
+nexti (ni)  # next instruction
+stepi (si)  # step instruction into callq
 
 ### when you cannot attach the process
 ```
@@ -78,11 +87,5 @@ As suggested by Jean-Francois Fabre, the python file installed by pyenv is actua
 
 See this question for other approaches: https://stackoverflow.com/q/5048112/6646912
 
-
-### commands
-https://www.youtube.com/watch?v=bWH-nL7v5F4
-layout next
-next (n)
-break (b)
 ### how to define custom functions 
 https://stackoverflow.com/questions/3832964/calling-operator-in-gdb
