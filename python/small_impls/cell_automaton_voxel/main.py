@@ -20,17 +20,20 @@ def update(mat: np.ndarray, mat_new: np.ndarray) -> None:
                 else:
                     mat_new[i, j] = 0
 
+
 N = 56
 mat = np.zeros((N, N), dtype=bool)
 mat[20:30, 20:30] = np.random.choice([0, 1], (10, 10), p=[0.5, 0.5])
-mat[40:50, 40:50] = np.random.choice([0, 1], (10, 10), p=[0.5, 0.5])
 
 ts = time.time()
 mat_3d = np.zeros((N, N, N), dtype=bool)
 for t in range(N):
-    mat_3d[:,:,t] = mat
-    mat_new = mat.copy()
-    update(mat, mat_new)
+    mat_3d[:, :, t] = mat
+    dx = np.random.randint(-1, 2)  # Random integer from -1 to 1
+    dy = np.random.randint(-1, 2)
+    mat_shifted = np.roll(mat, shift=(dx, dy), axis=(0, 1))
+    mat_new = np.zeros_like(mat, dtype=bool)
+    update(mat_shifted, mat_new)
     mat = mat_new
 print("Time: ", time.time() - ts)
 
