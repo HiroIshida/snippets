@@ -1,5 +1,19 @@
 n_iter = 100000
 
+def create_math_bench(instr_name):
+    # define addsd_bench
+    asm_string = ""
+    function_name = f"{instr_name}_operation_bench"
+    asm_string += f"global {function_name}\n"
+    asm_string += f"{function_name}:\n"
+    for _ in range(n_iter):
+        asm_string += f"{instr_name} xmm0, xmm1\n"
+        asm_string += f"{instr_name} xmm0, xmm1\n"
+    asm_string += "ret\n"
+    asm_string += "\n"
+    return asm_string
+
+
 def create_xmm_xmm_bench(instr_name):
     # define movsd_xmm_xmm_bench
     asm_string = ""
@@ -9,6 +23,20 @@ def create_xmm_xmm_bench(instr_name):
     for _ in range(n_iter):
         asm_string += f"{instr_name} xmm0, xmm1\n"
         asm_string += f"{instr_name} xmm1, xmm0\n"
+    asm_string += "ret\n"
+    asm_string += "\n"
+    return asm_string
+
+
+def create_xmm_rax_bench(instr_name):
+    # define movsd_xmm_xmm_bench
+    asm_string = ""
+    function_name = f"{instr_name}_xmm_rax_bench"
+    asm_string += f"global {function_name}\n"
+    asm_string += f"{function_name}:\n"
+    for _ in range(n_iter):
+        asm_string += f"{instr_name} xmm0, rax\n"
+        asm_string += f"{instr_name} rax, xmm0\n"
     asm_string += "ret\n"
     asm_string += "\n"
     return asm_string
@@ -38,6 +66,14 @@ asm_string += create_xmm_xmm_bench("movsd")
 asm_string += create_xmm_stack_bench("movsd")
 asm_string += create_xmm_xmm_bench("movapd")
 asm_string += create_xmm_stack_bench("movapd")
+
+asm_string += create_xmm_rax_bench("movq")
+asm_string += create_xmm_rax_bench("vmovq")
+
+
+asm_string += create_math_bench("addsd")
+asm_string += create_math_bench("subsd")
+asm_string += create_math_bench("mulsd")
 
 with open("bench.s", "w") as f:
     f.write(asm_string)
