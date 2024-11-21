@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 import numpy as np
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 
 class World:
     lb: np.ndarray
-    radius: float = 0.11
+    radius: float = 0.12
     def __init__(self):
         self.lb = np.array([0.0, 0.0])
         self.ub = np.array([1.0, 1.0])
@@ -64,9 +64,12 @@ def build_prm_graph(world: World, start: np.ndarray, goal: np.ndarray, num_nodes
     return X, near_indices_list
 
 
-def apply_astar(X, near_indices):
+def apply_astar(X, near_indices, ignore_indices: Optional[List[int]] = None, dijkstra: bool = False):
     open_set = {0}
     close_set = set()
+    if ignore_indices is not None:
+        close_set = set(ignore_indices)
+        assert not 0 in close_set
 
     goal_pos = X[1]
     g_costs = np.inf * np.ones(X.shape[0])
@@ -74,24 +77,39 @@ def apply_astar(X, near_indices):
 
     parents = np.ones(X.shape[0], dtype=int) * -1
 
+    count_linalg = 0
+
+    def compute_euclidean_distance(x1, x2):
+        nonlocal count_linalg
+        count_linalg += 1
+        return np.linalg.norm(x1 - x2)
+
+    if dijkstra:
+        heuristic = lambda x: 0
+    else:
+        heuristic = lambda x: compute_euclidean_distance(x, goal_pos)
+
+    count_iteration = 0
     while True:
+        count_iteration += 1
         # find the best node in the open set wrt estimated cost
         best_node = None
         best_cost = np.inf
         for node_idx in open_set:
-            h = np.linalg.norm(X[node_idx] - goal_pos)
-            f = g_costs[node_idx] + h
+            f = g_costs[node_idx] + heuristic(X[node_idx])
             if f < best_cost:
                 best_node = node_idx
                 best_cost = f
 
         if best_node == 1:
+            print(f"Found the goal in {count_iteration} iterations")
             # reverse trace the path
             idx_reverse_path = [1]
             while parents[idx_reverse_path[-1]] != 0:
                 idx_reverse_path.append(parents[idx_reverse_path[-1]])
             idx_reverse_path.append(0)
             idx_reverse_path.reverse()
+            print(f"number of linalg calls: {count_linalg}")
             return X[idx_reverse_path]
 
         # move the best node from the open set to the close set
@@ -104,20 +122,36 @@ def apply_astar(X, near_indices):
                 continue
             if near_index not in open_set:
                 open_set.add(near_index)
-            g_cost_cand = g_costs[best_node] + np.linalg.norm(X[best_node] - X[near_index])
+            g_cost_cand = g_costs[best_node] + compute_euclidean_distance(X[best_node], X[near_index])
             if g_cost_cand < g_costs[near_index]:
                 g_costs[near_index] = g_cost_cand
                 parents[near_index] = best_node
 
 
+def find_ignorable_indices(X, path: np.ndarray, eps: float = 0.2):
+    ignore_indices = []
+    for i, x in enumerate(X):
+        min_dist_to_path = np.min(np.linalg.norm(path - x, axis=1))
+        if min_dist_to_path > eps:
+            ignore_indices.append(i)
+    return ignore_indices
+
+
 if __name__ == "__main__":
     world = World()
-    X, near_indices = build_prm_graph(world, np.array([0.1, 0.1]), np.array([0.7, 0.1]), 500)
-    path = apply_astar(X, near_indices)
-    fig, ax = world.visualize()
-    ax.scatter(X[:, 0], X[:, 1], s=5)
-    for near_indices_i, x in zip(near_indices, X):
-        for near_index in near_indices_i:
-            ax.plot([x[0], X[near_index, 0]], [x[1], X[near_index, 1]], 'b-', linewidth=0.5)
-    ax.plot(path[:, 0], path[:, 1], 'g-', linewidth=4)
-    plt.show()
+    X, near_indices = build_prm_graph(world, np.array([0.1, 0.1]), np.array([0.5, 0.2]), 10000, radius=0.02)
+    print("=> from scratch")
+    path = apply_astar(X, near_indices, dijkstra=False)
+    ignore_indices = find_ignorable_indices(X, path, eps=0.1)
+    print("=> leveraging the previous path")
+    path = apply_astar(X, near_indices, ignore_indices=ignore_indices, dijkstra=False)
+
+    plot = False
+    if plot:
+        fig, ax = world.visualize()
+        ax.scatter(X[:, 0], X[:, 1], s=5)
+        for near_indices_i, x in zip(near_indices, X):
+            for near_index in near_indices_i:
+                ax.plot([x[0], X[near_index, 0]], [x[1], X[near_index, 1]], 'b-', linewidth=0.5)
+        ax.plot(path[:, 0], path[:, 1], 'g-', linewidth=4)
+        plt.show()
