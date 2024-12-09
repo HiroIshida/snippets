@@ -22,6 +22,18 @@ private:
     double x, y, w, h;
 };
 
+class Sphere : public ShapeInterface {
+public:
+    Sphere(double x, double y, double r) : x(x), y(y), r(r) {}
+
+    bool is_inside(double x, double y) const override {
+        return (x - this->x) * (x - this->x) + (y - this->y) * (y - this->y) <= r * r;
+    }
+private:
+    double x, y, r;
+};
+
+
 void benchmark_polymorphic(const std::vector<std::unique_ptr<ShapeInterface>>& shapes, double x, double y, size_t n_bench) {
     auto start = std::chrono::high_resolution_clock::now();
     size_t sum = 0;
@@ -49,13 +61,16 @@ void benchmark_casted(const std::vector<std::unique_ptr<ShapeInterface>>& shapes
 }
 
 int main() {
-    const size_t n_bench = 1000000;
+    const size_t n_bench = 100000000;
     const double x = 3, y = 3;
 
     // Setup shapes with unique_ptr
     std::vector<std::unique_ptr<ShapeInterface>> shapes_unique_ptr;
-    for(int i = 0; i < 10; i++) {
+    for(int i = 0; i < 5; i++) {
         shapes_unique_ptr.push_back(std::make_unique<Rectangle>(i, i, 1, 1));
+    }
+    for(int i = 0; i < 5; i++) {
+        shapes_unique_ptr.push_back(std::make_unique<Sphere>(i, i, 1));
     }
     benchmark_polymorphic(shapes_unique_ptr, x, y, n_bench);
     benchmark_casted(shapes_unique_ptr, x, y, n_bench);
