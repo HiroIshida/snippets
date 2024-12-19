@@ -7,6 +7,21 @@ import rospy
 from diagnostic_msgs.msg import DiagnosticArray
 import json
 from threading import Lock
+import subprocess
+import re
+
+def record_futex_calls_and_errors(process_name, timeout):
+    pid = subprocess.check_output(f"pgrep -f {process_name}", shell=True, text=True).strip()
+    strace_cmd = f"sudo timeout {timeout} strace -c -p {pid}"
+    print("Running strace command...")
+    result = subprocess.run(strace_cmd, shell=True, text=True, capture_output=True)
+    lines = result.stderr.splitlines()
+    for line in lines:
+        if "futex" in line:
+            splitted = line.split()
+            n_call = int(splitted[3])
+            n_err = int(splitted[4])
+            return n_call, n_err
 
 
 class Monitor:
@@ -34,9 +49,12 @@ class Monitor:
                         if value.key == "Avg EtherCAT roundtrip (us)":
                             self.push("current_time", time.time() - self.ts)
                             self.push("roundtrip_time", value.value)
-                            cpu_percentages = psutil.cpu_percent(interval=1, percpu=True)
+                            cpu_percentages = psutil.cpu_percent(interval=3, percpu=True)
                             for i, cpu_percentage in enumerate(cpu_percentages):
                                 self.push(f"cpu{i}", cpu_percentage)
+                            n_call, n_err = record_futex_calls_and_errors("pr2_ethercat", 3)
+                            self.push("futex_call", n_call)
+                            self.push("futex_err", n_err)
 
     def save(self, file_name: str):
         with self.lock:
@@ -49,7 +67,7 @@ if __name__ == "__main__":
     parser.add_argument("--plot", action="store_true", help="Plot the data")
     args = parser.parse_args()
 
-    file_name = "data.json"
+    file_name = "/tmp/data.json"
     if args.plot:
         with open(file_name, "r") as f:
             data = json.load(f)
