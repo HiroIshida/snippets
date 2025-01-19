@@ -8,9 +8,10 @@ model = load_robot_description("panda_mj_description")
 data = mujoco.MjData(model)
 viewer = mujoco_viewer.MujocoViewer(model, data)
 
-desired_qpos1 = np.array([0.0, -0.5, 0.0, -1.5, 0.0, 1.0, 0.7])
-desired_qpos2 = np.array([0.0, -0.1, 0.0, -1.5, 0.0, 1.0, 0.7])
-desired_qpos3 = np.array([-1.0, -0.1, 0.0, -1.5, 0.0, 1.0, 0.7])
+# gripper pos is 255 because it is tendon driven and control range is 0-255
+desired_qpos1 = np.array([0.0, -0.5, 0.0, -1.5, 0.0, 1.0, 0.7, 255])
+desired_qpos2 = np.array([0.0, -0.1, 0.0, -1.5, 0.0, 1.0, 0.7, 0])
+desired_qpos3 = np.array([-1.0, -0.1, 0.0, -1.5, 0.0, 1.0, 0.7, 255])
 desired_list = [desired_qpos1, desired_qpos2, desired_qpos3]
 current_index = 0
 desired = desired_list[current_index]
@@ -22,16 +23,16 @@ input("press enter to start the simulation")
 
 for _ in range(10000):
     if viewer.is_alive:
-        current_qpos = data.qpos[:7]
-        current_qvel = data.qvel[:7]
+        current_qpos = data.qpos[:8]
+        current_qvel = data.qvel[:8]
         pos_error = desired - current_qpos
         vel_error = -current_qvel
-        if np.linalg.norm(pos_error) < 0.1:
+        if np.linalg.norm(pos_error[:7]) < 0.1:
             if current_index < len(desired_list) - 1:
                 current_index += 1
                 desired = desired_list[current_index]
         control_input = kp * pos_error + kd * vel_error
-        data.ctrl[:7] = control_input
+        data.ctrl[:8] = control_input
         mujoco.mj_step(model, data)
         viewer.render()
     else:
