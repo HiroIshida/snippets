@@ -13,3 +13,13 @@ spawnするとかなり遅いので, forkを使わないといけない場合は
 - loggerのlockを強制的にリリース
 - pytorch (numpyも??)を内部で使っている場合, threadpoolctlでblasのthreadを1に制限
 
+## pyproject baseの editable install時のpath解決の仕組み
+### まずpthファイルとは
+
+site package内に`__editable__.mujoco_xml_editor-0.0.0.pth`が作成される. その内部は以下のようになっている.
+```python
+import __editable___mujoco_xml_editor_0_0_0_finder; __editable___mujoco_xml_editor_0_0_0_finder.install()
+```
+さらに, ...instlal()が呼ばれて, pathが追加される.
+この方法でのeditable installはほとんどのIDE/LSPは対応していない.
+https://github.com/microsoft/pyright/issues/3846
