@@ -1,0 +1,18 @@
+<mujoco>
+  <compiler angle="radian"/>
+  <option gravity="0 0 -9.8"/>
+  <worldbody>
+    <body name="main_body" pos="0 0 0.0">
+      <geom name="main_geom" type="box" size="0.2 0.15 0.2" density="1000" pos="0 0 0.2"/>
+      <body name="door" pos="-0.212 0 0.0">
+        <joint name="door_joint" type="hinge" pos="0 -0.16 0" axis="0 0 1" range="0 2.8"/>
+        <geom name="child_geom" type="box" size="0.01 0.145 0.195" density="1000" pos="0 0 0.2"/>
+        <geom name="handle" type="cylinder" size="0.01 0.195" density="1000" pos="-0.03 0.12 0.2"/>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="child_motor" joint="door_joint" ctrllimited="true" ctrlrange="-0.1 0.1"/>
+  </actuator>
+</mujoco>
