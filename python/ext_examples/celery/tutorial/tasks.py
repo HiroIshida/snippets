@@ -17,3 +17,8 @@ def mul(x, y):
 @celery_app.task
 def sub(x, y):
     return x - y
+
+@celery_app.task
+def custom_input_output(dict_input):
+    keys = list(dict_input.keys())
+    return "-".join(keys)

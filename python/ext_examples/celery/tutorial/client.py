@@ -1,10 +1,19 @@
-from tasks import add, mul, sub
+import numpy as np
+import time
+from tasks import add, mul, sub, custom_input_output
 
-result1 = add.delay(4, 6)
-result2 = mul.delay(3, 7)
-result3 = sub.delay(10, 4)
-
+ts = time.time()
+results = [add.delay(4, 6) for _ in range(80)]
 print("Waiting for results...")
-print(f"Addition Result: {result1.get(timeout=10)}")
-print(f"Multiplication Result: {result2.get(timeout=10)}")
-print(f"Subtraction Result: {result3.get(timeout=10)}")
+for result in results:
+    print(result.get())
+print(f"Time taken: {time.time() - ts}")
+
+inp = {"foo": 1, "bar": (1, 2, 3, 4)}
+ts = time.time()
+results = [custom_input_output.delay(inp) for _ in range(80)]
+print("Waiting for results...")
+for result in results:
+    print(result.get())
+print(f"Time taken: {time.time() - ts}")
+
