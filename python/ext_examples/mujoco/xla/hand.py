@@ -1,26 +1,16 @@
 import time
-import numpy as np
-import ycb_utils
+from pathlib import Path
+from robot_descriptions.robotiq_2f85_mj_description import PACKAGE_PATH
+
 import mujoco
 from mujoco import mjx
-from mujoco_xml_editor import MujocoXmlEditor
-import jax
 from jax import lax
+import jax
+from mujoco_xml_editor import MujocoXmlEditor
 
-
-editor = MujocoXmlEditor.empty("test")
-editor.add_sky()
+hand_xml_path = Path(PACKAGE_PATH) / "2f85.xml"
+editor = MujocoXmlEditor.load(hand_xml_path)
 editor.add_ground()
-editor.add_light()
-object_path = ycb_utils.resolve_path("035_power_drill")
-pos = np.array([0.3, -0.025, 0.39])
-editor.add_mesh(
-    object_path,
-    "drill",
-    density=100,
-    convex_decomposition=True,
-    pos=pos,
-    euler=np.array([1.54, np.pi, 0]),)
 xmlstr = editor.to_string()
 model = mujoco.MjModel.from_xml_string(xmlstr)
 
@@ -37,24 +27,22 @@ if use_jax:
         return lax.fori_loop(0, N, body_fun, data)
 
     @jax.jit
-    def batched_step(_):  # _ is a placeholder
+    def batched_step(vel):
         mjx_data = mjx.make_data(mjx_model)
         mjx_data = step_n_times(mjx_model, mjx_data, 300)
         return mjx_data.qpos[0]
 
     fn = jax.vmap(batched_step)
-    zeros = jax.numpy.zeros((1000000,))
-    result = fn(zeros)
+    zeros = jax.numpy.zeros((3000,))
     result = fn(zeros)
     print("compiled")
 
     ts = time.time()
     result = fn(zeros)
-    print("time per rollouts", (time.time() - ts) / 1000000)
+    print("time per rollouts", (time.time() - ts) / 3000)
 else:
-    data = mujoco.MjData(model)
     ts = time.time()
+    data = mujoco.MjData(model)
     for _ in range(300):
         mujoco.mj_step(model, data)
-    print("time per rollouts", time.time() - ts)
-
+    print("time per rollouts", (time.time() - ts))

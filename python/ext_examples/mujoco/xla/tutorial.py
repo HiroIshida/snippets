@@ -45,15 +45,16 @@ def batched_step(vel):
     mjx_data = step_n_times(mjx_model, mjx_data, 300)
     return mjx_data.qpos[0]
 
-vel = jax.numpy.arange(0.0, 1.0, 0.001)
+vel = jax.numpy.arange(0.0, 1.0, 0.0001)
 ts = time.time()
 fn = jax.vmap(batched_step)
 pos = fn(vel)
 print(f"time to compile: {time.time() - ts}")
 
-vel = jax.numpy.arange(0.0, 1.0, 0.001) * 2
+vel = jax.numpy.arange(0.0, 1.0, 0.0001) * 2
 ts = time.time()
 pos = fn(vel)
 elapsed_gpu = (time.time() - ts) / len(vel)
 print("Elapsed time per solve: ", elapsed_gpu)
 print(f"speedup: {elapsed_cpu / elapsed_gpu}")
+print(pos)
