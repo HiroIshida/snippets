@@ -1,3 +1,9 @@
+# docker container内部で google choromeを使う方法
+    - ubuntu22.04 ~ だとsnapじゃないとfirefox/chromeがinstallできない
+    - だがsnapはdocker内部だと実行できない..? 要検証
+    - host側でgoogle chromeのdeb pkgをダウンロードして, docker内部にscpする.
+    - docker run --privileged --name reazon -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -it hogehoge
+
 # コンテナ内でGUIを使う 
 host
 ```
