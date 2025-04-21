@@ -84,3 +84,40 @@ for ms_line in ms_lines:
     if os.access(full_path, os.W_OK):
         retcode = subprocess.call('rosrun openni2_camera usb_reset ' + full_path, shell=True)
 ```
+
+### USB の packet 監視
+1番bus(1u)のusb packetを監視する.
+```
+sudo cat /sys/kernel/debug/usb/usbmon/1u
+```
+こんな感じでBulk Out/In のpacketがタイムフレームと転送方式とともに表示される (CAN通信のケース)
+USB通信は1.interrupt, 2.bulk, 3.control, 4.isochronous の4つのtransfer typeがある. Bi, BoのBはbulkを表す.
+S, Cはそれぞれsubmit/completeを表す.
+```
+ffff9ff50ab86480 988832077 S Bo:1:013:1 -115 22 = 74303032 38374646 46374646 30303030 30303746 460d
+ffff9ff50ab86480 988832186 C Bo:1:013:1 0 22 >
+ffff9ff50ab86480 988832206 S Bo:1:013:1 -115 22 = 74303033 38374646 46374646 30303030 30303746 460d
+ffff9ff50ab86480 988832241 C Bo:1:013:1 0 22 >
+ffff9ff50ab86480 988832250 S Bo:1:013:1 -115 22 = 74303034 38374646 46374646 30303030 30303746 460d
+ffff9ff50ab86480 988832304 C Bo:1:013:1 0 22 >
+ffff9ff50ab86240 988833216 C Bi:1:013:1 0 22 = 74303132 38313238 30303437 46463746 46314131 410d
+ffff9ff50ab86240 988833218 S Bi:1:013:1 -115 128 <
+ffff9ff50ab87680 988833269 C Bi:1:013:1 0 22 = 74303133 38313337 46333137 46453746 45314231 390d
+ffff9ff50ab87680 988833271 S Bi:1:013:1 -115 128 <
+ffff9ff50ab86900 988833374 C Bi:1:013:1 0 22 = 74303134 38313438 31394137 46463746 46314131 410d
+ffff9ff50ab86900 988833376 S Bi:1:013:1 -115 128 <
+ffff9ff50ab87a40 988833499 C Bi:1:013:1 0 22 = 74303135 38313538 31334237 46463746 45314131 410d
+```
+
+ちなみにマウス通信の場合のpacketは次のようで, interruptモードのinのみであることがわかる.
+```
+h-ishida@umejuice:~$ sudo cat /sys/kernel/debug/usb/usbmon/1u
+[sudo] password for h-ishida: 
+ffff9ff4f5453e00 2412708810 C Ii:1:009:1 0:2 6 = 01000050 ff00
+ffff9ff4f5453e00 2412708847 S Ii:1:009:1 -115:2 6 <
+ffff9ff4f5453e00 2412710842 C Ii:1:009:1 0:2 6 = 010000a0 ff00
+ffff9ff4f5453e00 2412710858 S Ii:1:009:1 -115:2 6 <
+ffff9ff4f5453e00 2412718801 C Ii:1:009:1 0:2 6 = 01000050 ff00
+ffff9ff4f5453e00 2412718817 S Ii:1:009:1 -115:2 6 <
+ffff9ff4f5453e00 2412726790 C Ii:1:009:1 0:2 6 = 01000040 ff00
+```
