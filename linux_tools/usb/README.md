@@ -121,3 +121,35 @@ ffff9ff4f5453e00 2412718801 C Ii:1:009:1 0:2 6 = 01000050 ff00
 ffff9ff4f5453e00 2412718817 S Ii:1:009:1 -115:2 6 <
 ffff9ff4f5453e00 2412726790 C Ii:1:009:1 0:2 6 = 01000040 ff00
 ```
+
+### 自分のUSBのデバイスを動かしているカーネルモジュールを確認する.
+xhci_hcdはUSB3.0のドライバ.
+```
+h-ishida@umejuice:~$ sudo lspci -k |grep USB -A3
+pcilib: Error reading /sys/bus/pci/devices/0000:00:08.3/label: Operation not permitted
+c5:00.3 USB controller: Advanced Micro Devices, Inc. [AMD] Device 15b9
+	Subsystem: Lenovo Device 231c
+	Kernel driver in use: xhci_hcd
+	Kernel modules: xhci_pci
+c5:00.4 USB controller: Advanced Micro Devices, Inc. [AMD] Device 15ba
+	Subsystem: Lenovo Device 231c
+	Kernel driver in use: xhci_hcd
+	Kernel modules: xhci_pci
+--
+c7:00.3 USB controller: Advanced Micro Devices, Inc. [AMD] Device 15c0
+	Subsystem: Lenovo Device 231c
+	Kernel driver in use: xhci_hcd
+	Kernel modules: xhci_pci
+c7:00.4 USB controller: Advanced Micro Devices, Inc. [AMD] Device 15c1
+	Subsystem: Lenovo Device 231c
+	Kernel driver in use: xhci_hcd
+	Kernel modules: xhci_pci
+c7:00.5 USB controller: Advanced Micro Devices, Inc. [AMD] Device 1668
+	Subsystem: Lenovo Device 231c
+	Kernel driver in use: thunderbolt
+	Kernel modules: thunderbolt
+c7:00.6 USB controller: Advanced Micro Devices, Inc. [AMD] Device 1669
+	Subsystem: Lenovo Device 231c
+	Kernel driver in use: thunderbolt
+	Kernel modules: thunderbolt
+```
