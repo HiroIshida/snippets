@@ -36,8 +36,10 @@ init = []
 init.append(("AtConf", q_start))
 init.append(("IsConf", q_start))
 init.append(("IsGraspable", cylinder))
+init.append(("IsHandEmpty",))
 
-goal = Exists(["?pose", "?obj", "?q"], And(("IsGrasp", "?pose", "?obj"), ("Kin", "?q", "?pose"), ("AtConf", "?q")))
+# goal = Exists(["?pose", "?obj", "?q"], And(("IsGrasp", "?pose", "?obj"), ("Kin", "?q", "?pose"), ("AtConf", "?q")))
+goal = ("IsHolding", cylinder)
 problem = PDDLProblem(domain_pddl, constant_map, stream_pddl, stream_map, init, goal)
 
 print("start!")

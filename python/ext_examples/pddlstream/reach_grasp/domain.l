@@ -8,6 +8,8 @@
     (IsCFreePath ?q1 ?traj ?q2)
     (IsGraspable ?pose)
     (IsGrasp ?pose ?object)
+    (IsHandEmpty)
+    (IsHolding ?object)
   )
   (:action hand_free_move
     :parameters (?q1 ?traj ?q2)
@@ -20,4 +22,19 @@
         (AtConf ?q2)
     )
   )
+  (:action grasp
+     :parameters (?object ?pose ?q)
+     :precondition (and
+        (IsGraspable ?object)
+        (IsGrasp ?pose ?object)
+        (IsPose ?pose)
+        (kin ?q ?pose)
+        (AtConf ?q)
+        (IsHandEmpty)
+     )
+     :effect (and
+        (not (IsHandEmpty))
+        (IsHolding ?object)
+     )
+   )
 )
