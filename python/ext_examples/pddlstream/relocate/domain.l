@@ -1,0 +1,88 @@
+(define (domain reach)
+  (:requirements :strips :equality)
+  (:predicates
+    ;; types
+    (TypeConf ?q)
+    (TypePose ?pose)
+    (TypeCoords ?co)
+    (TypeGrasp ?grasp)
+    ;; fluents
+    (AtConf ?q)
+    (AtPose ?object ?pose)
+    (AtGrasp ?object ?grasp)
+    (IsHandEmpty)
+    (IsHolding ?object)
+    (IsUnderRelocation ?object)
+    (DebugFlag)
+    ;; others
+    (Kin ?q ?co)
+    (IsCFreePathFromHome ?traj ?q)
+    (IsCFreePathGrasping ?object ?grasp ?q1 ?traj ?q2)
+    (IsGraspable ?object)
+    (IsGrasp ?grasp ?object)
+    (IsGraspCoords ?co ?object ?grasp)
+  )
+  (:action hand_free_move
+    :parameters (?q1 ?traj ?q2)
+    :precondition (and
+        (AtConf ?q1)
+        (IsCFreePathFromHome ?traj ?q2)
+    )
+    :effect (and
+        (not (AtConf ?q1))
+        (AtConf ?q2)
+    )
+  )
+  (:action grasp
+     :parameters (?object ?pose ?grasp ?q ?co)
+     :precondition (and
+        (IsGraspable ?object)
+        (AtPose ?object ?pose)
+        (AtConf ?q)
+        (IsHandEmpty)
+        (not (IsUnderRelocation ?object))
+        (IsGrasp ?grasp ?object)
+        (IsGraspCoords ?co ?object ?grasp)
+        (Kin ?q ?co)
+     )
+     :effect (and
+        (not (IsHandEmpty))
+        (IsHolding ?object)
+        (not (AtPose ?object ?pose))
+        (AtGrasp ?object ?grasp)
+     )
+  )
+  (:action release
+    :parameters (?object ?pose ?grasp ?q ?co)
+    :precondition (and
+        (AtConf ?q)
+        (IsHolding ?object)
+        (AtGrasp ?object ?grasp)
+        (IsUnderRelocation ?object)
+        (IsGraspCoords ?co ?object ?grasp)
+        (Kin ?q ?co)
+     )
+     :effect (and
+        (not (IsHolding ?object))
+        (IsHandEmpty)
+        (not (AtGrasp ?object ?grasp))
+        (AtPose ?object ?pose)
+        (not (IsUnderRelocation ?object))
+        (DebugFlag)
+     )
+  )
+  (:action relocate
+    :parameters (?object ?grasp ?q1 ?traj ?q2)
+    :precondition (and
+        (AtConf ?q1)
+        (IsHolding ?object)
+        (AtGrasp ?object ?grasp)
+        (IsCFreePathGrasping ?object ?grasp ?q1 ?traj ?q2)
+    )
+    :effect (and
+        (not (AtConf ?q1))
+        (AtConf ?q2)
+        (IsUnderRelocation ?object)
+    )
+  )
+)

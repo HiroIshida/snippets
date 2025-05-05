@@ -1,0 +1,42 @@
+(define (stream tamp) 
+  (:stream sample-grasp
+           :inputs (?object)
+           :domain (IsGraspable ?object)
+           :outputs (?grasp)
+           :certified (and (IsGrasp ?grasp ?object) (TypeGrasp ?grasp))
+  )
+  (:stream sample-path-to-pose-from-home ;; solve IK to pose and motion plan
+           :inputs (?co)
+           :domain (TypeCoords ?co)
+           :outputs (?traj ?q)
+           :certified (and (IsCFreePathFromHome ?traj ?q) (Kin ?q ?co) 
+                           (TypeConf ?q))
+  )
+  (:stream derive-grasp-coords
+           :inputs (?object ?pose ?grasp)
+           :domain (and
+                     (IsGraspable ?object)
+                     (TypePose ?pose)
+                     (TypeGrasp ?grasp)
+           )
+           :outputs (?co)
+           :certified (and
+                        (IsGraspCoords ?co ?object ?grasp)
+                        (TypeCoords ?co))
+  )
+  (:stream sample-path-relocate
+           :inputs (?object ?pose ?grasp ?co ?q1 ?q2)
+           :domain (and
+                     (IsGraspable ?object)
+                     (TypePose ?pose)
+                     (TypeGrasp ?grasp)
+                     (TypeConf ?q1)
+                     (TypeConf ?q2)
+                     (IsGrasp ?grasp ?object)
+                     (Kin ?q1 ?co)
+                     (IsGraspCoords ?co ?object ?grasp)
+           )
+           :outputs (?traj)
+           :certified (IsCFreePathGrasping ?object ?grasp ?q1 ?traj ?q2)
+  )
+)
