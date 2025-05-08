@@ -12,7 +12,6 @@
     (IsHandEmpty)
     (IsHolding ?object)
     (IsUnderRelocation ?object)
-    (DebugFlag)
     ;; others
     (KinGrasp ?object ?pose ?grasp ?q)
     (IsCFreePathFromHome ?traj ?q)
@@ -64,7 +63,6 @@
         (not (AtGrasp ?object ?grasp))
         (AtPose ?object ?pose)
         (not (IsUnderRelocation ?object))
-        (DebugFlag)
      )
   )
   (:action relocate

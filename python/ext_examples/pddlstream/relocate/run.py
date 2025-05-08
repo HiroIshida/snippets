@@ -38,8 +38,8 @@ class Pose:
 def sample_grasp(obj):
     return (Grasp("sampled"),)
 
-def sample_path_to_grasp(obj, pose, grasp):
-    return (Traj("reach-gras"), Conf("sampled"))  # dummy
+def sample_path_to_grasp(obj, pose, grasp, fluents=[]):
+    return (Traj("reach-grasp"), Conf("sampled"))  # dummy
 
 def sample_path_relocate(obj, pose1, grasp, q1, pose2, q2):
     return (Traj("relocate"),)  # dummy
@@ -55,26 +55,25 @@ stream_map["sample-path-relocate"] = from_fn(sample_path_relocate)
 stream_map["sample-pose"] = from_gen_fn(sample_pose)
 
 q_start = Conf("start")
-cylinder_pose = Pose("init")
 cylinder = Object("cylinder")
+cylinder_pose = Pose("init")
+cylinder2 = Object("cylinder2")
+cylinder2_pose = Pose("init2")
 
 init = []
 init.append(("TypeConf", q_start))
 init.append(("AtConf", q_start))
 init.append(("AtPose", cylinder, cylinder_pose))
+init.append(("AtPose", cylinder2, cylinder2_pose))
 init.append(("TypePose", cylinder_pose))
+init.append(("TypePose", cylinder2_pose))
 init.append(("IsGraspable", cylinder))
+init.append(("IsGraspable", cylinder2))
 init.append(("IsHandEmpty",))
-goal = ("DebugFlag",)
+goal = Exists(("?grasp",), ("AtGrasp", cylinder2, "?grasp"))
 
 problem = PDDLProblem(domain_pddl, constant_map, stream_pddl, stream_map, init, goal)
-from pyinstrument import Profiler
-profiler = Profiler()
-profiler.start()
 solution = solve(problem, algorithm="adaptive", unit_costs=True, success_cost=float("inf")) 
-profiler.stop()
-print(profiler.output_text(unicode=True, color=True, show_all=False))
-print(solution)
 for item in solution.plan:
     print(item.name)
     print(item.args)
