@@ -4,7 +4,6 @@
     ;; types
     (TypeConf ?q)
     (TypePose ?pose)
-    (TypeCoords ?co)
     (TypeGrasp ?grasp)
     ;; fluents
     (AtConf ?q)
@@ -15,12 +14,11 @@
     (IsUnderRelocation ?object)
     (DebugFlag)
     ;; others
-    (Kin ?q ?co)
+    (KinGrasp ?object ?pose ?grasp ?q)
     (IsCFreePathFromHome ?traj ?q)
     (IsCFreePathGrasping ?object ?grasp ?q1 ?traj ?q2)
     (IsGraspable ?object)
     (IsGrasp ?grasp ?object)
-    (IsGraspCoords ?co ?object ?grasp)
   )
   (:action hand_free_move
     :parameters (?q1 ?traj ?q2)
@@ -34,7 +32,7 @@
     )
   )
   (:action grasp
-     :parameters (?object ?pose ?grasp ?q ?co)
+     :parameters (?object ?pose ?grasp ?q)
      :precondition (and
         (IsGraspable ?object)
         (AtPose ?object ?pose)
@@ -42,8 +40,7 @@
         (IsHandEmpty)
         (not (IsUnderRelocation ?object))
         (IsGrasp ?grasp ?object)
-        (IsGraspCoords ?co ?object ?grasp)
-        (Kin ?q ?co)
+        (KinGrasp ?object ?pose ?grasp ?q)
      )
      :effect (and
         (not (IsHandEmpty))
@@ -53,14 +50,13 @@
      )
   )
   (:action release
-    :parameters (?object ?pose ?grasp ?q ?co)
+    :parameters (?object ?pose ?grasp ?q)
     :precondition (and
         (AtConf ?q)
         (IsHolding ?object)
         (AtGrasp ?object ?grasp)
         (IsUnderRelocation ?object)
-        (IsGraspCoords ?co ?object ?grasp)
-        (Kin ?q ?co)
+        (KinGrasp ?object ?pose ?grasp ?q)
      )
      :effect (and
         (not (IsHolding ?object))
@@ -72,12 +68,15 @@
      )
   )
   (:action relocate
-    :parameters (?object ?grasp ?q1 ?traj ?q2)
+    :parameters (?object ?pose1 ?grasp ?q1 ?traj ?pose2 ?q2)
     :precondition (and
         (AtConf ?q1)
         (IsHolding ?object)
         (AtGrasp ?object ?grasp)
         (IsCFreePathGrasping ?object ?grasp ?q1 ?traj ?q2)
+        (KinGrasp ?object ?pose1 ?grasp ?q1)
+        (KinGrasp ?object ?pose2 ?grasp ?q2)
+        (not (= ?pose1 ?pose2))
     )
     :effect (and
         (not (AtConf ?q1))

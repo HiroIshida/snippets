@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import time
 import numpy as np
 from pddlstream.utils import read
@@ -14,30 +15,48 @@ constant_map = {}
 stream_pddl = read("stream.l")
 stream_map = {}
 
-class Traj: pass
+@dataclass
+class Object:
+    name: str
 
+@dataclass
+class Grasp:
+    name: str
+
+@dataclass
+class Traj:
+    name: str
+
+@dataclass
+class Conf:
+    name: str
+
+@dataclass
+class Pose:
+    name: str
 
 def sample_grasp(obj):
-    return (0.0,)
+    return (Grasp("sampled"),)
 
-def sample_path_to_pose_from_home(pose):
-    return (Traj, pose)  # dummy
+def sample_path_to_grasp(obj, pose, grasp):
+    return (Traj("reach-gras"), Conf("sampled"))  # dummy
 
-def derive_grasp_coords(obj, pose, grasp):
-    return (pose,)
+def sample_path_relocate(obj, pose1, grasp, q1, pose2, q2):
+    return (Traj("relocate"),)  # dummy
 
-def sample_path_relocate(obj, pose, grasp, co, q1, q2):
-    return (Traj,)
+def sample_pose(obj):
+    while True:
+        yield (Pose("sampled"),)
 
 
 stream_map["sample-grasp"] = from_fn(sample_grasp)
-stream_map["sample-path-to-pose-from-home"] = from_fn(sample_path_to_pose_from_home)
-stream_map["derive-grasp-coords"] = from_fn(derive_grasp_coords)
+stream_map["sample-path-to-grasp"] = from_fn(sample_path_to_grasp)
 stream_map["sample-path-relocate"] = from_fn(sample_path_relocate)
+stream_map["sample-pose"] = from_gen_fn(sample_pose)
 
-q_start = 0
-cylinder_pose = 1
-cylinder = "cylinder"
+q_start = Conf("start")
+cylinder_pose = Pose("init")
+cylinder = Object("cylinder")
 
 init = []
 init.append(("TypeConf", q_start))
@@ -46,12 +65,6 @@ init.append(("AtPose", cylinder, cylinder_pose))
 init.append(("TypePose", cylinder_pose))
 init.append(("IsGraspable", cylinder))
 init.append(("IsHandEmpty",))
-
-# goal = And(Not(("IsHolding", cylinder)), ("IsInRegion", cylinder_pose))
-# goal = ("IsInRegion", cylinder_pose)
-# goal = Exists(("?pose"), And(("AtPose", cylinder, "?pose"), ("IsInRegion", "?pose")))
-# goal = Exists(("?pose"), ("AtPose", cylinder, "?pose"))
-# goal = ("IsHolding", cylinder)
 goal = ("DebugFlag",)
 
 problem = PDDLProblem(domain_pddl, constant_map, stream_pddl, stream_map, init, goal)
@@ -64,3 +77,4 @@ print(profiler.output_text(unicode=True, color=True, show_all=False))
 print(solution)
 for item in solution.plan:
     print(item.name)
+    print(item.args)
