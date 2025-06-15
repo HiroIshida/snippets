@@ -1,0 +1,13 @@
+- Import the PR2 model: `robot = skrobot.models.PR2()`
+- Reset to default posture: `robot.reset_pose()` or `robot.init_pose()`
+- Quickly set a convenient manipulation pose: `robot.reset_manip_pose()`
+- Create a right-arm joint list for targeted control:  
+  `link_list = [robot.r_shoulder_pan_link, … , robot.r_wrist_roll_link]`
+- Access the corresponding joints: `joint_list = [l.joint for l in link_list]`
+- The attribute of each joint and link can be accessed via `robot.the_joint_name` or `robot.the_link_name`
+- To set the angle to the joint, use `robot.the_joint_name.joint_angle(angle)`
+- To read the angle to the joint, use `robot.the_joint_name.joint_angle()` which returns the float value
+- The following is the pr2's joint names ['fl_caster_rotation_joint', 'fl_caster_l_wheel_joint', 'fl_caster_r_wheel_joint', 'fr_caster_rotation_joint', 'fr_caster_l_wheel_joint', 'fr_caster_r_wheel_joint', 'bl_caster_rotation_joint', 'bl_caster_l_wheel_joint', 'bl_caster_r_wheel_joint', 'br_caster_rotation_joint', 'br_caster_l_wheel_joint', 'br_caster_r_wheel_joint', 'torso_lift_joint', 'torso_lift_motor_screw_joint', 'head_pan_joint', 'head_tilt_joint', 'laser_tilt_mount_joint', 'r_shoulder_pan_joint', 'r_shoulder_lift_joint', 'r_upper_arm_roll_joint', 'r_forearm_roll_joint', 'r_elbow_flex_joint', 'r_wrist_flex_joint', 'r_wrist_roll_joint', 'r_gripper_motor_slider_joint', 'r_gripper_motor_screw_joint', 'r_gripper_l_finger_joint', 'r_gripper_r_finger_joint', 'r_gripper_l_finger_tip_joint', 'r_gripper_r_finger_tip_joint', 'r_gripper_joint', 'l_shoulder_pan_joint', 'l_shoulder_lift_joint', 'l_upper_arm_roll_joint', 'l_forearm_roll_joint', 'l_elbow_flex_joint', 'l_wrist_flex_joint', 'l_wrist_roll_joint', 'l_gripper_motor_slider_joint', 'l_gripper_motor_screw_joint', 'l_gripper_l_finger_joint', 'l_gripper_r_finger_joint', 'l_gripper_l_finger_tip_joint', 'l_gripper_r_finger_tip_joint', 'l_gripper_joint']
+- To rotate pr2's larm gripper e.g, please access the joint `robot.l_wrist_roll_joint`
+- To get the whole configuration of the robot, use `robot.angle_vector()` which returns a numpy array of joint angles
+- To set the whole configuration of the robot, use `robot.angle_vector(angle_vector)` where `angle_vector` is a numpy array of joint angles
