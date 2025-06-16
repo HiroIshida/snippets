@@ -210,3 +210,85 @@ class Display:
             msg: Payload = self._to_main.get(timeout=timeout)
             if msg.tag is tag:
                 return
+
+
+class Headless:
+    def __init__(self) -> None:
+        self._start_time: float | None = None
+        self._proceed_enabled = False
+        self._waiting_for_start = False
+        self._waiting_for_proceed = False
+
+    # -------------   commands  -------------
+    def status(self, text: str, *, color: str = "black", font: tuple[str, int, str] | None = None) -> None:
+        print(f"[STATUS] {text}")
+
+    def start_timer(self) -> None:
+        self._start_time = time.perf_counter()
+        print("[TIMER] Started")
+
+    def stop_timer(self, what: str = "") -> None:
+        if self._start_time is not None:
+            elapsed = time.perf_counter() - self._start_time
+            if what:
+                print(f"[TIMER] {what} in {elapsed:5.2f}s")
+            else:
+                print(f"[TIMER] Stopped at {elapsed:5.2f}s")
+        self._start_time = None
+
+    def enable_proceed(self) -> None:
+        self._proceed_enabled = True
+        print("[INPUT] Press Enter to proceed...")
+
+    def reset(self) -> None:
+        self._start_time = None
+        self._proceed_enabled = False
+        self._waiting_for_start = False
+        self._waiting_for_proceed = False
+        print("[SYSTEM] Reset - Ready")
+
+    # -------------   waits  -------------
+    def wait_start(self, timeout: float | None = None) -> None:
+        self._waiting_for_start = True
+        print("[INPUT] Press Enter to start...")
+        self._wait_for_input("start", timeout)
+        self._waiting_for_start = False
+
+    def wait_proceed(self, timeout: float | None = None) -> None:
+        self._waiting_for_proceed = True
+        if not self._proceed_enabled:
+            print("[INPUT] Waiting for proceed to be enabled...")
+            while not self._proceed_enabled:
+                time.sleep(0.1)
+        self._wait_for_input("proceed", timeout)
+        self._waiting_for_proceed = False
+        self._proceed_enabled = False
+
+    # -------------   housekeeping  -------------
+    def shutdown(self) -> None:
+        print("[SYSTEM] Shutting down...")
+
+    # -------------   context mgr  -------------
+    def __enter__(self) -> "Headless":
+        return self
+
+    def __exit__(self, exc_type, exc, tb) -> None:
+        self.shutdown()
+
+    # -------------   internal  -------------
+    def _wait_for_input(self, action: str, timeout: float | None) -> None:
+        start_time = time.perf_counter()
+        while True:
+            try:
+                import select
+                import sys
+                if select.select([sys.stdin], [], [], 0.1)[0]:
+                    input()
+                    return
+            except ImportError:
+                time.sleep(0.1)
+                if timeout and time.perf_counter() - start_time > timeout:
+                    raise TimeoutError(f"Timeout waiting for {action}")
+
+            if timeout and time.perf_counter() - start_time > timeout:
+                raise TimeoutError(f"Timeout waiting for {action}")
