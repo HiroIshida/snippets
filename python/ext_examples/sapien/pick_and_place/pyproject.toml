@@ -1,0 +1,11 @@
+[project]
+name = "pick-and-place"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "sapien==3.0.0b1",
+    "setuptools>=80.9.0",
+    "six>=1.17.0",
+]
