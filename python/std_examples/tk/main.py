@@ -1,5 +1,5 @@
 import time
-from display import Display
+from display import Display, Headless
 
 def run_robot_demo(gui: Display) -> None:
     gui.status("Planning…")

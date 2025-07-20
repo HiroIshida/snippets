@@ -4,6 +4,7 @@ import multiprocessing as mp
 import queue as _queue
 import time
 import tkinter as tk
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Final
@@ -159,7 +160,49 @@ def _gui_entry(to_gui: mp.Queue, to_main: mp.Queue) -> None:
     root.mainloop()
 
 
-class Display:
+class DisplayBase(ABC):
+    @abstractmethod
+    def status(self, text: str, *, color: str = "black", font: tuple[str, int, str] | None = None) -> None:
+        pass
+
+    @abstractmethod
+    def start_timer(self) -> None:
+        pass
+
+    @abstractmethod
+    def stop_timer(self, what: str = "") -> None:
+        pass
+
+    @abstractmethod
+    def enable_proceed(self) -> None:
+        pass
+
+    @abstractmethod
+    def reset(self) -> None:
+        pass
+
+    @abstractmethod
+    def wait_start(self, timeout: float | None = None) -> None:
+        pass
+
+    @abstractmethod
+    def wait_proceed(self, timeout: float | None = None) -> None:
+        pass
+
+    @abstractmethod
+    def shutdown(self) -> None:
+        pass
+
+    @abstractmethod
+    def __enter__(self) -> "DisplayBase":
+        pass
+
+    @abstractmethod
+    def __exit__(self, exc_type, exc, tb) -> None:
+        pass
+
+
+class Display(DisplayBase):
     def __init__(self) -> None:
         self._to_gui: mp.Queue = mp.Queue()
         self._to_main: mp.Queue = mp.Queue()
@@ -212,7 +255,7 @@ class Display:
                 return
 
 
-class Headless:
+class Headless(DisplayBase):
     def __init__(self) -> None:
         self._start_time: float | None = None
         self._proceed_enabled = False
